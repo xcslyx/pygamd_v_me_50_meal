@@ -12,13 +12,13 @@ from tqdm import tqdm
 from pygamd_v_me_50_meal.data import Data
 from pygamd_analysis.utils import str2value
 
-from pygamd_v_me_50_meal.simulate_creation import xml_generator
-from pygamd_analysis.get_sequence import GetSequence
-from pygamd_analysis.msd_calculator import MSDCalculator
-from pygamd_analysis.coordinates_processor import CoordinatesProcessor
-from pygamd_analysis.contact_map_calculator import ContactMapCalculator
-from pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
-from pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
+from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
+from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
+from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
+from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
+from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
+from pygamd_v_me_50_meal.pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
+from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 
 
 plt.rcParams["font.family"] = "DejaVu Sans"
@@ -38,10 +38,12 @@ plt.rcParams["axes.formatter.use_mathtext"] = True
 
 
 class EndToEndDistanceCalculator:
-    def __init__(self):
-        self.path = file_args.path
-        self.mol_class_dict = Data().mol_class_dict
-        self.length_dict = Data().length_dict
+    def __init__(self, path, data):
+        self.path = path
+        self.data = data
+
+        self.mol_class_dict = self.data.mol_class_dict
+        self.length_dict = self.data.length_dict
 
         self.chain_path = os.path.join(self.path, "chain_xyz_unwrapping/")
 
@@ -53,13 +55,13 @@ class EndToEndDistanceCalculator:
 
         self.cal_end_to_end_distance_list = []
         if not self.cal_end_to_end_distance_list:
-            print(f"\n您的分子类型有：\n{Data().molecules}")
+            print(f"\n您的分子类型有：\n{self.data.molecules}")
             self.cal_end_to_end_distance_list = input("请输入您想要计算末端距时需要包括的分子，以逗号分隔，如“1,2”。\n"
                                                       "如需计算全部分子，请输入 all 或直接回车：").split(',')
             if "all" in self.cal_end_to_end_distance_list or self.cal_end_to_end_distance_list == [""]:
-                self.cal_end_to_end_distance_list = list(Data().mol_class_dict.keys())
+                self.cal_end_to_end_distance_list = list(self.data.mol_class_dict.keys())
             else:
-                self.cal_end_to_end_distance_list = [Data().mol_class_list[int(i)] for i in self.cal_end_to_end_distance_list]
+                self.cal_end_to_end_distance_list = [self.data.mol_class_list[int(i)] for i in self.cal_end_to_end_distance_list]
         print(f"即将计算末端距的分子：{self.cal_end_to_end_distance_list}")
 
         self.files = sorted(os.listdir(self.chain_path))
@@ -334,7 +336,7 @@ def main():
         exit()
 
     if file_args.eed:
-        EndToEndDistanceCalculator().cal_end_to_end_distance_parallel()
+        EndToEndDistanceCalculator(path, data).cal_end_to_end_distance_parallel()
         exit()
 
 if __name__ == '__main__':
