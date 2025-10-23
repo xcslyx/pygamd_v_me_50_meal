@@ -1,7 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 
-from ..data import Data
+from data import Data
 
 
 # 定义类 GetSequence

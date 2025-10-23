@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.ndimage import gaussian_filter
 
-from ..data import Data
+from data import Data
 
 
 # 定义一个类，用于计算 Rg, RMSD, RMSF。

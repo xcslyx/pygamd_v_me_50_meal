@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 from multiprocessing import Pool
 
-from .get_sequence import GetSequence
+from get_sequence import GetSequence
 
 
 # 处理坐标文件

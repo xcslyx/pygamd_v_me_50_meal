@@ -265,35 +265,6 @@ if __name__ == '__main__':
 
     file_args = parser.parse_args()
 
-
-    def progress_bar(finish_tasks_number, tasks_number, task_name="进度"):
-        percentage = round(finish_tasks_number / tasks_number * 100)
-        print(f"\r{task_name}: {percentage}%: ", "▓" * (percentage // 2), end="")
-        sys.stdout.flush()
-
-    def install_and_import(package):
-        try:
-            importlib.import_module(package)
-        except ImportError:
-            logging.warning(f"未安装{package.split('.')[0]}，正在自动安装...")
-            if package == "sklearn":
-                package = "scikit-learn"
-            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-        except subprocess.CalledProcessError:
-            logging.warning(f"自动安装{package.split('.')[0]}失败，请手动安装")
-
-    # 要检测并确保安装的包列表
-    required_packages = [
-        "numpy", "pandas", "matplotlib", "torch",
-        "tqdm", "scipy", "sklearn", "MDAnalysis"
-        # "pygamd",
-    ]
-    packages_num = len(required_packages)
-    for i in range(packages_num):
-        install_and_import(required_packages[i])
-        progress_bar(i + 1, packages_num, "检查依赖包安装情况")
-    print("\n")
-
     path = file_args.path
     data = Data(path)
 
