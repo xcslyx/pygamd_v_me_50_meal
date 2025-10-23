@@ -1,12 +1,8 @@
 #!-*- coding: utf-8 -*-
 import os
 import re
-import sys
 import shutil
-import logging
 import argparse
-import importlib
-import subprocess
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,7 +12,7 @@ from tqdm import tqdm
 from data import Data
 from pygamd_analysis.utils import str2value
 
-from simulate_creation.xml_generator import XMLGenerator
+from pygamd_v_me_50_meal.simulate_creation import XMLGenerator
 from pygamd_analysis.get_sequence import GetSequence
 from pygamd_analysis.msd_calculator import MSDCalculator
 from pygamd_analysis.coordinates_processor import CoordinatesProcessor

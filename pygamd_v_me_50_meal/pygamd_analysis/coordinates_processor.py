@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 from multiprocessing import Pool
 
-from Functions import Functions
+from pygamd_v_me_50_meal.Functions import Functions
 
 from .get_sequence import GetSequence
 

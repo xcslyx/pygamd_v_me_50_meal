@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from multiprocessing import Pool
 from scipy.ndimage import gaussian_filter
-from matplotlib.ticker import ScalarFormatter, MaxNLocator, FormatStrFormatter
+from matplotlib.ticker import ScalarFormatter, MaxNLocator
 
-from Functions import Functions
+from pygamd_v_me_50_meal.Functions import Functions
 
 # 定义一个类用于计算和绘制 contact map
 class ContactMapCalculator:
