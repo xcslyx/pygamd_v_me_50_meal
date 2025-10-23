@@ -13,16 +13,16 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
-from .data import Data
+from data import Data
+from pygamd_analysis.utils import str2value
 
-from .simulate_creation.xml_generator import XMLGenerator
-
-from .pygamd_analysis.get_sequence import GetSequence
-from .pygamd_analysis.msd_calculator import MSDCalculator
-from .pygamd_analysis.coordinates_processor import CoordinatesProcessor
-from .pygamd_analysis.contact_map_calculator import ContactMapCalculator
-from .pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
-from .pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
+from simulate_creation.xml_generator import XMLGenerator
+from pygamd_analysis.get_sequence import GetSequence
+from pygamd_analysis.msd_calculator import MSDCalculator
+from pygamd_analysis.coordinates_processor import CoordinatesProcessor
+from pygamd_analysis.contact_map_calculator import ContactMapCalculator
+from pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
+from pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 
 
 plt.rcParams["font.family"] = "DejaVu Sans"
@@ -158,17 +158,7 @@ class EndToEndDistanceCalculator:
 
 
 if __name__ == '__main__':
-    def str2value(value):
-        if value.lower() in ('yes', 'y', 'true', 'ture', 't', '1'):
-            return True
-        elif value.lower() in ('no', 'n', 'false', 'f', '0'):
-            return False
-        elif value == "avg":
-            return "avg"
-        elif value == "unset":
-            return None
-        else:
-            return value
+    print(">>> Running pygamd_v_me_50_meal package...")
 
     parser = argparse.ArgumentParser(
         prog = f'{os.path.basename(__file__)} v0.0.20 增强版',
