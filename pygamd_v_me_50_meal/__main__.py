@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from pygamd_v_me_50_meal.data import Data
-from pygamd_analysis.utils import str2value
+from pygamd_v_me_50_meal.pygamd_analysis.utils import str2value
 
 from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
 from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
