@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
-from data import Data
+from pygamd_v_me_50_meal.data import Data
 from pygamd_analysis.utils import str2value
 
 from pygamd_v_me_50_meal.simulate_creation import xml_generator
