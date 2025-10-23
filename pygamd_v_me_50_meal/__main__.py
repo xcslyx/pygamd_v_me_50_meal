@@ -12,7 +12,7 @@ from tqdm import tqdm
 from data import Data
 from pygamd_analysis.utils import str2value
 
-from pygamd_v_me_50_meal.simulate_creation import XMLGenerator
+from pygamd_v_me_50_meal.simulate_creation import xml_generator
 from pygamd_analysis.get_sequence import GetSequence
 from pygamd_analysis.msd_calculator import MSDCalculator
 from pygamd_analysis.coordinates_processor import CoordinatesProcessor
@@ -297,7 +297,7 @@ def main():
             exit()
         elif file_args.avg == 'mass_density':
             print("开始对质量密度分布进行平均...")
-            MassDensityDistributionCalculator().average_mass_density_distribution()
+            MassDensityDistributionCalculator(path, data).average_mass_density_distribution()
             exit()
 
     if file_args.draw:
