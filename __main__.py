@@ -155,15 +155,11 @@ class EndToEndDistanceCalculator:
 
         print("✅ 计算完成")
 
-
-
-if __name__ == '__main__':
-    print(">>> Running pygamd_v_me_50_meal package...")
-
+def main():
     parser = argparse.ArgumentParser(
-        prog = f'{os.path.basename(__file__)} v0.0.20 增强版',
-        description = 'Do something you want to do in your system.',
-        formatter_class = argparse.RawDescriptionHelpFormatter,
+        prog=f'{os.path.basename(__file__)} v0.0.20 增强版',
+        description='Do something you want to do in your system.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v0.0.14')
@@ -252,7 +248,6 @@ if __name__ == '__main__':
     parser.add_argument('-eed', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算末端距。")
 
-
     file_args = parser.parse_args()
 
     path = file_args.path
@@ -260,13 +255,12 @@ if __name__ == '__main__':
 
     ref = file_args.ref
 
-
     if file_args.pdb2xml:
         XMLGenerator(path, file_args.pdb2xml, file_args.box_size,
-                     add_enm_bond=file_args.add_enm_bond, add_rigid_body=file_args.add_rigid_body, add_domain=file_args.add_domain,
+                     add_enm_bond=file_args.add_enm_bond, add_rigid_body=file_args.add_rigid_body,
+                     add_domain=file_args.add_domain,
                      dna_model=file_args.dna_model)
         exit()
-
 
     if file_args.get_seq:
         GetSequence(path, file_args.get_seq, data=data)
@@ -274,26 +268,25 @@ if __name__ == '__main__':
 
     if file_args.xyz:
         print("开始进行坐标提取...")
-        CoordinatesProcessor(path, file_args.remove_ions_zhy).cal_xyz()
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz()
     elif file_args.xyz is None:
         xyz_request = input("是否已经完成坐标提取？（y(es)/n(o)）")
         if xyz_request in ["n", "no", "N", "No"]:
             if path is None:
                 raise ValueError("请提供系统目录路径！")
-            CoordinatesProcessor(path, file_args.remove_ions_zhy).cal_xyz()
+            CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz()
         elif xyz_request in ["y", "yes", "Y", "Yes"]:
             pass
         else:
             raise ValueError("输入格式不正确，请输入 y(es) 或 n(o)")
 
-
     if file_args.cm:
         print("开始计算 contact map 文件...")
         ContactMapCalculator(path,
-                            data=data,
-                            cm_choice=file_args.cm_choice,
-                            r_cut=file_args.r_cut,
-                            ).calculate_contact_map_parallel()
+                             data=data,
+                             cm_choice=file_args.cm_choice,
+                             r_cut=file_args.r_cut,
+                             ).calculate_contact_map_parallel()
         exit()
 
     if file_args.avg:
@@ -302,9 +295,9 @@ if __name__ == '__main__':
         if file_args.avg == 'cm':
             print("开始对 contact map 进行平均...")
             ContactMapCalculator(path, data=data,
-                                cm_choice=file_args.cm_choice,
-                                r_cut=file_args.r_cut,
-                                ).average_contact_map()
+                                 cm_choice=file_args.cm_choice,
+                                 r_cut=file_args.r_cut,
+                                 ).average_contact_map()
             exit()
         elif file_args.avg == 'mass_density':
             print("开始对质量密度分布进行平均...")
@@ -316,9 +309,9 @@ if __name__ == '__main__':
         if "cm" in draw_type:
             print("开始绘制 contact map 图像...")
             ContactMapCalculator(path, data=data,
-                                cm_choice=file_args.cm_choice,
-                                r_cut=file_args.r_cut,
-                                ).draw_contact_map()
+                                 cm_choice=file_args.cm_choice,
+                                 r_cut=file_args.r_cut,
+                                 ).draw_contact_map()
         if 'rg' in draw_type:
             print("开始绘制 Rg 图像...")
             RgRMSDRMSFCalculator(path, data, ref).draw_rg_distribution()
@@ -335,7 +328,6 @@ if __name__ == '__main__':
         RgRMSDRMSFCalculator(path, data, ref).calculate(cal_class_dict)
         exit()
 
-
     if file_args.mass_density:
         MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel()
         exit()
@@ -348,6 +340,11 @@ if __name__ == '__main__':
     if file_args.eed:
         EndToEndDistanceCalculator().cal_end_to_end_distance_parallel()
         exit()
+
+if __name__ == '__main__':
+    print(">>> Running pygamd_v_me_50_meal package...")
+    main()
+
 
 
 

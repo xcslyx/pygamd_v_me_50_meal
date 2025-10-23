@@ -8,31 +8,26 @@ import numpy as np
 from tqdm import tqdm
 from multiprocessing import Pool
 
-from get_sequence import GetSequence
+from Functions import Functions
+
+from .get_sequence import GetSequence
 
 
 # 处理坐标文件
 class CoordinatesProcessor:
-    def __init__(self, data, file_args, ):
+    def __init__(self, path: str, data, remove_ions_zhy: bool=False,
+                 remove_enm=False, remove_condensate_pbc=False):
+        self.path = path
         self.data = data
-        self.file_args = file_args
-        self.path = file_args.path
-        self.mol_class_dict = data.mol_class_dict
-        self.length_dict = data.length_dict
+
+        self.mol_class_dict = self.data.mol_class_dict
+        self.length_dict = self.data.length_dict
 
         self.init_xml_path = os.path.join(self.path, "xml/")
         self.unwrapping_xml_path = os.path.join(self.path, "xml_unwrapping/")
         self.remove_pbc_condensate_xml_path = os.path.join(self.path, "xml_remove_pbc_condensate/")
 
-        self.box_size = None
-
         os.makedirs(self.init_xml_path, exist_ok=True)
-
-        self.unwrap_xml_flag: bool = True
-
-        self.max_group_start = 0
-        self.max_group_core = None
-
         for file in os.listdir(self.path):
             if file.startswith("particles") and file.endswith(".xml"):
                 file_path = os.path.join(self.path, file)
@@ -43,6 +38,22 @@ class CoordinatesProcessor:
                     os.remove(destination_path)
 
                 shutil.move(file_path, self.init_xml_path)
+
+        self.remove_ions = remove_ions_zhy
+
+        self.remove_enm = remove_enm
+        self.remove_condensate_pbc = remove_condensate_pbc
+
+        xml_path = os.path.join(self.path, "xml")
+        self.xml_files = sorted(os.listdir(xml_path))
+        init_xml_file = os.path.join(self.path, "xml", self.xml_files[0])
+        init_root = ET.parse(init_xml_file).getroot()
+        self.box_size: list[float] = [float(init_root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
+
+        self.unwrap_xml_flag: bool = True
+
+        self.max_group_start = 0
+        self.max_group_core = None
 
 
     def remove_enm_bonds_from_xml(self, xml_file):
@@ -68,59 +79,15 @@ class CoordinatesProcessor:
         # 将修改后的 XML 对象写回到文件中
         tree.write(os.path.join(self.init_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
 
-    @staticmethod
-    def is_chain_wrapped(positions, box_length, threshold=0.5):
-        """
-        判断链是否跨越了盒子的周期边界
-        :param positions: 粒子坐标 (N, 3) numpy 数组
-        :param box_length: 模拟盒子尺寸
-        :param threshold: 跳跃阈值（单位：盒子长度比例），默认0.5（即跳过一半盒子视为跨盒）
-        :return: True 表示链是跨盒的，False 表示连续
-        """
-        positions = np.array(positions)
-        box_length = np.array([box_length, box_length, box_length])
-        deltas = positions[1:] - positions[:-1]
-        min_image_deltas = deltas - box_length * np.round(deltas / box_length)
 
-        # 如果某个方向上距离跳跃了超过阈值 × 盒子长度，则视为“跨盒”
-        jump = np.abs(deltas - min_image_deltas)
-        return np.any(jump > (threshold * box_length))
-
-    @staticmethod
-    def unwrap_chain(positions: list[list[float]], box_length: float) -> list[list[float]]:
-        """
-        将一个周期性边界条件下的链解包 (unwrap) 为连续结构
-        :param positions: 原始坐标数组，形状为 (N, 3)
-        :param box_length: 模拟盒子长度
-        :return: 解包后的坐标数组，形状为 (N, 3)
-        """
-        positions = np.array(positions)
-        box_length = np.array([box_length, box_length, box_length])
-
-        # 存储解包后的坐标
-        unwrapped = np.zeros_like(positions)
-        unwrapped[0] = positions[0]  # 第一个点保持不变
-
-        for i in range(1, len(positions)):
-            delta = positions[i] - positions[i - 1]
-            # 最小图像法
-            delta -= box_length * np.round(delta / box_length)
-            unwrapped[i] = unwrapped[i - 1] + delta
-
-        return unwrapped.tolist()
-
-    def abstract_coordinates_1(self, xml_file):
-        if xml_file.startswith("particles") and xml_file.endswith("0.xml"):
-            pass
-        else:
+    def abstract_coordinates_normal(self, xml_file):
+        if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
             return
+
         positions, unwrapped_positions = {}, {}
 
         tree = ET.parse(os.path.join(self.init_xml_path, xml_file))
         root = tree.getroot()
-
-        if not self.box_size:
-            self.box_size = float(root.find('.//box').attrib['lx'])
 
         # 读取 position 数据
         position_elem = root.find('.//position')
@@ -131,7 +98,11 @@ class CoordinatesProcessor:
         for line in position_elem_text.strip().split('\n'):
             position.append(list(map(float, line.strip().split())))
 
+
         for type_ in self.mol_class_dict:
+            if self.remove_ions and type_ in ["Na", "K+", "Cl", "Br", "I-"]:
+                continue
+
             mol_positions, unwrapped_mol_positions = [], []
             count = self.mol_class_dict[type_][0]
             length = self.mol_class_dict[type_][1]
@@ -142,8 +113,8 @@ class CoordinatesProcessor:
                 mol_positions.append(cur_position)
                 position = position[length:]
 
-                if self.is_chain_wrapped(cur_position, self.box_size):
-                    unwrapped_cur_position = self.unwrap_chain(cur_position, self.box_size)
+                if Functions.is_chain_wrapped(cur_position, self.box_size):
+                    unwrapped_cur_position = Functions.unwrap_chain(cur_position, self.box_size)
                 else:
                     unwrapped_cur_position = cur_position
 
@@ -160,37 +131,41 @@ class CoordinatesProcessor:
         with open(os.path.join(self.path, "chain_xyz_unwrapping/",
                                xml_file.replace("0.xml", "0.reimage.xml")), 'w') as f_chain_xyz:
             f_chain_xyz.writelines(str(unwrapped_positions))
+
             # 重新写入 position 数据
             position_elem.text = '\n' + '\n'.join([' '.join(map(str, pos)) for pos in unwrapped_position]) + '\n'
+            position_elem.attrib['num'] = str(len(unwrapped_position))
 
-            # 删除 angle 和 dihedral 数据
-            angle_elem = root.find('.//angle')
-            if angle_elem is not None and angle_elem in root:
-                root.remove(angle_elem)
-            dihedral_elem = root.find('.//dihedral')
-            if dihedral_elem is not None and dihedral_elem in root:
-                root.remove(dihedral_elem)
-            # 删除 charge 和 mass 数据
-            charge_elem = root.find('.//charge')
-            if charge_elem is not None and charge_elem in root:
-                root.remove(charge_elem)
-            mass_elem = root.find('.//mass')
-            if mass_elem is not None and mass_elem in root:
-                root.remove(mass_elem)
-            # 删除 body 数据
-            body_elem = root.find('.//body')
-            if body_elem is not None and body_elem in root:
-                root.remove(body_elem)
-            # 删除 image 数据
-            image_elem = root.find('.//image')
-            if image_elem is not None and image_elem in root:
-                root.remove(image_elem)
+            root.find('.//configuration').attrib["natoms"] = str(len(unwrapped_position))
+
+            if self.remove_ions:
+                # 修改 type 数据，使得 type 中不包含离子
+                for types in root.findall('.//type'):
+                    modified_types = []
+                    for line in types.text.strip().split('\n'):
+                        # 离子可能为 "Na", "K", "Cl", "Br", "I"
+                        if line in ["Na", "K+", "Cl", "Br", "I-"]:
+                            continue
+                        modified_types.append(line)
+                    # 将修改后的文本重新写回到 bond 元素中
+                    types.text = '\n' + '\n'.join(modified_types) + '\n'
+                    types.attrib['num'] = str(len(modified_types))
+
+            # 删除 angle dihedral mass charge body image 数据
+            # for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
+            for tag in ["velocity"]:
+                try:
+                    for elem in root.findall(f'.//{tag}'):
+                        # 删除 configuration 元素中的相关数据
+                        root.find('.//configuration').remove(elem)
+                except:
+                    pass
 
             # 写入修改后的 XML 对象
             tree.write(os.path.join(self.unwrapping_xml_path, xml_file.replace("0.xml", "0.reimage.xml")),
                        encoding='utf-8', xml_declaration=True)
 
-    def abstract_coordinates_2(self, xml_file):
+    def abstract_coordinates_condensate_pbc(self, xml_file):
         if os.path.exists(self.remove_pbc_condensate_xml_path):
             tree = ET.parse(os.path.join(self.remove_pbc_condensate_xml_path, xml_file.replace(".xml", ".reimage.new.xml")))
             root = tree.getroot()
@@ -218,11 +193,42 @@ class CoordinatesProcessor:
             with open(os.path.join(self.path, "chain_xyz_remove_pbc_condensate/", xml_file), 'w') as f_chain_xyz:
                 f_chain_xyz.writelines(str(positions))
 
-    def cal_xyz(self, remove_condensate_pbc=True):
+
+    def remove_ions(self, xml_file):
+        if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
+            return
+
+        tree = ET.parse(os.path.join(self.init_xml_path, xml_file))
+        root = tree.getroot()
+
+        # 获取离子在type中的id，然后在其余的每一个tag中都把这个id的数据删除
+        ions_ids = []
+        for types in root.findall('.//type'):
+            types_list = types.text.strip().split('\n')
+            for type_idx in range(len(types_list)):
+                if types_list[type_idx] in ["Na", "K+", "Cl", "Br", "I-"]:
+                    ions_ids.append(type_idx)
+                    types_list.pop(type_idx)
+            types.text = '\n' + '\n'.join(types_list) + '\n'
+            types.attrib['num'] = str(len(types_list))
+
+        for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
+            for elem in root.findall(f'.//{tag}'):
+                elem_text = elem.text.strip().split('\n')
+
+                for ion_id in ions_ids:
+                    if ion_id < len(elem_text):
+                        elem_text.pop(ion_id)
+
+                elem.text = '\n' + '\n'.join(elem_text) + '\n'
+
+
+
+    def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
-        if self.file_args.remove_enm:
+        if self.remove_enm:
             remove_enm_bonds_request = "y"
-        elif self.file_args.remove_enm is None:
+        elif self.remove_enm is None:
             remove_enm_bonds_request = input("是否需要移除弹性键？(y/n)")
         else:
             remove_enm_bonds_request = "n"
@@ -256,7 +262,7 @@ class CoordinatesProcessor:
         with Pool(processes=4) as pool:
             print("开始处理文件...")
             # 使用 tqdm 包装你的可迭代对象
-            list(tqdm(pool.imap(self.abstract_coordinates_1, init_files),
+            list(tqdm(pool.imap(self.abstract_coordinates_normal, init_files),
                       total=len(init_files),
                       desc="处理进度",
                       colour="cyan",
@@ -264,11 +270,11 @@ class CoordinatesProcessor:
 
         print("所有文件处理完成。")
         print("开始提取序列信息...")
-        self.file_args.output = os.path.join(self.path, f"{self.data.system_name}_sequence.txt")
+        seq_output = os.path.join(self.path, f"{self.data.system_name}_sequence.txt")
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data).xml2sequence()
-        print(f"序列信息已保存至 {self.file_args.output}。")
+        print(f"序列信息已保存至 {seq_output}。")
 
-        if self.file_args.remove_condensate_pbc:
+        if self.remove_condensate_pbc:
             print("开始进行针对凝聚体的 PBC 去除")
             for _dir in ["chain_xyz_remove_pbc_condensate"]:
                 if _dir not in os.listdir(self.path):
@@ -282,27 +288,25 @@ class CoordinatesProcessor:
             with Pool(processes=4) as pool:
                 print("开始处理去周期后的凝聚体文件...")
                 # 使用 tqdm 包装你的可迭代对象
-                list(tqdm(pool.imap(self.abstract_coordinates_2, init_files),
+                list(tqdm(pool.imap(self.abstract_coordinates_condensate_pbc, init_files),
                           total=len(init_files),
                           desc="处理进度",
                           colour="cyan",
                           ncols=100))
 
     @staticmethod
-    def move_chains_towards_com(positions, reference_com, box_size):
+    def move_chains_towards_com(positions, reference_com, box_size: list[float]):
         """
         移动蛋白质到与参考质心尽量接近的位置。
         :param positions:
-        :param reference_com:
-        :param box_size:
+        :param reference_com: 参考质心
+        :param box_size: 模拟盒子尺寸
         :return: positions: 移动后的蛋白质位置
         """
-        # 定义在x, y, z轴上的位移量
-        shifts = np.array([0, box_size, -box_size])
-
         for i in range(1, len(positions)):
-            # 对x轴进行调整
             for axis in range(3):  # 分别处理x, y, z三个轴
+                # 定义在x, y, z轴上的位移量
+                shifts = np.array([0, box_size[axis], -box_size[axis]])
                 best_position = positions[i].copy()
                 best_distance = abs(positions[i][:, axis] - reference_com[axis])
 
@@ -341,14 +345,14 @@ class CoordinatesProcessor:
             # xyz = "xyz"
             for i in range(3):  # 3维坐标 (x, y, z)
                 cur_move = np.array([0, 0, 0])
-                cur_move[i] = self.box_size
+                cur_move[i] = self.box_size[i]
                 # print("cur_move: ", cur_move)
-                if com[i] < -self.box_size / 2:
+                if com[i] < -self.box_size[i] / 2:
                     # print("cur_move: ", cur_move)
                     chain_positions = chain_positions + cur_move
                     com = np.mean(chain_positions, axis=0)
                     # print(f"new_com: {com}")
-                elif com[i] > self.box_size / 2:
+                elif com[i] > self.box_size[i] / 2:
                     # print("cur_move: ", cur_move)
                     chain_positions = chain_positions - cur_move
                     com = np.mean(chain_positions, axis=0)
@@ -359,14 +363,14 @@ class CoordinatesProcessor:
         def adjust_centroid_to_box(re_positions):
             new_re_positions = []
             # print(f"re_positions: {re_positions}")
-            box_min = -self.box_size / 2
-            box_max = self.box_size / 2
             positions = [pos for _, pos in re_positions]
             condensate_com = np.mean(np.array(list(map(lambda x: np.mean(x, axis=0), positions))), axis=0)  # 计算凝聚体的质心
             # print(f"condensate_com: {condensate_com}")
             for i in range(3):  # 3维坐标 (x, y, z)
+                box_min = -self.box_size[i] / 2
+                box_max = self.box_size[i] / 2
                 cur_move = np.array([0, 0, 0])
-                cur_move[i] = self.box_size
+                cur_move[i] = self.box_size[i]
                 # print(cur_move)
                 while condensate_com[i] < box_min:
                     positions = list(map(lambda x: x + cur_move, positions))
@@ -458,7 +462,6 @@ class CoordinatesProcessor:
 
         tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
         root = tree.getroot()
-        self.box_size = float(root.find('.//box').attrib['lx'])
 
         # 读取 position 数据
         position = []
@@ -468,6 +471,8 @@ class CoordinatesProcessor:
 
         positions = []
         for type_ in self.mol_class_dict:
+            if type_ in ["Na", "K+", "Cl", "Br", "I-"]:
+                continue
             count = self.mol_class_dict[type_][0]
             length = self.mol_class_dict[type_][1]
             for _ in range(count):
