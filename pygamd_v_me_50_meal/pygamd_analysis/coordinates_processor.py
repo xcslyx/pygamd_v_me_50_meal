@@ -197,22 +197,23 @@ class CoordinatesProcessor:
         ions_ids = []
         for types in root.findall('.//type'):
             types_list = types.text.strip().split('\n')
+            new_types_list = []
             for type_idx in range(len(types_list)):
-                if types_list[type_idx] in ["Na", "K+", "Cl", "Br", "I-"]:
+                if types_list[type_idx] not in ["Na", "K+", "Cl", "Br", "I-"]:
                     ions_ids.append(type_idx)
-                    types_list.pop(type_idx)
-            types.text = '\n' + '\n'.join(types_list) + '\n'
-            types.attrib['num'] = str(len(types_list))
+                    new_types_list.append(types_list[type_idx])
+            types.text = '\n' + '\n'.join(new_types_list) + '\n'
+            types.attrib['num'] = str(len(new_types_list))
 
         for tag in ["position", "mass", "charge", "body", "image", "velocity"]:
             for elem in root.findall(f'.//{tag}'):
-                elem_text = elem.text.strip().split('\n')
-
-                for ion_id in ions_ids:
-                    if ion_id < len(elem_text):
-                        elem_text.pop(ion_id)
-
-                elem.text = '\n' + '\n'.join(elem_text) + '\n'
+                elem_text_list = elem.text.strip().split('\n')
+                new_elem_text_list = []
+                for elem_idx in range(len(elem_text_list)):
+                    if elem_idx not in ions_ids:
+                        new_elem_text_list.append(elem_text_list[elem_idx])
+                elem.text = '\n' + '\n'.join(new_elem_text_list) + '\n'
+                elem.attrib['num'] = str(len(new_elem_text_list))
 
         # 写入修改后的 XML 对象
         tree.write(os.path.join(self.init_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
