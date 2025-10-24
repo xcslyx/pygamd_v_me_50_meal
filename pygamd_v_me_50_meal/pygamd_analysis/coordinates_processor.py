@@ -8,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 from multiprocessing import Pool
 
+import pygamd_v_me_50_meal.utils as utils
 from pygamd_v_me_50_meal.Functions import Functions
 
 from .get_sequence import GetSequence
@@ -16,7 +17,7 @@ from .get_sequence import GetSequence
 # 处理坐标文件
 class CoordinatesProcessor:
     def __init__(self, path: str, data, remove_ions_zhy: bool=False,
-                 remove_enm=False, remove_condensate_pbc=False):
+                 remove_enm=None, remove_condensate_pbc=False):
         self.path = path
         self.data = data
 
@@ -39,10 +40,14 @@ class CoordinatesProcessor:
 
                 shutil.move(file_path, self.init_xml_path)
 
-        self.remove_ions = remove_ions_zhy
+        self.remove_ions_zhy = remove_ions_zhy
 
-        self.remove_enm = remove_enm
-        self.remove_condensate_pbc = remove_condensate_pbc
+        if remove_enm:
+            self.remove_enm_bonds_request = "y"
+        elif remove_enm is None:
+            self.remove_enm_bonds_request = input("是否需要移除弹性键？(y/n)")
+        else:
+            self.remove_enm_bonds_request = "n"
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
@@ -54,6 +59,8 @@ class CoordinatesProcessor:
 
         self.max_group_start = 0
         self.max_group_core = None
+
+        self.cal_xyz(remove_condensate_pbc=remove_condensate_pbc)
 
 
     def remove_enm_bonds_from_xml(self, xml_file):
@@ -100,9 +107,6 @@ class CoordinatesProcessor:
 
 
         for type_ in self.mol_class_dict:
-            if self.remove_ions and type_ in ["Na", "K+", "Cl", "Br", "I-"]:
-                continue
-
             mol_positions, unwrapped_mol_positions = [], []
             count = self.mol_class_dict[type_][0]
             length = self.mol_class_dict[type_][1]
@@ -138,18 +142,6 @@ class CoordinatesProcessor:
 
             root.find('.//configuration').attrib["natoms"] = str(len(unwrapped_position))
 
-            if self.remove_ions:
-                # 修改 type 数据，使得 type 中不包含离子
-                for types in root.findall('.//type'):
-                    modified_types = []
-                    for line in types.text.strip().split('\n'):
-                        # 离子可能为 "Na", "K", "Cl", "Br", "I"
-                        if line in ["Na", "K+", "Cl", "Br", "I-"]:
-                            continue
-                        modified_types.append(line)
-                    # 将修改后的文本重新写回到 bond 元素中
-                    types.text = '\n' + '\n'.join(modified_types) + '\n'
-                    types.attrib['num'] = str(len(modified_types))
 
             # 删除 angle dihedral mass charge body image 数据
             # for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
@@ -212,7 +204,7 @@ class CoordinatesProcessor:
             types.text = '\n' + '\n'.join(types_list) + '\n'
             types.attrib['num'] = str(len(types_list))
 
-        for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
+        for tag in ["position", "mass", "charge", "body", "image", "velocity"]:
             for elem in root.findall(f'.//{tag}'):
                 elem_text = elem.text.strip().split('\n')
 
@@ -222,31 +214,29 @@ class CoordinatesProcessor:
 
                 elem.text = '\n' + '\n'.join(elem_text) + '\n'
 
+        # 写入修改后的 XML 对象
+        tree.write(os.path.join(self.init_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
-        if self.remove_enm:
-            remove_enm_bonds_request = "y"
-        elif self.remove_enm is None:
-            remove_enm_bonds_request = input("是否需要移除弹性键？(y/n)")
-        else:
-            remove_enm_bonds_request = "n"
 
-        if remove_enm_bonds_request.lower() in ["y", "yes"]:
+        if self.remove_enm_bonds_request == "y":
             # 使用 tqdm 和多进程移除弹性键
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_enm_bonds_from_xml, init_files),
                           total=len(init_files),
                           desc="移除弹性键进度", colour="cyan", ncols=100))
 
+        if self.remove_ions_zhy:
+            # 使用 tqdm 和多进程移除离子
+            with Pool(processes=4) as pool:
+                list(tqdm(pool.imap(self.remove_ions, init_files),
+                          total=len(init_files),
+                          desc="移除离子进度", colour="cyan", ncols=100))
+
         for _dir in ["chain_xyz", "chain_xyz_unwrapping"]:
-            if _dir not in os.listdir(self.path):
-                print(f"✅ 创建{_dir}文件夹...")
-                os.mkdir(os.path.join(self.path, _dir))
-            else:
-                shutil.rmtree(os.path.join(self.path, _dir))
-                os.mkdir(os.path.join(self.path, _dir))
+            utils.create_folder(_dir, self.path, overwrite=True)
         # print(init_files + unwrapping_files)
 
         if os.path.exists(self.unwrapping_xml_path):
@@ -274,25 +264,12 @@ class CoordinatesProcessor:
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data).xml2sequence()
         print(f"序列信息已保存至 {seq_output}。")
 
-        if self.remove_condensate_pbc:
+        if remove_condensate_pbc:
             print("开始进行针对凝聚体的 PBC 去除")
             for _dir in ["chain_xyz_remove_pbc_condensate"]:
-                if _dir not in os.listdir(self.path):
-                    print(f"✅ 创建{_dir}文件夹...")
-                    os.mkdir(os.path.join(self.path, _dir))
-                else:
-                    shutil.rmtree(os.path.join(self.path, _dir))
-                    os.mkdir(os.path.join(self.path, _dir))
+                utils.create_folder(_dir, self.path, overwrite=True)
             self.remove_pbc_condensate_parallel()
 
-            with Pool(processes=4) as pool:
-                print("开始处理去周期后的凝聚体文件...")
-                # 使用 tqdm 包装你的可迭代对象
-                list(tqdm(pool.imap(self.abstract_coordinates_condensate_pbc, init_files),
-                          total=len(init_files),
-                          desc="处理进度",
-                          colour="cyan",
-                          ncols=100))
 
     @staticmethod
     def move_chains_towards_com(positions, reference_com, box_size: list[float]):
@@ -523,4 +500,13 @@ class CoordinatesProcessor:
                       total=len(xml_files),
                       desc="去除 PBC 条件",
                       colour='cyan',
+                      ncols=100))
+
+        with Pool(processes=4) as pool:
+            print("开始处理去周期后的凝聚体文件...")
+            # 使用 tqdm 包装你的可迭代对象
+            list(tqdm(pool.imap(self.abstract_coordinates_condensate_pbc, init_files),
+                      total=len(init_files),
+                      desc="处理进度",
+                      colour="cyan",
                       ncols=100))
