@@ -21,7 +21,6 @@ class CoordinatesProcessor:
         self.path = path
         self.data = data
 
-        self.mol_class_dict = self.data.mol_class_dict
         self.length_dict = self.data.length_dict
 
         self.init_xml_path = os.path.join(self.path, "xml/")
@@ -106,10 +105,10 @@ class CoordinatesProcessor:
             position.append(list(map(float, line.strip().split())))
 
 
-        for type_ in self.mol_class_dict:
+        for type_ in self.data.mol_class_dict:
             mol_positions, unwrapped_mol_positions = [], []
-            count = self.mol_class_dict[type_][0]
-            length = self.mol_class_dict[type_][1]
+            count = self.data.mol_class_dict[type_][0]
+            length = self.data.mol_class_dict[type_][1]
 
 
             for _ in range(count):
@@ -169,10 +168,10 @@ class CoordinatesProcessor:
                 position.append(list(map(float, line.strip().split())))
 
             positions = {}
-            for type_ in self.mol_class_dict:
+            for type_ in self.data.mol_class_dict:
                 mol_positions = []
-                count = self.mol_class_dict[type_][0]
-                length = self.mol_class_dict[type_][1]
+                count = self.data.mol_class_dict[type_][0]
+                length = self.data.mol_class_dict[type_][1]
 
                 for _ in range(count):
                     cur_position = position[:length]
@@ -194,13 +193,14 @@ class CoordinatesProcessor:
         root = tree.getroot()
 
         for tag in ["position", "type", "mass", "charge", "body", "image", "velocity"]:
-            for elem in root.find(f'.//{tag}'):
+            for elem in root.findall(f'.//{tag}'):
                 elem_text_list = elem.text.strip().split('\n')
                 for _type in self.data.mol_class_dict:
                     if _type in ["Na", "K", "Cl", "Li", ]:
                         # 用空字符代替原来的元素
                         start, end = self.data.mol_class_dict[_type][2][0], self.data.mol_class_dict[_type][2][1]
                         elem_text_list[start:end] = [''] * (end - start + 1)
+                        self.data.mol_class_dict.pop(_type)
                 elem_text_list = [elem_text for elem_text in elem_text_list if elem_text]
                 elem.text = '\n' + '\n'.join(elem_text_list) + '\n'
                 elem.attrib['num'] = str(len(elem_text_list))
@@ -441,11 +441,11 @@ class CoordinatesProcessor:
             position.append(list(map(float, line.strip().split())))
 
         positions = []
-        for type_ in self.mol_class_dict:
+        for type_ in self.data.mol_class_dict:
             if type_ in ["Na", "K+", "Cl", "Br", "I-"]:
                 continue
-            count = self.mol_class_dict[type_][0]
-            length = self.mol_class_dict[type_][1]
+            count = self.data.mol_class_dict[type_][0]
+            length = self.data.mol_class_dict[type_][1]
             for _ in range(count):
                 positions.append(np.array(position[:length]))
                 position = position[length:]
