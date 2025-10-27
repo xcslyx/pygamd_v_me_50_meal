@@ -50,7 +50,10 @@ class CoordinatesProcessor:
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
-        init_xml_file = os.path.join(self.path, "xml", self.xml_files[0])
+        for i in range(len(self.xml_files)):
+            if self.xml_files[i].startswith("particles") and self.xml_files[i].endswith("0.xml"):
+                init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
+                break
         init_root = ET.parse(init_xml_file).getroot()
         self.box_size: list[float] = [float(init_root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
 
@@ -257,7 +260,7 @@ class CoordinatesProcessor:
         print("所有文件处理完成。")
         print("开始提取序列信息...")
         seq_output = os.path.join(self.path, f"{self.data.system_name}_sequence.txt")
-        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data).xml2sequence()
+        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output=seq_output).xml2sequence()
         print(f"序列信息已保存至 {seq_output}。")
 
         if remove_condensate_pbc:

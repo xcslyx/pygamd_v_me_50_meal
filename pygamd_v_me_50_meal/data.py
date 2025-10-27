@@ -9,7 +9,7 @@ class Data:
         "Ga": 466, "Gb": 466, "Gaw": 466, "Gbw": 466,
         "FC": 528,
         "fuslcd": 162,
-        "MED1": 671, "Na": 1, "Cl": 1
+        "MED1": 627, "Na": 1, "Cl": 1
     }
     molecules = None
 
