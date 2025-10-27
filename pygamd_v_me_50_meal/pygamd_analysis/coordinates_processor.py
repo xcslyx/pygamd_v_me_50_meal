@@ -221,6 +221,8 @@ class CoordinatesProcessor:
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
 
+        shutil.copy(self.init_xml_path, os.path.join(self.path, "xml_init/"))
+
         if self.remove_enm_bonds_request == "y":
             # 使用 tqdm 和多进程移除弹性键
             with Pool(processes=4) as pool:
