@@ -9,10 +9,13 @@
 ### GetSequence
 GetSequence类用于提取 xml 或 pdb 文件的序列，根据文件后缀自动检测文件类型。
 #### 使用
-你可以直接使用 '-get_seq' 选项：
+你可以直接使用 `-get_seq` 选项：
+
     python pygamd_v_me_50_meal.py -get_seq /path/to/file.xml
     python pygamd_v_me_50_meal.py -get_seq /path/to/file.pdb
-也可以通过 '-p' 提供路径，然后使用 '-get_seq' 提供文件名：
+
+也可以通过 `-p` 提供路径，然后使用 `-get_seq` 提供文件名：
+
     python pygamd_v_me_50_meal.py -p /path/to/system -get_seq filename.xml
     python pygamd_v_me_50_meal.py -p /path/to/system -get_seq filename.pdb
 

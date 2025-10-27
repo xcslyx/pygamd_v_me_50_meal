@@ -106,10 +106,12 @@ class CoordinatesProcessor:
 
 
         for type_ in self.data.mol_class_dict:
+            if type_ in ["Na", "K", "Cl", "Li", ] and self.remove_ions_zhy:
+                continue
+
             mol_positions, unwrapped_mol_positions = [], []
             count = self.data.mol_class_dict[type_][0]
             length = self.data.mol_class_dict[type_][1]
-
 
             for _ in range(count):
                 cur_position = position[:length]
@@ -200,7 +202,7 @@ class CoordinatesProcessor:
                         # 用空字符代替原来的元素
                         start, end = self.data.mol_class_dict[_type][2][0], self.data.mol_class_dict[_type][2][1]
                         elem_text_list[start:end] = [''] * (end - start + 1)
-                        self.data.mol_class_dict.pop(_type)
+
                 elem_text_list = [elem_text for elem_text in elem_text_list if elem_text]
                 elem.text = '\n' + '\n'.join(elem_text_list) + '\n'
                 elem.attrib['num'] = str(len(elem_text_list))

@@ -248,7 +248,17 @@ def main():
 
     file_args = parser.parse_args()
 
+    current_dir_path = os.getcwd()
     path = file_args.path
+
+    if path is None:
+        if file_args.get_seq is not None:
+            path = os.path.dirname(file_args.get_seq)
+
+    if path is None:
+        raise ValueError("请提供体系目录路径。")
+
+    path = os.path.join(current_dir_path, path)
     data = Data(path)
 
     ref = file_args.ref
@@ -266,17 +276,7 @@ def main():
 
     if file_args.xyz:
         print("开始进行坐标提取...")
-        CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz()
-    elif file_args.xyz is None:
-        xyz_request = input("是否已经完成坐标提取？（y(es)/n(o)）")
-        if xyz_request in ["n", "no", "N", "No"]:
-            if path is None:
-                raise ValueError("请提供系统目录路径！")
-            CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz()
-        elif xyz_request in ["y", "yes", "Y", "Yes"]:
-            pass
-        else:
-            raise ValueError("输入格式不正确，请输入 y(es) 或 n(o)")
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy)
 
     if file_args.cm:
         print("开始计算 contact map 文件...")
@@ -285,40 +285,6 @@ def main():
                              cm_choice=file_args.cm_choice,
                              r_cut=file_args.r_cut,
                              ).calculate_contact_map_parallel()
-        exit()
-
-    if file_args.avg:
-        if path is None:
-            raise ValueError("请提供系统目录路径！")
-        if file_args.avg == 'cm':
-            print("开始对 contact map 进行平均...")
-            ContactMapCalculator(path, data=data,
-                                 cm_choice=file_args.cm_choice,
-                                 r_cut=file_args.r_cut,
-                                 ).average_contact_map()
-            exit()
-        elif file_args.avg == 'mass_density':
-            print("开始对质量密度分布进行平均...")
-            MassDensityDistributionCalculator(path, data).average_mass_density_distribution()
-            exit()
-
-    if file_args.draw:
-        draw_type = file_args.draw.lower().split(",")
-        if "cm" in draw_type:
-            print("开始绘制 contact map 图像...")
-            ContactMapCalculator(path, data=data,
-                                 cm_choice=file_args.cm_choice,
-                                 r_cut=file_args.r_cut,
-                                 ).draw_contact_map()
-        if 'rg' in draw_type:
-            print("开始绘制 Rg 图像...")
-            RgRMSDRMSFCalculator(path, data, ref).draw_rg_distribution()
-        if "rmsd" in draw_type:
-            print("开始绘制 RMSD 图像...")
-            RgRMSDRMSFCalculator(path, data, ref).draw_rmsd_distribution()
-        if "rmsf" in draw_type:
-            print("开始绘制 RMSF 图像...")
-            RgRMSDRMSFCalculator(path, data, ref).draw_rmsf()
         exit()
 
     cal_class_dict = {"Rg": file_args.rg, "RMSD": file_args.rmsd, "RMSF": file_args.rmsf}
