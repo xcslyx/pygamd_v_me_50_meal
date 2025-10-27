@@ -248,7 +248,7 @@ def main():
 
     file_args = parser.parse_args()
 
-    current_dir_path = os.getcwd()
+    # current_dir_path = os.getcwd()
     path = file_args.path
 
     if path is None:
@@ -258,7 +258,7 @@ def main():
     if path is None:
         raise ValueError("请提供体系目录路径。")
 
-    path = os.path.join(current_dir_path, path)
+    # path = os.path.join(current_dir_path, path)
     data = Data(path)
 
     ref = file_args.ref

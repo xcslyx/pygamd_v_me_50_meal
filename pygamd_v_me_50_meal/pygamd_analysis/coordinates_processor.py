@@ -259,8 +259,8 @@ class CoordinatesProcessor:
 
         print("所有文件处理完成。")
         print("开始提取序列信息...")
-        seq_output = os.path.join(self.path, f"{self.data.system_name}_sequence.txt")
-        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output=seq_output).xml2sequence()
+        seq_output = f"{self.data.system_name}_sequence.txt"
+        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path, output=seq_output).xml2sequence()
         print(f"序列信息已保存至 {seq_output}。")
 
         if remove_condensate_pbc:

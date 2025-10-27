@@ -6,10 +6,12 @@ from pygamd_v_me_50_meal.data import Data
 
 # 定义类 GetSequence
 class GetSequence:
-    def __init__(self, path: str, filename: str, data: Data, output: str=None):
+    def __init__(self, path: str, filename: str, data: Data, output_path=None, output: str=None):
         self.filename = os.path.join(path, filename)
         self.data = data
-        self.output = os.path.join(path, output) if output else self.filename.replace('.xml', '.txt')
+        if output_path is None:
+            output_path = path
+        self.output = os.path.join(output_path, output) if output else self.filename.replace('.xml', '.txt')
 
     def pdb2sequence(self):
         with open(self.filename, 'r') as pdb:
