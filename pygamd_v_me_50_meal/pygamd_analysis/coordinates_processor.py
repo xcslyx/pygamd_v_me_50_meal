@@ -161,6 +161,7 @@ class CoordinatesProcessor:
             tree.write(os.path.join(self.unwrapping_xml_path, xml_file.replace("0.xml", "0.reimage.xml")),
                        encoding='utf-8', xml_declaration=True)
 
+
     def abstract_coordinates_condensate_pbc(self, xml_file):
         if os.path.exists(self.remove_pbc_condensate_xml_path):
             tree = ET.parse(os.path.join(self.remove_pbc_condensate_xml_path, xml_file.replace(".xml", ".reimage.new.xml")))
@@ -257,7 +258,6 @@ class CoordinatesProcessor:
                       colour="cyan",
                       ncols=100))
 
-        print("所有文件处理完成。")
         print("开始提取序列信息...")
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path, output=seq_output).xml2sequence()
@@ -268,6 +268,9 @@ class CoordinatesProcessor:
             for _dir in ["chain_xyz_remove_pbc_condensate"]:
                 utils.create_folder(_dir, self.path, overwrite=True)
             self.remove_pbc_condensate_parallel()
+
+        print("所有文件处理完成。")
+
 
 
     @staticmethod

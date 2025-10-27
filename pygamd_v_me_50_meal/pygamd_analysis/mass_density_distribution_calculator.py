@@ -40,7 +40,6 @@ class MassDensityDistributionCalculator:
             if not os.path.exists(self.free_chain_save_path):
                 os.makedirs(self.free_chain_save_path, exist_ok=True)
                 print(f"✅ 已创建 {self.free_chain_save_path} 目录")
-
             else:
                 self.cover_free_chain_save_path_choice = input(f"已存在 {self.free_chain_save_path} 目录，是否覆盖？(y/n)")
                 if self.cover_free_chain_save_path_choice == 'y':
@@ -207,7 +206,7 @@ class MassDensityDistributionCalculator:
 
     def cal_mass_density_distribution(self, name):
         x_mat = eval(open(os.path.join(self.chain_path, name), 'r').read())
-        if self.free_chain_choice:
+        if self.free_chain_choice == 'y':
             free_chain_dict = eval(open(os.path.join(self.free_chain_save_path, name), 'r').read())
             center, _ = Functions.abstract_centroid(os.path.join(self.chain_path, name),
                                                     self.cal_mass_density_distribution_list,

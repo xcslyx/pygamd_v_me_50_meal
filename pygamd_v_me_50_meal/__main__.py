@@ -276,7 +276,7 @@ def main():
 
     if file_args.xyz:
         print("开始进行坐标提取...")
-        CoordinatesProcessor(path, data, file_args.remove_ions_zhy)
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy, remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
         print("开始计算 contact map 文件...")
