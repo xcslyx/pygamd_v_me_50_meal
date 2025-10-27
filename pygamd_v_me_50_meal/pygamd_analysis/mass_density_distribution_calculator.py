@@ -8,6 +8,10 @@ import multiprocessing as mp
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 
+from tqdm import tqdm
+from multiprocessing import Pool
+from sklearn.decomposition import PCA
+
 from pygamd_v_me_50_meal.Functions import Functions
 
 # 计算径向质量数密度分布的类
@@ -87,9 +91,9 @@ class MassDensityDistributionCalculator:
             if not os.path.exists(self.mass_density_save_path):
                 os.makedirs(self.mass_density_save_path, exist_ok=True)
                 print(f"✅ 已创建 {self.mass_density_save_path} 目录")
-            elif file_args.avg != "mass_density":
-                shutil.rmtree(self.mass_density_save_path)
-                os.makedirs(self.mass_density_save_path, exist_ok=True)
+            # elif file_args.avg != "mass_density":
+            #     shutil.rmtree(self.mass_density_save_path)
+            #     os.makedirs(self.mass_density_save_path, exist_ok=True)
 
             self.res_file = os.path.join(self.mass_density_path, f"mass_density_of_{self.new_name}.dat")
         else:
@@ -98,10 +102,10 @@ class MassDensityDistributionCalculator:
                 if not os.path.exists(mass_density_save_path):
                     os.makedirs(mass_density_save_path, exist_ok=True)
                     print(f"✅ 已创建 {mass_density_save_path} 目录")
-                elif file_args.avg != "mass_density":
-                    shutil.rmtree(mass_density_save_path)
-                    os.makedirs(mass_density_save_path, exist_ok=True)
-                    print(f"✅ 已重置 {mass_density_save_path} 目录")
+                # elif file_args.avg != "mass_density":
+                #     shutil.rmtree(mass_density_save_path)
+                #     os.makedirs(mass_density_save_path, exist_ok=True)
+                #     print(f"✅ 已重置 {mass_density_save_path} 目录")
 
         if not self.balance_cut:
             self.balance_cut = input(

@@ -39,8 +39,8 @@ class Data:
                     else:
                         self.length_dict[type_] = int(length)
                     self.mol_class_dict[type_].append(self.length_dict[type_])
-                    self.mol_class_dict[type_].append([start, start + num * self.length_dict[type_]])
-                    start += num * self.length_dict[type_]
+                    self.mol_class_dict[type_].append([start, start + int(num) * self.length_dict[type_]])
+                    start += int(num) * self.length_dict[type_]
                     print(f"类型: {type_}，数量: {num}，长度: {self.mol_class_dict[type_][1]}，起止位置：{self.mol_class_dict[type_][2]}")
 
                     self.mol_class_list = list(self.mol_class_dict.keys())

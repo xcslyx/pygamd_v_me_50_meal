@@ -145,13 +145,13 @@ class CoordinatesProcessor:
 
             # 删除 angle dihedral mass charge body image 数据
             # for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
-            for tag in ["velocity"]:
-                try:
-                    for elem in root.findall(f'.//{tag}'):
-                        # 删除 configuration 元素中的相关数据
-                        root.find('.//configuration').remove(elem)
-                except:
-                    pass
+            # for tag in ["velocity"]:
+            #     try:
+            #         for elem in root.findall(f'.//{tag}'):
+            #             # 删除 configuration 元素中的相关数据
+            #             root.find('.//configuration').remove(elem)
+            #     except Exception as e:
+            #         pass
 
             # 写入修改后的 XML 对象
             tree.write(os.path.join(self.unwrapping_xml_path, xml_file.replace("0.xml", "0.reimage.xml")),
@@ -194,15 +194,19 @@ class CoordinatesProcessor:
         root = tree.getroot()
 
         for tag in ["position", "type", "mass", "charge", "body", "image", "velocity"]:
-            for elem in root.findall(f'.//{tag}'):
+            for elem in root.find(f'.//{tag}'):
                 elem_text_list = elem.text.strip().split('\n')
                 for _type in self.data.mol_class_dict:
                     if _type in ["Na", "K", "Cl", "Li", ]:
                         # 用空字符代替原来的元素
                         start, end = self.data.mol_class_dict[_type][2][0], self.data.mol_class_dict[_type][2][1]
                         elem_text_list[start:end] = [''] * (end - start + 1)
+                elem_text_list = [elem_text for elem_text in elem_text_list if elem_text]
                 elem.text = '\n' + '\n'.join(elem_text_list) + '\n'
                 elem.attrib['num'] = str(len(elem_text_list))
+
+                if tag == "position":
+                    root.find('.//configuration').attrib["natoms"] = str(len(elem_text_list))
 
         # 写入修改后的 XML 对象
         tree.write(os.path.join(self.init_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
@@ -492,6 +496,8 @@ class CoordinatesProcessor:
                       colour='cyan',
                       ncols=100))
 
+        init_files = sorted(
+            [i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
         with Pool(processes=4) as pool:
             print("开始处理去周期后的凝聚体文件...")
             # 使用 tqdm 包装你的可迭代对象
