@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import logging
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -221,9 +222,8 @@ class CoordinatesProcessor:
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
 
-        shutil.copytree(self.init_xml_path, os.path.join(self.path, "xml_init/"))
-
         if self.remove_enm_bonds_request == "y":
+            utils.backup_folder(self.path, 'xml', 'xml_init')
             # 使用 tqdm 和多进程移除弹性键
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_enm_bonds_from_xml, init_files),
@@ -231,6 +231,7 @@ class CoordinatesProcessor:
                           desc="移除弹性键进度", colour="cyan", ncols=100))
 
         if self.remove_ions_zhy:
+            utils.backup_folder(self.path, 'xml', 'xml_init')
             # 使用 tqdm 和多进程移除离子
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_ions, init_files),

@@ -26,3 +26,16 @@ def create_folder(folder_name, folder_path, overwrite=False):
         print(f"✅ 创建{folder_name}文件夹...")
     else:
         print(f"❌ {folder_name}文件夹已存在")
+
+
+def backup_folder(backup_path, init_folder_name, backup_folder_name):
+    if not os.path.exists(os.path.join(backup_path, backup_folder_name)):
+        print("正在备份原始 XML 文件...")
+        shutil.copytree(os.path.join(backup_path, init_folder_name), os.path.join(backup_path, backup_folder_name))
+        print("备份完成。")
+    else:
+        if input("是否需要重新备份原始 XML 文件？(y/n)") == "y":
+            print("正在备份原始 XML 文件...")
+            shutil.rmtree(os.path.join(backup_path, backup_folder_name))
+            shutil.copytree(os.path.join(backup_path, init_folder_name), os.path.join(backup_path, backup_folder_name))
+            print("备份完成。")
