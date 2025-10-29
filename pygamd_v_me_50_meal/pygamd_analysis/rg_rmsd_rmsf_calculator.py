@@ -92,7 +92,7 @@ class RgRMSDRMSFCalculator:
         #              'TD': 101.11, 'ID': 113.16, 'WD': 186.22, 'PD': 97.12, 'VD': 99.13,
         #              }
         # calculate the core of mass of the chain
-        with open(f"{os.path.join(self.path, Data().system_name)}_sequence.txt") as f:
+        with open(f"{os.path.join(self.path, self.data.system_name)}_sequence.txt") as f:
             if self.domain:
                 domain_sequence = eval(f.read())[self.cur_chain_class][self.domain[0] - 1:self.domain[1]]
             else:
@@ -185,8 +185,8 @@ class RgRMSDRMSFCalculator:
 
         if self.cal_class["Rg"]:
             self.cur_chain_class = None
-            self.cal_class_rg = list(map(int, input(f"请输入想要计算 Rg 的分子序号：\n{Data().molecules}\n").split(',')))
-            self.cal_class_rg = [Data().mol_class_list[i] for i in self.cal_class_rg]
+            self.cal_class_rg = list(map(int, input(f"请输入想要计算 Rg 的分子序号：\n{self.data.molecules}\n").split(',')))
+            self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
             print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
             self.rg_results = {}
 
@@ -197,8 +197,8 @@ class RgRMSDRMSFCalculator:
 
             self.init_pos = self.get_init_pos()  # 读取参考结构的初始位置
             self.cal_class_rmsd = list(
-                map(int, input(f"请输入想要计算 RMSD 的分子序号：\n{Data().molecules}\n").split(',')))
-            self.cal_class_rmsd = [Data().mol_class_list[i] for i in self.cal_class_rmsd]
+                map(int, input(f"请输入想要计算 RMSD 的分子序号：\n{self.data.molecules}\n").split(',')))
+            self.cal_class_rmsd = [self.data.mol_class_list[i] for i in self.cal_class_rmsd]
             print(f"即将计算 RMSD 的分子：{self.cal_class_rmsd}")
             self.rmsd_results = {}
 
@@ -209,8 +209,8 @@ class RgRMSDRMSFCalculator:
 
             self.init_pos = self.get_init_pos()  # 读取参考结构的初始位置
             self.cal_class_rmsf = list(
-                map(int, input(f"请输入想要计算 RMSF 的分子序号：\n{Data().molecules}\n").split(',')))
-            self.cal_class_rmsf = [Data().mol_class_list[i] for i in self.cal_class_rmsf]
+                map(int, input(f"请输入想要计算 RMSF 的分子序号：\n{self.data.molecules}\n").split(',')))
+            self.cal_class_rmsf = [self.data.mol_class_list[i] for i in self.cal_class_rmsf]
             print(f"即将计算 RMSF 的分子：{self.cal_class_rmsf}")
 
         domain = input(
@@ -260,7 +260,7 @@ class RgRMSDRMSFCalculator:
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
             init_rg_list = rg_results[mol]
             rg = np.array(sorted(init_rg_list))
-            frame_num = int(len(init_rg_list) / Data().mol_class_dict[mol][0])
+            frame_num = int(len(init_rg_list) / self.data.mol_class_dict[mol][0])
             print(f"{mol} 的帧数：{frame_num}")
 
             # 划分 bin
@@ -291,7 +291,7 @@ class RgRMSDRMSFCalculator:
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
             init_rmsd_list = rmsd_results[mol]
             rmsd = np.array(sorted(init_rmsd_list))
-            frame_num = int(len(init_rmsd_list) / Data().mol_class_dict[mol][0])
+            frame_num = int(len(init_rmsd_list) / self.data.mol_class_dict[mol][0])
             print(f"{mol} 的帧数：{frame_num}")
 
             # 划分 bin
