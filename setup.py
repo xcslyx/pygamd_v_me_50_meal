@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pygamd_v_me_50_meal",
-    version="0.1.12",
+    version="0.1.13",
     packages=find_packages(),
     install_requires=[
         "numpy", "pandas", "matplotlib",

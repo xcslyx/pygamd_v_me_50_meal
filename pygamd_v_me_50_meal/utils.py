@@ -15,14 +15,14 @@ def str2value(value):
         return value
 
 
-def create_folder(folder_path, path, overwrite=False):
-    if folder_path not in os.listdir(path):
-        os.mkdir(os.path.join(path, folder_path))
-        print(f"✅ 创建{folder_path}文件夹...")
+def create_folder(folder_name, folder_path, overwrite=False):
+    if folder_name not in os.listdir(folder_path):
+        os.mkdir(os.path.join(folder_path, folder_name))
+        print(f"✅ 创建{folder_name}文件夹...")
     elif overwrite:
-        print(f"⚠️ {folder_path}文件夹已存在，正在删除...")
-        shutil.rmtree(os.path.join(path, folder_path))
-        os.mkdir(os.path.join(path, folder_path))
-        print(f"✅ 创建{folder_path}文件夹...")
+        print(f"⚠️ {folder_name}文件夹已存在，正在删除...")
+        shutil.rmtree(os.path.join(folder_path, folder_name))
+        os.mkdir(os.path.join(folder_path, folder_name))
+        print(f"✅ 创建{folder_name}文件夹...")
     else:
-        print(f"❌ {folder_path}文件夹已存在")
+        print(f"❌ {folder_name}文件夹已存在")

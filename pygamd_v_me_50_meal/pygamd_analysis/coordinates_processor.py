@@ -149,13 +149,13 @@ class CoordinatesProcessor:
 
             # 删除 angle dihedral mass charge body image 数据
             # for tag in ["angle", "dihedral", "mass", "charge", "body", "image", "velocity"]:
-            # for tag in ["velocity"]:
-            #     try:
-            #         for elem in root.findall(f'.//{tag}'):
-            #             # 删除 configuration 元素中的相关数据
-            #             root.find('.//configuration').remove(elem)
-            #     except Exception as e:
-            #         pass
+            for tag in ["image", "velocity"]:
+                try:
+                    for elem in root.findall(f'.//{tag}'):
+                        # 删除 configuration 元素中的相关数据
+                        root.find('.//configuration').remove(elem)
+                except Exception as e:
+                    pass
 
             # 写入修改后的 XML 对象
             tree.write(os.path.join(self.unwrapping_xml_path, xml_file.replace("0.xml", "0.reimage.xml")),
@@ -221,7 +221,7 @@ class CoordinatesProcessor:
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
 
-        shutil.copy(self.init_xml_path, os.path.join(self.path, "xml_init/"))
+        shutil.copytree(self.init_xml_path, os.path.join(self.path, "xml_init/"))
 
         if self.remove_enm_bonds_request == "y":
             # 使用 tqdm 和多进程移除弹性键
@@ -237,19 +237,8 @@ class CoordinatesProcessor:
                           total=len(init_files),
                           desc="移除离子进度", colour="cyan", ncols=100))
 
-        for _dir in ["chain_xyz", "chain_xyz_unwrapping"]:
+        for _dir in ["xml_unwrapping", "chain_xyz", "chain_xyz_unwrapping"]:
             utils.create_folder(_dir, self.path, overwrite=True)
-        # print(init_files + unwrapping_files)
-
-        if os.path.exists(self.unwrapping_xml_path):
-            if len(os.listdir(self.init_xml_path)) == len(os.listdir(self.unwrapping_xml_path)):
-                unwrap_request = input("已存在去周期后的 XML 文件，是否需要重新去周期？(y/n)")
-                if unwrap_request.lower() == "n":
-                    self.unwrap_xml_flag = False
-
-        if self.unwrap_xml_flag:
-            # 创建 xml_unwrapping 文件夹
-            os.makedirs(self.unwrapping_xml_path, exist_ok=True)
 
         with Pool(processes=4) as pool:
             print("开始处理文件...")
