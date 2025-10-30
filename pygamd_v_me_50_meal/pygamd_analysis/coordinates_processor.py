@@ -27,6 +27,8 @@ class CoordinatesProcessor:
         self.init_xml_path = os.path.join(self.path, "xml/")
         self.unwrapping_xml_path = os.path.join(self.path, "xml_unwrapping/")
         self.remove_pbc_condensate_xml_path = os.path.join(self.path, "xml_remove_pbc_condensate/")
+        self.unwrapping_remove_ions_xml_path = os.path.join(self.path, "xml_unwrapping_remove_ions/")
+        self.remove_pbc_condensate_remove_ions_xml_path = os.path.join(self.path, "xml_remove_pbc_condensate_remove_ions/")
 
         os.makedirs(self.init_xml_path, exist_ok=True)
         for file in os.listdir(self.path):
@@ -196,7 +198,7 @@ class CoordinatesProcessor:
         if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
             return
 
-        tree = ET.parse(os.path.join(self.init_xml_path, xml_file))
+        tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
         root = tree.getroot()
 
         for tag in ["position", "type", "mass", "charge", "body", "image", "velocity"]:
@@ -216,11 +218,17 @@ class CoordinatesProcessor:
                     root.find('.//configuration').attrib["natoms"] = str(len(elem_text_list))
 
         # 写入修改后的 XML 对象
-        tree.write(os.path.join(self.init_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
+        tree.write(os.path.join(self.unwrapping_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
+
+        print("开始提取序列信息...")
+        seq_output = f"{self.data.system_name}_sequence.txt"
+        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
+                    output=seq_output).xml2sequence()
+        print(f"序列信息已保存至 {seq_output}。")
 
         if self.remove_enm_bonds_request == "y":
             utils.backup_folder(self.path, 'xml', 'xml_init')
@@ -230,19 +238,12 @@ class CoordinatesProcessor:
                           total=len(init_files),
                           desc="移除弹性键进度", colour="cyan", ncols=100))
 
-        if self.remove_ions_zhy:
-            utils.backup_folder(self.path, 'xml', 'xml_init')
-            # 使用 tqdm 和多进程移除离子
-            with Pool(processes=4) as pool:
-                list(tqdm(pool.imap(self.remove_ions, init_files),
-                          total=len(init_files),
-                          desc="移除离子进度", colour="cyan", ncols=100))
 
         for _dir in ["xml_unwrapping", "chain_xyz", "chain_xyz_unwrapping"]:
             utils.create_folder(_dir, self.path, overwrite=True)
 
         with Pool(processes=4) as pool:
-            print("开始处理文件...")
+            print("开始去周期并提取坐标...")
             # 使用 tqdm 包装你的可迭代对象
             list(tqdm(pool.imap(self.abstract_coordinates_normal, init_files),
                       total=len(init_files),
@@ -250,10 +251,16 @@ class CoordinatesProcessor:
                       colour="cyan",
                       ncols=100))
 
-        print("开始提取序列信息...")
-        seq_output = f"{self.data.system_name}_sequence.txt"
-        GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path, output=seq_output).xml2sequence()
-        print(f"序列信息已保存至 {seq_output}。")
+        unwrapping_files = sorted([i for i in os.listdir(self.unwrapping_xml_path) if i.endswith("0.reimage.xml") and i.startswith("particles")])
+
+        if self.remove_ions_zhy:
+            # utils.backup_folder(self.path, 'xml', 'xml_init')
+            utils.create_folder("xml_unwrapping_remove_ions", self.path, overwrite=True)
+            # 使用 tqdm 和多进程移除离子
+            with Pool(processes=4) as pool:
+                list(tqdm(pool.imap(self.remove_ions, unwrapping_files),
+                          total=len(unwrapping_files),
+                          desc="移除离子进度", colour="cyan", ncols=100))
 
         if remove_condensate_pbc:
             print("开始进行针对凝聚体的 PBC 去除")
@@ -431,7 +438,10 @@ class CoordinatesProcessor:
         if not (xml_file.startswith("particles") and xml_file.endswith("0.reimage.xml")):
             return
 
-        tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
+        if self.remove_ions_zhy:
+            tree = ET.parse(os.path.join(self.unwrapping_remove_ions_xml_path, xml_file))
+        else:
+            tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
         root = tree.getroot()
 
         # 读取 position 数据
@@ -466,7 +476,10 @@ class CoordinatesProcessor:
         new_positions = np.vstack(re_ordered_positions)
 
         new_xml_file = xml_file.replace(".xml", ".new.xml")
-        tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
+        if self.remove_ions_zhy:
+            tree = ET.parse(os.path.join(self.unwrapping_remove_ions_xml_path, xml_file))
+        else:
+            tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
         root = tree.getroot()
 
         # 找到 position 标签
@@ -477,17 +490,26 @@ class CoordinatesProcessor:
         tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
 
 
-    def remove_pbc_condensate_parallel(self):
+    def remove_pbc_condensate_parallel(self, ):
         """
         多进程去除凝聚体 PBC 条件。
         """
-        if not os.path.exists(self.remove_pbc_condensate_xml_path):
-            os.makedirs(self.remove_pbc_condensate_xml_path, exist_ok=True)
-            if not os.path.exists(self.unwrapping_xml_path):
-                print("未找到去周期后的 XML 文件，请先运行去周期脚本。")
-                return
+        if self.remove_ions_zhy:
+            if not os.path.exists(self.remove_pbc_condensate_remove_ions_xml_path):
+                os.makedirs(self.remove_pbc_condensate_remove_ions_xml_path, exist_ok=True)
+                if not os.path.exists(self.unwrapping_remove_ions_xml_path):
+                    print("未找到去周期后的 XML 文件，请先运行去周期脚本。")
+                    return
+            xml_files = sorted(os.listdir(self.unwrapping_remove_ions_xml_path))
+        else:
+            if not os.path.exists(self.remove_pbc_condensate_remove_ions_xml_path):
+                os.makedirs(self.remove_pbc_condensate_remove_ions_xml_path, exist_ok=True)
+                if not os.path.exists(self.unwrapping_xml_path):
+                    print("未找到去周期后的 XML 文件，请先运行去周期脚本。")
+                    return
+            xml_files = sorted(os.listdir(self.unwrapping_xml_path))
 
-        xml_files = sorted(os.listdir(self.unwrapping_xml_path))
+
         print(f"开始处理 {len(xml_files)} 个文件...")
         with Pool(processes=4) as pool:
             list(tqdm(pool.imap(self.remove_pbc_condensate, xml_files),
