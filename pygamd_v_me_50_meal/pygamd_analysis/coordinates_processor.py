@@ -198,7 +198,7 @@ class CoordinatesProcessor:
         if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
             return
 
-        tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
+        tree = ET.parse(os.path.join(self.unwrapping_remove_ions_xml_path, xml_file))
         root = tree.getroot()
 
         for tag in ["position", "type", "mass", "charge", "body", "image", "velocity"]:
@@ -218,7 +218,7 @@ class CoordinatesProcessor:
                     root.find('.//configuration').attrib["natoms"] = str(len(elem_text_list))
 
         # 写入修改后的 XML 对象
-        tree.write(os.path.join(self.unwrapping_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
+        tree.write(os.path.join(self.unwrapping_remove_ions_xml_path, xml_file), encoding='utf-8', xml_declaration=True)
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
