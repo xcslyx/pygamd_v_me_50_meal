@@ -112,8 +112,8 @@ class CoordinatesProcessor:
 
 
         for type_ in self.data.mol_class_dict:
-            if type_ in ["Na", "K", "Cl", "Li", ] and self.remove_ions_zhy:
-                continue
+            # if type_ in ["Na", "K", "Cl", "Li", ] and self.remove_ions_zhy:
+            #     continue
 
             mol_positions, unwrapped_mol_positions = [], []
             count = self.data.mol_class_dict[type_][0]
@@ -166,8 +166,9 @@ class CoordinatesProcessor:
 
 
     def abstract_coordinates_condensate_pbc(self, xml_file):
-        if os.path.exists(self.remove_pbc_condensate_xml_path):
-            tree = ET.parse(os.path.join(self.remove_pbc_condensate_xml_path, xml_file.replace(".xml", ".reimage.new.xml")))
+        remove_pbc_condensate_xml_path = self.remove_pbc_condensate_remove_ions_xml_path if self.remove_ions_zhy else self.remove_pbc_condensate_xml_path
+        if os.path.exists(remove_pbc_condensate_xml_path):
+            tree = ET.parse(os.path.join(remove_pbc_condensate_xml_path, xml_file.replace(".xml", ".reimage.new.xml")))
             root = tree.getroot()
 
             # 读取 position 数据
@@ -195,10 +196,10 @@ class CoordinatesProcessor:
 
 
     def remove_ions(self, xml_file):
-        if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
+        if not (xml_file.startswith("particles") and xml_file.endswith("0.reimage.xml")):
             return
 
-        tree = ET.parse(os.path.join(self.unwrapping_remove_ions_xml_path, xml_file))
+        tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
         root = tree.getroot()
 
         for tag in ["position", "type", "mass", "charge", "body", "image", "velocity"]:
@@ -487,7 +488,10 @@ class CoordinatesProcessor:
         pos_text = "\n".join(["    ".join(map(str, p)) for p in new_positions])
         position_element.text = f"\n{pos_text}\n"
         # 保存更新后的XML文件
-        tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
+        if self.remove_ions_zhy:
+            tree.write(os.path.join(self.remove_pbc_condensate_remove_ions_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
+        else:
+            tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
 
 
     def remove_pbc_condensate_parallel(self, ):
