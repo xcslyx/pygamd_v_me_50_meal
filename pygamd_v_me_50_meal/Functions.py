@@ -292,7 +292,7 @@ class Functions:
         return chain_positions
 
 
-    def pre_process(self, indexed_positions, box_size: list[float], max_group_start=0, condensate_index=None, adjusted_chains=None):
+    def pre_process(self, indexed_positions, box_size: list[float], max_group_start=0, condensate_index=None, adjusted_chains=None, max_group_core=None):
         # 计算第一个蛋白质的质心
         if condensate_index is None:
             condensate_index = []
@@ -354,8 +354,8 @@ class Functions:
         if group_start < len(re_positions):
             adjusted_chains.append(re_positions[:group_start])
             # 对新小组递归调用
-            se_positions, _ = self.pre_process(re_positions[group_start:], box_size, max_group_start=max_group_start,
-                                       condensate_index=condensate_index, adjusted_chains=adjusted_chains)
+            se_positions, _ = Functions.pre_process(re_positions[group_start:], box_size, max_group_start=max_group_start,
+                                       condensate_index=condensate_index, adjusted_chains=adjusted_chains, max_group_core=max_group_core)
             # 调整质心到盒子内
             re_positions[:group_start] = Functions.adjust_centroid_to_box(re_positions[:group_start], box_size)
             # 将 se_positions 转换为字典，以 idx 为键，position 为值
