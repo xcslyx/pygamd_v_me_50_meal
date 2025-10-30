@@ -291,8 +291,8 @@ class Functions:
                 # print(f"new_com: {com}")
         return chain_positions
 
-
-    def pre_process(self, indexed_positions, box_size: list[float], max_group_start=0, condensate_index=None, adjusted_chains=None, max_group_core=None):
+    @staticmethod
+    def pre_process(indexed_positions, box_size: list[float], max_group_start=0, condensate_index=None, adjusted_chains=None, max_group_core=None):
         # 计算第一个蛋白质的质心
         if condensate_index is None:
             condensate_index = []
