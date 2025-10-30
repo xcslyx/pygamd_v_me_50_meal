@@ -162,10 +162,8 @@ class Functions:
         return R
 
     @staticmethod
-    def abstract_centroid(file_name: str, cal_mol: list[str],
-                          free_chain_dict: dict[str, list[int]]=None,
-                          mass: bool=False,
-                          get_height: bool=False,):
+    def abstract_centroid(file_name: str, cal_mol: list[str], free_chain_dict: dict[str, list[int]]=None,
+                          mass: bool=False, get_height: bool=False,):
         x_mat = eval(open(file_name, 'r').read())
 
         # time_step = None
@@ -210,3 +208,161 @@ class Functions:
             res = [mol_condensate_centroid, mol_condensate_centroid_variance]
 
         return res
+
+    @staticmethod
+    def move_chains_towards_com(positions, reference_com, box_size: list[float]):
+        """
+        移动蛋白质到与参考质心尽量接近的位置。
+        :param positions:
+        :param reference_com: 参考质心
+        :param box_size: 模拟盒子尺寸
+        :return: positions: 移动后的蛋白质位置
+        """
+        for i in range(1, len(positions)):
+            for axis in range(3):  # 分别处理x, y, z三个轴
+                # 定义在x, y, z轴上的位移量
+                shifts = np.array([0, box_size[axis], -box_size[axis]])
+                best_position = positions[i].copy()
+                best_distance = abs(positions[i][:, axis] - reference_com[axis])
+
+                # 依次尝试三个位移，看看是否可以减少距离
+                for shift in shifts:
+                    shifted_position = positions[i].copy()
+                    shifted_position[:, axis] += shift  # 仅改变当前轴的坐标
+                    shifted_distance = abs(shifted_position[:, axis] - reference_com[axis])
+
+                    # 如果位移后的距离更小，则保留该位移
+                    if np.all(shifted_distance < best_distance):
+                        best_position = shifted_position
+                        best_distance = shifted_distance
+
+                # 更新粒子的位置
+                positions[i] = best_position
+        return positions
+
+    @staticmethod
+    def adjust_centroid_to_box(re_positions, box_size: list[float]):
+        new_re_positions = []
+        # print(f"re_positions: {re_positions}")
+        positions = [pos for _, pos in re_positions]
+        condensate_com = np.mean(np.array(list(map(lambda x: np.mean(x, axis=0), positions))), axis=0)  # 计算凝聚体的质心
+        # print(f"condensate_com: {condensate_com}")
+        for i in range(3):  # 3维坐标 (x, y, z)
+            box_min = -box_size[i] / 2
+            box_max = box_size[i] / 2
+            cur_move = np.array([0, 0, 0])
+            cur_move[i] = box_size[i]
+            # print(cur_move)
+            while condensate_com[i] < box_min:
+                positions = list(map(lambda x: x + cur_move, positions))
+                condensate_com = np.mean(np.array(list(map(lambda x: np.mean(x, axis=0), positions))), axis=0)  # 更新质心
+                # print(f"condensate_com: {condensate_com}")
+            while condensate_com[i] > box_max:
+                positions = list(map(lambda x: x - cur_move, positions))
+                condensate_com = np.mean(np.array(list(map(lambda x: np.mean(x, axis=0), positions))), axis=0)  # 更新质心
+                # print(f"condensate_com: {condensate_com}")
+
+        for i in range(len(re_positions)):
+            new_re_positions.append((re_positions[i][0], positions[i]))
+        return new_re_positions
+
+    @staticmethod
+    def move_chain_into_box(chain_positions, box_size: list[float], max_group_core):
+        # 若链的质心不在盒子内，则使其位于盒子内
+        # print(f"chain_positions: {chain_positions}")
+        # exit()
+        chain_positions -= max_group_core
+        com = np.mean(chain_positions, axis=0)
+        # print(com)
+        # xyz = "xyz"
+        for i in range(3):  # 3维坐标 (x, y, z)
+            cur_move = np.array([0, 0, 0])
+            cur_move[i] = box_size[i]
+            # print("cur_move: ", cur_move)
+            if com[i] < -box_size[i] / 2:
+                # print("cur_move: ", cur_move)
+                chain_positions = chain_positions + cur_move
+                com = np.mean(chain_positions, axis=0)
+                # print(f"new_com: {com}")
+            elif com[i] > box_size[i] / 2:
+                # print("cur_move: ", cur_move)
+                chain_positions = chain_positions - cur_move
+                com = np.mean(chain_positions, axis=0)
+                # print(f"new_com: {com}")
+        return chain_positions
+
+
+    def pre_process(self, indexed_positions, box_size: list[float], max_group_start=0, condensate_index=None, adjusted_chains=None):
+        # 计算第一个蛋白质的质心
+        if condensate_index is None:
+            condensate_index = []
+        if adjusted_chains is None:
+            adjusted_chains = []
+        first_chain_com = np.mean(indexed_positions[0][1], axis=0)
+
+        # 先移动所有链条以形成第一个凝聚体
+        new_positions = Functions.move_chains_towards_com([pos for _, pos in indexed_positions], first_chain_com,
+                                                          box_size)
+
+        # 重新组合 indexed_positions
+        new_indexed_positions = [(indexed_positions[i][0], new_positions[i]) for i in range(len(new_positions))]
+
+        # 计算所有蛋白质到第一个凝聚体的距离
+        distances = []
+        for i, (index, pos) in enumerate(new_indexed_positions):
+            current_com = np.mean(pos, axis=0)
+            distance = np.linalg.norm(current_com - first_chain_com)
+            distances.append((distance, index))  # 记录距离和原始索引
+
+        # 按照距离第一个凝聚体的远近重新排序
+        distances.sort(key=lambda x: x[0])
+
+        position_dict = dict(new_indexed_positions)
+
+        # 从 distances 中获取 re_positions
+        re_positions = [(idx, position_dict[idx]) for idx in [pos[1] for pos in distances] if idx in position_dict]
+
+        first_com = np.mean(re_positions[0][1], axis=0)  # 初始位置的质心
+
+        group_start = None
+
+        last_distance = 0.
+        for i in range(len(re_positions)):  # 从第1个索引开始遍历
+            current_com = np.mean(re_positions[i][1], axis=0)
+            cur_distance = np.linalg.norm(current_com - first_com)
+            distance = cur_distance - last_distance  # 与上一个质心的距离差值
+            last_distance = distance
+            # print(distance)
+            if distance > 4:
+                group_start = i  # 如果距离差值大于 4，则认为是第二个凝聚体
+                condensate_index.append(group_start + (condensate_index[-1] if condensate_index else 0))  # 记录凝聚体的索引
+                break
+            if group_start is None:
+                group_start = len(re_positions)  # 如果没有大于 4 的，所有都属于第一个凝聚体
+
+        if group_start > max_group_start:
+            max_group_start = group_start
+            max_se_dict = dict(re_positions[:group_start])
+            max_updated_positions = [(idx, max_se_dict[idx] if idx in max_se_dict else pos) for idx, pos in
+                                     new_indexed_positions]
+            max_re_ordered_positions = [position for idx, position in
+                                        sorted(max_updated_positions, key=lambda x: x[0])]
+            max_new_positions = np.vstack(max_re_ordered_positions)
+            max_group_core = np.mean(max_new_positions, axis=0)
+
+        # 递归调用：对第二个小组及第二个小组之后的蛋白质重复操作
+        if group_start < len(re_positions):
+            adjusted_chains.append(re_positions[:group_start])
+            # 对新小组递归调用
+            se_positions, _ = self.pre_process(re_positions[group_start:], box_size, max_group_start=max_group_start,
+                                       condensate_index=condensate_index, adjusted_chains=adjusted_chains)
+            # 调整质心到盒子内
+            re_positions[:group_start] = Functions.adjust_centroid_to_box(re_positions[:group_start], box_size)
+            # 将 se_positions 转换为字典，以 idx 为键，position 为值
+            se_dict = dict(se_positions)
+
+            # 替换 new_indexed_positions 中的 position
+            updated_positions = [(idx, se_dict[idx] if idx in se_dict else pos) for idx, pos in
+                                 new_indexed_positions]
+            new_indexed_positions = updated_positions
+        return new_indexed_positions, max_group_core
