@@ -9,6 +9,7 @@
 可直接使用 `pip` 安装：
 
     pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+    pip install git+https://github.com/xcslyx/pygamd_v_me_50_meal
 
 或者
 
