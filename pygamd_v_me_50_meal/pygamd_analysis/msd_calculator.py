@@ -1,6 +1,12 @@
 import os
+import re
 import shutil
 
+import numpy as np
+import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+
+from tqdm import tqdm
 
 class MSDCalculator:
     def __init__(self, path, data):
@@ -76,7 +82,7 @@ class MSDCalculator:
                                   self.cal_msd_list]))
 
         self.displacement_probability_distribution_dict = dict(zip(self.cal_msd_list,
-                                 [[] for cal_mol in
+                                 [[] for _ in
                                   self.cal_msd_list]))
 
     def abstract_centroid(self, file_idx: int):
@@ -84,11 +90,11 @@ class MSDCalculator:
         with open(os.path.join(self.chain_path, file), 'rb') as f:
             data = eval(f.read())
 
-        match = re.search(r'\d+', file)
-        if match:
-            time_step = int(match.group())
-
-        time_step = None
+        # match = re.search(r'\d+', file)
+        # if match:
+        #     time_step = int(match.group())
+        #
+        # time_step = None
         for mol_name in self.cal_msd_list:
             mol_data = data[mol_name]
             mol_condensate_centroid = []
@@ -110,7 +116,7 @@ class MSDCalculator:
                                                 for cal_mol in self.cal_msd_list]))
             self.condensate_centroid_dict = dict(zip(self.cal_msd_list,
                                                      [[[] for _ in range(len(self.files))]
-                                                     for cal_mol in self.cal_msd_list]))
+                                                     for _ in self.cal_msd_list]))
 
             list(tqdm(map(self.abstract_centroid, range(len(self.files))),
                       total=len(self.files),
@@ -133,7 +139,7 @@ class MSDCalculator:
 
                 self.condensate_centroid_dict = dict(zip(self.cal_msd_list,
                                                          [[[] for _ in range(len(self.files))]
-                                                          for cal_mol in self.cal_msd_list]))
+                                                          for _ in self.cal_msd_list]))
 
                 list(tqdm(map(self.abstract_centroid, range(len(self.files))),
                           total=len(self.files),
