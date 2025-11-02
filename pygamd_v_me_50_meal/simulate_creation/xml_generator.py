@@ -10,7 +10,7 @@ import numpy as np
 
 # 定义类 XMLGenerator
 class XMLGenerator:
-    def __init__(self, path, filename, box_size, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
+    def __init__(self, path: str, filename, box_size: str | float, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
         if filename.endswith(".pdb"):
             if path is None:
                 if os.path.exists(filename):
