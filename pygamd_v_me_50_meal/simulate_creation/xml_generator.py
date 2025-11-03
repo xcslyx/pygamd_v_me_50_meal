@@ -66,10 +66,9 @@ class XMLGenerator:
         self.dna_model = None
         self.rna_model = None
         if dna_model:
-            dna_model_choice = dna_model
-            if dna_model_choice == "1":
+            if dna_model == "1":
                 self.dna_model = "3SPN"
-            elif dna_model_choice == "2":
+            elif dna_model == "2":
                 self.dna_model = "2BeadMittal"
 
         self.output_file = filename.replace(".pdb", ".xml")
@@ -168,6 +167,11 @@ class XMLGenerator:
                 self.mol_class[i] = "rna"
                 if not self.rna_model:
                     print("请选择 RNA 模型：\n1. 3SPN 模型\n2. CAVADOS-RNA 模型(未提供)")
+                    rna_model_choice = input("请输入选择：")
+                    if rna_model_choice == "1":
+                        self.rna_model = "3SPN"
+                    elif rna_model_choice == "2":
+                        self.rna_model = "CAVADOS-RNA"
 
             res = ""
             k = 1
@@ -792,6 +796,8 @@ class XMLGenerator:
                 else:
                     new_sequence[-1].append(i)
 
+        # print(new_sequence)
+
         new_sequence_position = []
         for new_seq in new_sequence[1:]:
             # print(len(new_seq), new_seq)
@@ -827,14 +833,16 @@ class XMLGenerator:
             f.write("</image>\n")
 
             # set particle type
-            particles_map = {"DA": "Ab", "DT": "Tb", "DG": "Gb", "DC": "Cb", "Ph": "Ph", "Su": "Su"}
+            particles_map = {"Ph": "Ph", "Su": "Su",
+                             "A": "Arb", "U": "Urb", "G": "Grb", "C": "Crb", }
             f.write('<type num="{}">\n'.format(n_atoms))
             for atom in new_sequence_position:
                 f.write("{}\n".format(particles_map[atom[0]]))
             f.write("</type>\n")
 
             # set mass
-            mass_dict_particle = {"Ph": 94.97, "Su": 83.11, "DA": 134.1, "DT": 125.1, "DC": 110.1, "DG": 150.1}
+            mass_dict_particle = {"Ph": 94.97, "Su": 83.11,
+                                  "A": 134.1, "U": 125.1, "C": 110.1, "G": 150.1}
             f.write('<mass num="{}">\n'.format(n_atoms))
             for atom in new_sequence_position:
                 f.write("{:<17.10f}\n".format(mass_dict_particle[atom[0]]))
