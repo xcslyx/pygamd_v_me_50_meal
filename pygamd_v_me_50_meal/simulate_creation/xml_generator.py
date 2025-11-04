@@ -19,11 +19,16 @@ class XMLGenerator:
                         path = os.getcwd()
                     print(f"系统目录路径未提供，已设置为 {path}")
                     filename = os.path.basename(filename)
+                    assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
                 else:
-                    raise ValueError("请提供体系路径！")
+                    raise ValueError("需要转换的 PDB 文件不存在！")
+            else:
+                if path == os.path.dirname(filename):
+                    filename = filename = os.path.basename(filename)
+                    assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
             print(f"开始转换 PDB 文件 {filename} 为 XML 文件...")
         else:
-            raise ValueError("PDB 文件名格式不正确！")
+            raise ValueError("文件格式错误，请提供 PDB 文件！")
 
         self.path = path
         self.filename = filename
@@ -34,7 +39,7 @@ class XMLGenerator:
                         'SER': ['S', 6], 'THR': ['T', 7], 'TRP': ['W', 14], 'TYR': ['Y', 12], 'VAL': ['V', 7],
                         'HIE': ['H', 10]}
         self.mass_dict_atom = {"C": 12.011, "N": 14.007, "O": 15.999, "P": 30.974, 'H': 1.008, 'S': 32}
-        self.box_size = box_size
+        self.box_size = float(box_size)
         self.x_max, self.y_max, self.z_max = 0, 0, 0
 
         self.log_dir = ""

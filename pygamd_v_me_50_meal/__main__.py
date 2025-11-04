@@ -142,7 +142,6 @@ def main():
         raise ValueError("请提供体系目录路径。")
 
     # path = os.path.join(current_dir_path, path)
-    data = Data(path)
 
     ref = file_args.ref
 
@@ -152,6 +151,8 @@ def main():
                      add_domain=file_args.add_domain,
                      dna_model=file_args.dna_model)
         exit()
+
+    data = Data(path)
 
     if file_args.get_seq:
         GetSequence(path, file_args.get_seq, data=data)
