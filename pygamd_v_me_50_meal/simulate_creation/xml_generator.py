@@ -265,10 +265,11 @@ class XMLGenerator:
                 filename = os.path.join(self.xml_dir, file)
                 if filename.endswith("enm.xml"):
                     self.output_file = os.path.join(self.path, self.filename.replace(".pdb", "_enm.xml"))
-                    shutil.move(filename, str(os.path.join(self.path, self.output_file)))
+                    shutil.move(filename, str(self.output_file))
                 else:
                     self.output_file = os.path.join(self.path, self.filename.replace(".pdb", ".xml"))
-                    shutil.move(filename, str(os.path.join(self.path, self.output_file)))
+                    shutil.move(filename, str(self.output_file))
+                    # TODO
         else:
             root = self.output_tree.getroot()
             root.text = '\n'
@@ -938,18 +939,18 @@ class XMLGenerator:
             f.write("kappaD = 13.603 * math.sqrt((50.0 / concent) * (Temperature / 300.0))  # related to salt concentration 13.603 -> 50mM NaCl\n")
             f.write("real_epsilon = 0.26 * 4184.0  # (0.26 kcal/mol = 0.26**4184.0 J/mol)\n")
             f.write("R = 8.314472  # gas constant\n")
-            f.write("enegy_reduce_unit = 1000.0\n")
+            f.write("energy_reduce_unit = 1000.0\n")
             f.write("lenscale = 10.0  # angstrom\n")
             f.write("lsq = lenscale ** 2\n")
-            f.write("epsilon = real_epsilon / enegy_reduce_unit\n\n")
+            f.write("epsilon = real_epsilon / energy_reduce_unit\n\n")
             kappaD = 13.603 * math.sqrt((50.0 / concent) * (Temperature / 300.0))
             print("kappaD = ", kappaD)
             real_epsilon = 0.26 * 4184.0
             R = 8.314472
-            enegy_reduce_unit = 1000.0
+            energy_reduce_unit = 1000.0
             lenscale = 10.0
             lsq = lenscale ** 2
-            epsilon = real_epsilon / enegy_reduce_unit
+            epsilon = real_epsilon / energy_reduce_unit
             print("epsilon = ", epsilon)
 
             f.write("rcut = 4.0\n\n"); print("短程相互作用 r_cut 默认为 4.0")
