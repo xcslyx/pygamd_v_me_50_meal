@@ -137,9 +137,12 @@ def main():
     if path is None:
         if file_args.get_seq is not None:
             path = str(os.path.dirname(file_args.get_seq))
-
-    if path is None:
-        raise ValueError("请提供体系目录路径。")
+        elif file_args.pdb2xml is not None:
+            path = str(os.path.dirname(file_args.pdb2xml))
+            if not path:
+                path = os.getcwd()
+        else:
+            raise ValueError("请提供体系目录路径。")
 
     # path = os.path.join(current_dir_path, path)
 
