@@ -490,9 +490,9 @@ class XMLGenerator:
                         f.write("{:<17.10f}\n".format(0.75 * q_unit))
                 elif self.pro_res_map[atom[0]][0] == 'D' or self.pro_res_map[atom[0]][0] == 'E':
                     if self.protein_model == "HPS":
-                        f.write("{:<17.10f}\n".format(q_unit))
+                        f.write("{:<17.10f}\n".format(-q_unit))
                     elif self.protein_model == "Mpipi":
-                        f.write("{:<17.10f}\n".format(0.75 * q_unit))
+                        f.write("{:<17.10f}\n".format(0.75 * -q_unit))
                 elif self.pro_res_map[atom[0]][0] == 'H':
                     if self.protein_model == "HPS":
                         f.write("{:<17.10f}\n".format(1 / (1 + 10 ** (7.4 - 6)) * q_unit))
