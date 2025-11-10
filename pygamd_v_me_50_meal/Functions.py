@@ -74,7 +74,9 @@ class Functions:
                       # RNA
                       'Ad': 0.844, 'Cd': 0.822, 'Gd': 0.851, 'Ud': 0.817,
                       # DNA
-                      "Ph": 0.611, "Su": 0.611, "Ab": 0.611, "Gb": 0.611, "Cb": 0.611, "Tb": 0.611}
+                      "Ph": 0.611, "Su": 0.611, "Ab": 0.611, "Gb": 0.611, "Cb": 0.611, "Tb": 0.611,
+                      # Enzo np
+                      "CA": 0.47, "Nda": 0.47, "COH": 0.47, "COO": 0.47, }
 
         # 计算平均分子体积矩阵
         seq_sigma_list_a = np.array([sigma_dict[i] for i in sequence_a])

@@ -47,6 +47,7 @@ class CoordinatesProcessor:
         if remove_enm:
             self.remove_enm_bonds_request = "y"
         elif remove_enm is None:
+            print("Do you want to remove elastic bonds? (y/n)")
             self.remove_enm_bonds_request = input("是否需要移除弹性键？(y/n)")
         else:
             self.remove_enm_bonds_request = "n"
@@ -223,11 +224,14 @@ class CoordinatesProcessor:
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
 
+
         print("开始提取序列信息...")
+        print("Staring to extract sequence information...")
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
                     output=seq_output).xml2sequence()
         print(f"序列信息已保存至 {seq_output}。")
+        print(f"Sequence information has been saved to {seq_output}.")
 
         if self.remove_enm_bonds_request == "y":
             utils.backup_folder(self.path, 'xml', 'xml_init')
@@ -235,7 +239,7 @@ class CoordinatesProcessor:
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_enm_bonds_from_xml, init_files),
                           total=len(init_files),
-                          desc="移除弹性键进度", colour="cyan", ncols=100))
+                          desc="Remove elastic bonds", colour="cyan", ncols=100))
 
 
         for _dir in ["xml_unwrapping", "chain_xyz", "chain_xyz_unwrapping"]:
@@ -243,10 +247,11 @@ class CoordinatesProcessor:
 
         with Pool(processes=4) as pool:
             print("开始去周期并提取坐标...")
+            print("Staring to remove PBC and extract coordinates...")
             # 使用 tqdm 包装你的可迭代对象
             list(tqdm(pool.imap(self.abstract_coordinates_normal, init_files),
                       total=len(init_files),
-                      desc="处理进度",
+                      desc="Process progress",
                       colour="cyan",
                       ncols=100))
 
@@ -258,15 +263,17 @@ class CoordinatesProcessor:
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_ions, unwrapping_files),
                           total=len(unwrapping_files),
-                          desc="移除离子进度", colour="cyan", ncols=100))
+                          desc="Remove ions", colour="cyan", ncols=100))
 
         if remove_condensate_pbc:
             print("开始进行针对凝聚体的 PBC 去除")
+            print("Staring to remove PBC for condensate...")
             for _dir in ["chain_xyz_remove_pbc_condensate"]:
                 utils.create_folder(_dir, self.path, overwrite=True)
             self.remove_pbc_condensate_parallel()
 
         print("所有文件处理完成。")
+        print("All files have been processed.")
 
     def remove_pbc_condensate(self, xml_file):
         """
@@ -340,13 +347,15 @@ class CoordinatesProcessor:
                 os.makedirs(self.remove_pbc_condensate_remove_ions_xml_path, exist_ok=True)
                 if not os.path.exists(self.unwrapping_remove_ions_xml_path):
                     print("未找到去周期后的 XML 文件，请先运行去周期脚本。")
+                    print("Cannot find the XML file after removing PBC, please run the script to remove PBC first.")
                     return
             xml_files = sorted(os.listdir(self.unwrapping_remove_ions_xml_path))
         else:
-            if not os.path.exists(self.remove_pbc_condensate_remove_ions_xml_path):
-                os.makedirs(self.remove_pbc_condensate_remove_ions_xml_path, exist_ok=True)
+            if not os.path.exists(self.remove_pbc_condensate_xml_path):
+                os.makedirs(self.remove_pbc_condensate_xml_path, exist_ok=True)
                 if not os.path.exists(self.unwrapping_xml_path):
                     print("未找到去周期后的 XML 文件，请先运行去周期脚本。")
+                    print("Cannot find the XML file after removing PBC, please run the script to remove PBC first.")
                     return
             xml_files = sorted(os.listdir(self.unwrapping_xml_path))
 
