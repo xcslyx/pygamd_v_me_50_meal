@@ -127,6 +127,7 @@ class ContactMapCalculator:
 
     def calculate_contact_map_parallel(self):
         if torch.cuda.is_available():
+            print("Using GPU to calculate Contact Map. Please specify the GPU number or press Enter to use the default 0-th GPU. If you want to use CPU, please input CPU:")
             gpu_choice = input("即将使用 GPU 加速计算 Contact Map，请指定 GPU 编号，或直接回车使用默认 0 号 GPU。若想使用 CPU，请输入 CPU：")
             if gpu_choice.strip().upper() == "CPU":
                 self.device = torch.device("cpu")
@@ -136,35 +137,40 @@ class ContactMapCalculator:
                 self.device = torch.device("cuda:0")
         else:
             self.device = torch.device("cpu")
-        print(f"使用设备：{self.device}")
+        print(f"Using device：{self.device}")
         if mp.get_start_method(allow_none=True) is None:
             mp.set_start_method('spawn')
 
         if not self.cm_class_list:
-            print(f"\n您的分子类型有：\n{self.data.molecules}")
-            self.cm_class_list = input("请输入您想要计算的 contact map 的分子对，以逗号分隔，如“1-1,2-2,1-2”。\n"
+            print(f"\nYour molecule types are：\n{self.data.molecules}")
+            print("Please enter the index of the two molecules you want to calculate the contact map for, for example: \"1-1,2-2,1-2\", or all or directly press Enter to calculate all combinations:")
+            self.cm_class_list = input("请输入您想要计算的 contact map 的分子对，以逗号分隔，如\"1-1,2-2,1-2\"。\n"
                                         "如需计算全部分子组合，请输入 all 或直接回车：").split(',')
         if "all" in self.cm_class_list or self.cm_class_list == [""]:
             self.cm_class_list = [[i, j] for i in range(len(self.data.mol_class_list)) for j in range(i, len(self.data.mol_class_list))]
         else:
             self.cm_class_list = list(map(lambda x: list(map(int, x.split('-'))), self.cm_class_list))
 
+        print("If you only need to calculate the domain, please enter the starting residue number and the last residue number of the domain (starting from 1), separated by -, such as 159-522. \n "
+              "Note: Only calculated domains with the same molecular type, such as 0-0 and 1-1.\n "
+              "If there are multiple domains, please separate them with commas: ")
         domain = input(
             "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522。\n"
             "注：仅限计算的分子类型相同的结构域，如0-0、1-1。如需计算不同分子类型的结构域，请另外计算。\n"
-            "若有多个结构域，请以英文逗号分隔，否则请直接回车：")
+            "若有多个结构域，请以英文逗号分隔：")
         if domain:
             if ',' in domain:
                 domains = domain.split(',')
                 domains = list(map(lambda x: list(map(int, x.split('-'))), domains))
                 self.domains = domains
-                print(f"即将计算结构域：{domains}")
+                print(f"Domains to be calculated: {domains}")
             else:
                 domain = list(map(int, domain.split('-')))
                 self.domain = domain
-                print(f"即将计算结构域：{domain}")
+                print(f"Domain to be calculated: {domain}")
 
         if not self.balance_cut:
+            print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000,2000, or directly press Enter to skip:")
             self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
 
         if not self.balance_cut:
@@ -178,23 +184,24 @@ class ContactMapCalculator:
             self.cm_class = [self.data.mol_class_list[cm_class[0]], self.data.mol_class_list[cm_class[1]]]
             self.avg_sigma_mat = torch.tensor(self.r_cut + Functions.cal_sigma_mat(self.sequence[self.cm_class[0]], self.sequence[self.cm_class[1]]),
                                                device=self.device)
-            print(f"正在计算 {' 和 '.join(self.cm_class)} 的 contact map")
+            print(f"Calculating contact map of {' 和 '.join(self.cm_class)}")
             self.cur_cm_path = os.path.join(self.cm_path, f"{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}")
             if os.path.exists(self.cur_cm_path):
-                print(f"✅ 已存在 {self.cur_cm_path} 文件夹，正在删除...")
+                print(f"✅ {self.cur_cm_path} has already existed, removing...")
                 os.system(f"rm -rf {self.cur_cm_path}")
             os.makedirs(self.cur_cm_path, exist_ok=True)
             with Pool(processes=4) as pool:
                 # 使用 tqdm 包装可迭代对象
                 list(tqdm(pool.imap(self.calculate_contact_map, files),
                           total=len(files),
-                          desc="计算中",
+                          desc="Calculating contact map",
                           colour='cyan',
                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                           ncols=100))
 
         self.average_contact_map()
         print(f"所有 contact map 已经计算完成，保存在目录 {os.path.join(self.path, 'draw_log')} 中。")
+        print(f"Finished calculating all contact maps and saved in the directory {os.path.join (self.path,'draw_log')}.")
         self.draw_contact_map()
 
 
@@ -220,7 +227,7 @@ class ContactMapCalculator:
             with Pool(processes=4) as pool:
                 results = list(tqdm(pool.imap(self.avg_cm_file, cm_files),
                                     total=len(cm_files),
-                                    desc="平均中",
+                                    desc="Averaging contact map",
                                     colour='cyan',
                                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                                     ncols=100))
@@ -272,7 +279,7 @@ class ContactMapCalculator:
                 print(f"❌ 无法解析文件名 {cm_file} {match.groups()}")
                 continue
 
-            print(f"✅ Drawing contact map of {cm_class[0]}-{cm_class[1]}, r_cut 为 {r_cut}")
+            print(f"✅ Drawing contact map of {cm_class[0]}-{cm_class[1]}, r_cut is {r_cut}")
 
             with open(os.path.join(self.cm_path, cm_file), 'r') as f:
                 data_matrix = []

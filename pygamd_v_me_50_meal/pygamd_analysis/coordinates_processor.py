@@ -47,8 +47,7 @@ class CoordinatesProcessor:
         if remove_enm:
             self.remove_enm_bonds_request = "y"
         elif remove_enm is None:
-            print("Do you want to remove elastic bonds? (y/n)")
-            self.remove_enm_bonds_request = input("是否需要移除弹性键？(y/n)")
+            self.remove_enm_bonds_request = input("是否需要移除弹性键？(y/n) Do you want to remove elastic bonds? (y/n)")
         else:
             self.remove_enm_bonds_request = "n"
 
@@ -224,8 +223,6 @@ class CoordinatesProcessor:
     def cal_xyz(self, remove_condensate_pbc=False):
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
 
-
-        print("开始提取序列信息...")
         print("Staring to extract sequence information...")
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
@@ -246,7 +243,6 @@ class CoordinatesProcessor:
             utils.create_folder(_dir, self.path, overwrite=True)
 
         with Pool(processes=4) as pool:
-            print("开始去周期并提取坐标...")
             print("Staring to remove PBC and extract coordinates...")
             # 使用 tqdm 包装你的可迭代对象
             list(tqdm(pool.imap(self.abstract_coordinates_normal, init_files),
@@ -266,13 +262,11 @@ class CoordinatesProcessor:
                           desc="Remove ions", colour="cyan", ncols=100))
 
         if remove_condensate_pbc:
-            print("开始进行针对凝聚体的 PBC 去除")
             print("Staring to remove PBC for condensate...")
             for _dir in ["chain_xyz_remove_pbc_condensate"]:
                 utils.create_folder(_dir, self.path, overwrite=True)
             self.remove_pbc_condensate_parallel()
 
-        print("所有文件处理完成。")
         print("All files have been processed.")
 
     def remove_pbc_condensate(self, xml_file):

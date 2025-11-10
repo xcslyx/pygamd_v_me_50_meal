@@ -16,6 +16,7 @@ class MSDCalculator:
         self.mol_class_dict = self.data.mol_class_dict
         self.length_dict = self.data.length_dict
 
+        print("Do I need to use the file after removing condensate PBC? (y/n)")
         remove_pbc_choice = input("是否需要使用移除 PBC后的文件？(y/n)")
         if remove_pbc_choice == 'y':
             self.chain_path = os.path.join(self.path, "chain_xyz_remove_pbc_condensate/")
@@ -38,7 +39,9 @@ class MSDCalculator:
 
         self.cal_msd_list = []
         if not self.cal_msd_list:
-            print(f"\n您的分子类型有：\n{self.data.molecules}")
+            print(f"\nYour molecule types are：\n{self.data.molecules}")
+            print("Please enter the molecules you want to include when calculating MSD, separated by commas, such as \"1,2\". \n "
+                  "To calculate all numerators, please enter all or enter directly: ")
             self.cal_msd_list = input("请输入您想要计算 MSD 时需要包括的分子，以逗号分隔，如“1,2”。\n"
                                         "如需计算全部分子，请输入 all 或直接回车：").split(',')
         if "all" in self.cal_msd_list or self.cal_msd_list == [""]:
