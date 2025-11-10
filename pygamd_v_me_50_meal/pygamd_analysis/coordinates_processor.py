@@ -54,7 +54,7 @@ class CoordinatesProcessor:
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
         for i in range(len(self.xml_files)):
-            if self.xml_files[i].startswith("particles") and self.xml_files[i].endswith("0.xml"):
+            if utils.check_xml_start_tag(self.xml_files[i]) and self.xml_files[i].endswith("0.xml"):
                 init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
                 break
         init_root = ET.parse(init_xml_file).getroot()
@@ -67,7 +67,7 @@ class CoordinatesProcessor:
 
 
     def remove_enm_bonds_from_xml(self, xml_file):
-        if xml_file.startswith("particles") and xml_file.endswith("0.xml"):
+        if utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml"):
             pass
         else:
             return
@@ -91,7 +91,7 @@ class CoordinatesProcessor:
 
 
     def abstract_coordinates_normal(self, xml_file):
-        if not (xml_file.startswith("particles") and xml_file.endswith("0.xml")):
+        if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml")):
             return
 
         positions, unwrapped_positions = {}, {}
@@ -194,7 +194,7 @@ class CoordinatesProcessor:
 
 
     def remove_ions(self, xml_file):
-        if not (xml_file.startswith("particles") and xml_file.endswith("0.reimage.xml")):
+        if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.reimage.xml")):
             return
 
         tree = ET.parse(os.path.join(self.unwrapping_xml_path, xml_file))
@@ -221,7 +221,7 @@ class CoordinatesProcessor:
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
-        init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
+        init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
 
         print("开始提取序列信息...")
         seq_output = f"{self.data.system_name}_sequence.txt"
@@ -251,7 +251,7 @@ class CoordinatesProcessor:
                       ncols=100))
 
         if self.remove_ions_zhy:
-            unwrapping_files = sorted([i for i in os.listdir(self.unwrapping_xml_path) if i.endswith("0.reimage.xml") and i.startswith("particles")])
+            unwrapping_files = sorted([i for i in os.listdir(self.unwrapping_xml_path) if i.endswith("0.reimage.xml") and utils.check_xml_start_tag(i)])
             # utils.backup_folder(self.path, 'xml', 'xml_init')
             utils.create_folder("xml_unwrapping_remove_ions", self.path, overwrite=True)
             # 使用 tqdm 和多进程移除离子
@@ -274,7 +274,7 @@ class CoordinatesProcessor:
         :param xml_file: 凝聚体的 XML 文件
         :return: None
         """
-        if not (xml_file.startswith("particles") and xml_file.endswith("0.reimage.xml")):
+        if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.reimage.xml")):
             return
 
         if self.remove_ions_zhy:
@@ -360,7 +360,7 @@ class CoordinatesProcessor:
                       ncols=100))
 
         init_files = sorted(
-            [i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and i.startswith("particles")])
+            [i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
         with Pool(processes=4) as pool:
             print("开始处理去周期后的凝聚体文件...")
             # 使用 tqdm 包装你的可迭代对象

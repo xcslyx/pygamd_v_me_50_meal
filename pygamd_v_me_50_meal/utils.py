@@ -28,6 +28,12 @@ def create_folder(folder_name, folder_path, overwrite=False):
         print(f"❌ {folder_name} 文件夹已存在")
 
 
+def check_xml_start_tag(xml_file):
+    if xml_file.startswith("particles") or xml_file.startswith("monomers"):
+        return True
+    return None
+
+
 def backup_folder(backup_path, init_folder_name, backup_folder_name):
     if not os.path.exists(os.path.join(backup_path, backup_folder_name)):
         print("正在备份原始 XML 文件...")
