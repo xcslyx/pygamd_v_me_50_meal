@@ -20,8 +20,8 @@
 ---
 ## 分子动力学模拟前的文件生成
 
-### pygamd_v_me_50_meal/simulate_creation/xml_generator.py
-XMLGenerator 类用于从 PDB 文件生成模拟所需要的粗粒化 XML 文件，目前支持蛋白质与 DNA 粗粒化模型的生成。
+### 生成 XML 文件
+从 PDB 文件生成模拟所需要的粗粒化 XML 文件，目前支持蛋白质与 DNA 粗粒化模型的生成。
 #### 使用
     v50 -pdb2xml /path/to/pdb_file.pdb
     v50 -p /path/to/system -pdb2xml filename.pdb
