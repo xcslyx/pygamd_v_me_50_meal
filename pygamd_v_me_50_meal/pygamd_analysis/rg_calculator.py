@@ -101,11 +101,10 @@ class RgCalculator:
                   ncols=100))
 
         # 保存结果
-        cal_type = 'rg'
-        result_file = os.path.join(self.save_path, f"draw_{cal_type}.log")
+        result_file = os.path.join(self.save_path, f"draw_Rg.log")
         with open(result_file, 'w') as f:
-            exec(f"f.write(str(self.{cal_type.lower()}_results))")
-        print(f"{cal_type} 计算完成！结果已保存至文件 {result_file}")
+            f.write(str(self.rg_results))
+        print(f"Rg 计算完成！结果已保存至文件 {result_file}")
 
         self.draw_rg_distribution()
 
@@ -130,9 +129,9 @@ class RgCalculator:
 
             ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} R_{{\mathrm{{g}}}}")
             ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, label=rf"{mol} Rg")
-            ax.set_xlabel(r'Rg ($\AA$)')
-            ax.set_ylabel('probability')
-            ax.set_title(f'probability distribution')
+            ax.set_xlabel(r'$R_{\mathrm{g}} (\AA)$')
+            ax.set_ylabel('Probability')
+            ax.set_title(rf'Probability Density Function of {mol} R_{{\mathrm{{g}}}}')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))
             plt.close(fig)
