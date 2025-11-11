@@ -32,7 +32,7 @@ class CoordinatesProcessor:
 
         os.makedirs(self.init_xml_path, exist_ok=True)
         for file in os.listdir(self.path):
-            if file.startswith("particles") and file.endswith(".xml"):
+            if utils.check_xml_start_tag(file) and file.endswith(".xml"):
                 file_path = os.path.join(self.path, file)
                 destination_path = os.path.join(self.init_xml_path, file)
 
