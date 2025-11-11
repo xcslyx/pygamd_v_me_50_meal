@@ -16,6 +16,7 @@ from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
 from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
+from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
 
@@ -173,10 +174,12 @@ def main():
                              ).calculate_contact_map_parallel()
         exit()
 
-    cal_class_dict = {"Rg": file_args.rg, "RMSD": file_args.rmsd, "RMSF": file_args.rmsf}
-    if True in cal_class_dict.values():
-        RgRMSDRMSFCalculator(path, data, ref).calculate(cal_class_dict)
-        exit()
+    # cal_class_dict = {"Rg": file_args.rg, "RMSD": file_args.rmsd, "RMSF": file_args.rmsf}
+    # if True in cal_class_dict.values():
+    #     RgRMSDRMSFCalculator(path, data, ref).calculate(cal_class_dict)
+    #     exit()
+    if file_args.rg:
+        RgCalculator(path, data).calculate()
 
     if file_args.mass_density:
         MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel()
