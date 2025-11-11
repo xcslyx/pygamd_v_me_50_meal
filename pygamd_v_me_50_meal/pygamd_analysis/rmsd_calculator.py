@@ -25,7 +25,6 @@ class RgRMSDRMSFCalculator:
         os.makedirs(self.save_path, exist_ok=True)
 
         self.ref = ref
-        self.cal_class = {}
         self.cal_class_rmsd = []
         self.rmsd_results = {}
         self.cur_chain_class = ""
@@ -101,27 +100,17 @@ class RgRMSDRMSFCalculator:
             x_mat: dict = eval(fp.read())
 
         for i in x_mat.keys():
-            if i not in self.cal_class_rg and i not in self.cal_class_rmsd and i not in self.cal_class_rmsf:
+            if i not in self.cal_class_rmsd:
                 continue
             else:
                 if self.domain:
                     cur_chain_xyz = map(lambda x: x[self.domain[0]-1:self.domain[1]], x_mat[i])
                 else:
                     cur_chain_xyz = x_mat[i]
-            if i in self.cal_class_rg and self.cal_class["Rg"]:
-                self.cur_chain_class = i
-                self.rg_results[i] = [] if i not in self.rg_results else self.rg_results[i]
-                cur_rg_results = list(map(self.cal_rg, cur_chain_xyz))
-                self.rg_results[i] += cur_rg_results
-            if i in self.cal_class_rmsd and self.cal_class["RMSD"]:
+            if i in self.cal_class_rmsd:
                 self.rmsd_results[i] = [] if i not in self.rmsd_results else self.rmsd_results[i]
                 cur_rmsd_results = list(map(self.cal_rmsd, cur_chain_xyz))
                 self.rmsd_results[i] += cur_rmsd_results
-            if i in self.cal_class_rmsf and self.cal_class["RMSF"]:
-                cur_rmsf_results = np.array([self.cal_rmsf(x) for x in cur_chain_xyz])
-                cur_rmsf_results = np.sqrt(np.mean(cur_rmsf_results, axis=0))
-                self.rmsf_results[i] += cur_rmsf_results
-        # print(self.rmsf_results)
 
 
     def calculate(self):
@@ -151,20 +140,19 @@ class RgRMSDRMSFCalculator:
         # 使用 tqdm 包装可迭代对象以显示进度条
         list(tqdm(map(self.process_chain_file, sorted(chain_files)),
                   total=len(chain_files),
-                  desc="计算中",
+                  desc="Calculating RMSD",
                   colour='cyan',
                   bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                   ncols=100))
 
         # 保存结果
-        cal_type = "RMSD"
-        result_file = os.path.join(self.save_path, f"draw_{cal_type}_ref_{os.path.basename(self.ref)}.log")
+        result_file = os.path.join(self.save_path, f"draw_RMSD_ref_{os.path.basename(self.ref)}.log")
         with open(result_file, 'w') as f:
-            exec(f"f.write(str(self.{cal_type.lower()}_results))")
-        print(f"{cal_type} 计算完成！结果已保存至文件 {result_file}")
+            f.write(str(self.rmsd_results))
+        print(f"RMSD 计算完成！结果已保存至文件 {result_file}")
 
         self.draw_rmsd_distribution()
-        print(f"{cal_type} 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_{cal_type}_ref_{os.path.basename(self.ref)}.png')}")
+        print(f"RMSD 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_RMSD_ref_{os.path.basename(self.ref)}.png')}")
 
 
     def draw_rmsd_distribution(self):
@@ -190,9 +178,9 @@ class RgRMSDRMSFCalculator:
             probabilities = hist / sum(hist)
 
             ax.plot(bin_edges[:-1], probabilities, label=f"{mol} RMSD")
-            ax.set_xlabel(r'RMSD ($\AA$)')
+            ax.set_xlabel(r'RMSD (nm)')
             ax.set_ylabel('probability')
-            ax.set_title(f'probability distribution\nref: {os.path.basename(self.ref)}')
+            ax.set_title(f'Probability Density Function of {mol} RMSD\nref: {os.path.basename(self.ref)}')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_RMSD_{mol}_ref_{os.path.basename(self.ref)}.png"))
             plt.close(fig)

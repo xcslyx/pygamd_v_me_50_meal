@@ -24,6 +24,8 @@ class RgCalculator:
         self.save_path = os.path.join(self.path, "draw_log/")
         os.makedirs(self.save_path, exist_ok=True)
 
+        self.balance_cut = ""
+
         self.cal_class = {}
         self.cal_class_rg = []
         self.rg_results = {}
@@ -74,7 +76,14 @@ class RgCalculator:
 
 
     def calculate(self):
-        chain_files = os.listdir(self.chain_path)
+        if not self.balance_cut:
+            self.balance_cut = input(
+                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
+        if not self.balance_cut:
+            chain_files = os.listdir(self.chain_path)
+        else:
+            start, end = list(map(int, self.balance_cut.split(',')))
+            chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         self.cur_chain_class = None
         self.cal_class_rg = list(map(int, input(f"请输入想要计算 Rg 的分子序号：\n{self.data.molecules}\n").split(',')))
@@ -127,13 +136,13 @@ class RgCalculator:
             # 计算概率
             probabilities = hist / sum(hist)
 
-            ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} R_{{\mathrm{{g}}}}")
-            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, label=rf"{mol} Rg")
-            ax.set_xlabel(r'$R_{\mathrm{g}} (\AA)$')
+            ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} $R_{{\mathrm{{g}}}}$")
+            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5)
+            ax.set_xlabel(r'$R_{\mathrm{g}}$ (nm)')
             ax.set_ylabel('Probability')
-            ax.set_title(rf'Probability Density Function of {mol} R_{{\mathrm{{g}}}}')
+            ax.set_title(rf'Probability Density Function of {mol} $R_{{\mathrm{{g}}}}$')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))
             plt.close(fig)
 
-        print(f"Rg 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_Rg_{mol}.png')}")
+            print(f"Rg 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_Rg_{mol}.png')}")
