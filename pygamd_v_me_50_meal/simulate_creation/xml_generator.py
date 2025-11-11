@@ -21,7 +21,7 @@ class XMLGenerator:
                     filename = os.path.basename(filename)
                     assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
                 else:
-                    raise ValueError("需要转换的 PDB 文件不存在！")
+                    raise ValueError("需要转换的 PDB 文件不存在！ Please provide a valid PDB file!")
             else:
                 if path == os.path.dirname(filename):
                     filename = filename = os.path.basename(filename)
@@ -613,7 +613,7 @@ class XMLGenerator:
 
             f.write('<charge num="{}">\n'.format(n_atoms))
             for atom in new_sequence_position:
-                f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'DP' else f.write(f"{0.:<17.10f}\n")
+                f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'Ph' else f.write(f"{0.:<17.10f}\n")
             f.write('</charge>\n')
 
             # set molecule
@@ -861,7 +861,7 @@ class XMLGenerator:
 
             f.write('<charge num="{}">\n'.format(n_atoms))
             for atom in new_sequence_position:
-                f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'DP' else f.write(f"{0.:<17.10f}\n")
+                f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'Ph' else f.write(f"{0.:<17.10f}\n")
             f.write('</charge>\n')
 
             # set molecule

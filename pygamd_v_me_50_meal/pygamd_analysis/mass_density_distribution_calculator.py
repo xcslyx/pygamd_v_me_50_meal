@@ -25,7 +25,7 @@ class MassDensityDistributionCalculator:
 
         self.init_xml_path = os.path.join(self.path, "xml/")
 
-        remove_pbc_choice = input("是否需要使用移除 PBC后的文件？(y/n)")
+        remove_pbc_choice = input("是否需要使用移除 PBC后的文件？(y/n) Do you want to use the file without condensate PBC? (y/n)")
         if remove_pbc_choice == 'y':
             self.chain_path = os.path.join(self.path, "chain_xyz_remove_pbc_condensate/")
         else:
@@ -35,34 +35,35 @@ class MassDensityDistributionCalculator:
         os.makedirs(self.save_path, exist_ok=True)
 
         self.free_chain_save_path = os.path.join(self.path, "free_chain/")
-        self.free_chain_choice = input("是否需要排除游离链? (y/n)")
+        self.free_chain_choice = input("是否需要排除游离链? (y/n) Do you want to exclude free chains? (y/n)")
         if self.free_chain_choice == "y":
             if not os.path.exists(self.free_chain_save_path):
                 os.makedirs(self.free_chain_save_path, exist_ok=True)
-                print(f"✅ 已创建 {self.free_chain_save_path} 目录")
+                print(f"✅ Created {self.free_chain_save_path} directory")
             else:
                 self.cover_free_chain_save_path_choice = input(f"已存在 {self.free_chain_save_path} 目录，是否覆盖？(y/n)")
                 if self.cover_free_chain_save_path_choice == 'y':
                     shutil.rmtree(self.free_chain_save_path)
                     os.makedirs(self.free_chain_save_path, exist_ok=True)
-                    print(f"✅ 已创建 {self.free_chain_save_path} 目录")
+                    print(f"✅ Created {self.free_chain_save_path} directory")
 
         self.balance_cut = ""
         self.mass_density_path = os.path.join(self.save_path, "mass_density/")
         if not os.path.exists(self.mass_density_path):
             os.makedirs(self.mass_density_path, exist_ok=True)
-            print(f"✅ 已创建 {self.mass_density_path} 目录")
+            print(f"✅ Created {self.mass_density_path} directory")
 
         self.cal_mass_density_distribution_list = []
         if not self.cal_mass_density_distribution_list:
             print(f"\n您的分子类型有：\n{self.data.molecules}")
+            print("Please input the number of molecules you want to calculate the mass density distribution for, separated by commas.")
             self.cal_mass_density_distribution_list = input("请输入您想要计算质量密度分布时需要包括的分子，以逗号分隔，如“1,2”。\n"
                                                             "如需计算全部分子，请输入 all 或直接回车：").split(',')
         if "all" in self.cal_mass_density_distribution_list or self.cal_mass_density_distribution_list == [""]:
             self.cal_mass_density_distribution_list = list(self.mol_class_dict.keys())
         else:
             self.cal_mass_density_distribution_list = [self.data.mol_class_list[int(i)] for i in self.cal_mass_density_distribution_list]
-        print(f"即将计算质量密度分布的分子：{self.cal_mass_density_distribution_list}")
+        print(f"Molecule(s) to calculate mass density distribution: {self.cal_mass_density_distribution_list}")
 
 
         self.sequence = {}
@@ -73,15 +74,14 @@ class MassDensityDistributionCalculator:
 
         self.domain = None
         self.new_name = None
-        domain = input(
-            "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，否则请直接回车。"
-            "注：只支持选择单个分子计算。"
-            "请输入：")
+        print("If you want to calculate the mass density distribution of a specific domain, please input the domain start and end residue index (from 1), separated by -, like 159-522. Otherwise, please directly press Enter. Note: only single-molecule calculation is supported.")
+        domain = input("若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，否则请直接回车。"
+                        "注：只支持选择单个分子计算。请输入：")
         if domain:
             domain = list(map(int, domain.split('-')))
             self.domain = domain
-            print(f"即将计算结构域：{domain}")
-            self.new_name = input("是否给此结构域命名？请输入名称，否则直接回车：")
+            print(f"Domain to calculate: {domain}")
+            self.new_name = input("是否给此结构域命名？请输入名称，否则直接回车：Do you want to name this domain? Please input the name, or press Enter directly:")
             if self.new_name is not None:
                 self.mass_density_save_path = os.path.join(self.mass_density_path, f"{self.new_name}/")
             else:
@@ -89,7 +89,7 @@ class MassDensityDistributionCalculator:
 
             if not os.path.exists(self.mass_density_save_path):
                 os.makedirs(self.mass_density_save_path, exist_ok=True)
-                print(f"✅ 已创建 {self.mass_density_save_path} 目录")
+                print(f"✅ Created {self.mass_density_save_path} directory")
             # elif file_args.avg != "mass_density":
             #     shutil.rmtree(self.mass_density_save_path)
             #     os.makedirs(self.mass_density_save_path, exist_ok=True)
@@ -100,7 +100,7 @@ class MassDensityDistributionCalculator:
                 mass_density_save_path = os.path.join(self.mass_density_path, cal_mol)
                 if not os.path.exists(mass_density_save_path):
                     os.makedirs(mass_density_save_path, exist_ok=True)
-                    print(f"✅ 已创建 {mass_density_save_path} 目录")
+                    print(f"✅ Created {mass_density_save_path} directory")
                 # elif file_args.avg != "mass_density":
                 #     shutil.rmtree(mass_density_save_path)
                 #     os.makedirs(mass_density_save_path, exist_ok=True)
@@ -117,8 +117,8 @@ class MassDensityDistributionCalculator:
 
         # 选择计算哪一种 MSD（sphere/axis/slab）
         while True:
-            print("可计算的 MSD 类型有：sphere/axis/slab")
-            self.mass_density_choice = input("请输入需要计算的 MSD 类型，直接回车则使用默认值：")
+            print("可计算的 MSD 类型有：sphere(球形凝聚体)/axis(有取向的棒状凝聚体)/slab(slab模拟)")
+            self.mass_density_choice = input("请输入需要计算的 MSD 类型，直接回车则计算 sphere 类型：")
             if not self.mass_density_choice or self.mass_density_choice == "sphere":
                 self.mass_density_class = "sphere"
                 break
@@ -337,7 +337,9 @@ class MassDensityDistributionCalculator:
             #     Functions.replace_position(os.path.join(self.init_xml_path, name), rotated_positions,
             #                                new_xml_file=os.path.join(self.mass_density_path, cal_mol, name.replace(".xml", "_rotated.xml")))
 
+            #====================
             # 计算质量密度分布
+            #===================
             # 初始化质量和体积
             shell_count = np.zeros(self.num_bins)
             shell_volume = np.zeros(self.num_bins)
@@ -366,10 +368,9 @@ class MassDensityDistributionCalculator:
 
             # 在 shell_volume 中，如果数值为 0，则说明该壳层没有粒子，则将其体积设置为 1，以避免除 0 错误
             shell_volume[shell_volume == 0] = 1
-            # 计算密度（质量 / 体积），换算单位为 mg/mL
             # print(f"shell_count: {shell_count}")
             # print(f"shell_volume: {shell_volume}")
-            density = shell_count / shell_volume / sp.constants.N_A * 1000  # 单位为 mg/mL
+            density = shell_count / shell_volume / sp.constants.N_A * 1000  # 计算密度（质量 / 体积），单位为 mg/mL
             # density = shell_count / sp.constants.N_A / 1e-21 * 1000  # 单位为 mg/mL
 
             # 计算每个壳层的半径中心
@@ -409,13 +410,14 @@ class MassDensityDistributionCalculator:
             # 减去 z 坐标均值，使粒子中心在 0 处
             all_coords[:, 2] -= all_coords[:, 2].mean()
 
-
+            #====================
             # 计算质量密度分布
+            #====================
             # 初始化质量和体积
             shell_count = np.zeros(self.num_bins)
-            shell_volume = np.zeros(self.num_bins)
 
             # 遍历每个粒子
+            shell_volume = self.box_size[0] * self.box_size[1] * self.dr * 1e-21  # 计算壳层体积，单位为 mL。每个壳层的体积都相同，无需在循环中计算
             for coord_idx in range(len(all_coords)):
                 # 确定壳层索引
                 z = all_coords[coord_idx][2] + self.box_size[2] / 2
@@ -424,10 +426,6 @@ class MassDensityDistributionCalculator:
                 # 累加粒子质量，单位是 g/mol
                 if shell_index < self.num_bins:
                     shell_count[shell_index] += self.sequence[cal_mol][coord_idx // self.length_dict[cal_mol]]
-
-            # 统计质量
-            # 计算壳层体积，单位是 mL
-            shell_volume = self.box_size[0] * self.box_size[1] * self.dr * 1e-21  # 单位为 mL
 
             # 计算密度（质量 / 体积），换算单位为 mg/mL
             density = shell_count / shell_volume / sp.constants.N_A * 1000  # 单位为 mg/mL
@@ -443,7 +441,6 @@ class MassDensityDistributionCalculator:
                 with open(os.path.join(self.mass_density_path, cal_mol, name.replace(".xml", "_slab.xml")), 'w') as f:
                     for r, d in zip(radii, density):
                         f.write(f"{r:20.4f}{d:20.6f}\n")
-
 
 
     def average_mass_density_distribution(self):

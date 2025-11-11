@@ -142,7 +142,7 @@ def main():
             if not path:
                 path = os.getcwd()
         else:
-            raise ValueError("请提供体系目录路径。")
+            raise ValueError("请提供体系目录路径。Please provide the path to the system directory.")
 
     # path = os.path.join(current_dir_path, path)
 
@@ -162,7 +162,6 @@ def main():
         exit()
 
     if file_args.xyz:
-        print("开始进行坐标提取...")
         CoordinatesProcessor(path, data, file_args.remove_ions_zhy, remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:

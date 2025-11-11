@@ -249,7 +249,7 @@ class RgRMSDRMSFCalculator:
                 self.draw_rg_distribution() if cal_type == "Rg" else None
                 self.draw_rmsd_distribution() if cal_type == "RMSD" else None
                 self.draw_rmsf() if cal_type == "RMSF" else None
-                print(f"{cal_type} 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_{cal_type}_ref_{os.path.basename(self.ref)}.png')}")
+                # print(f"{cal_type} 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_{cal_type}_ref_{os.path.basename(self.ref)}.png')}")
 
 
     def draw_rg_distribution(self):
@@ -270,13 +270,16 @@ class RgRMSDRMSFCalculator:
             # 计算概率
             probabilities = hist / sum(hist)
 
-            plt.plot(bin_edges[:-1], probabilities, label=f"{mol} RMSD")
-            plt.xlabel(r'Rg ($\AA$)')
-            plt.ylabel('probability')
-            plt.title(f'probability distribution')
-            plt.legend()
-            plt.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))
+            ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} R_{{\mathrm{{g}}}}")
+            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, label=rf"{mol} Rg")
+            ax.set_xlabel(r'Rg ($\AA$)')
+            ax.set_ylabel('probability')
+            ax.set_title(f'probability distribution')
+            ax.legend()
+            fig.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))
             plt.close(fig)
+
+        print(f"Rg 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_Rg_{mol}.png')}")
 
 
     def draw_rmsd_distribution(self):

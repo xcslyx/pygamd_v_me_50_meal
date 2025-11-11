@@ -62,7 +62,7 @@ class CoordinatesProcessor:
 
         self.unwrap_xml_flag: bool = True
 
-
+        print("Starting coordinate extraction...")
         self.cal_xyz(remove_condensate_pbc=remove_condensate_pbc)
 
 
@@ -227,7 +227,6 @@ class CoordinatesProcessor:
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
                     output=seq_output).xml2sequence()
-        print(f"序列信息已保存至 {seq_output}。")
         print(f"Sequence information has been saved to {seq_output}.")
 
         if self.remove_enm_bonds_request == "y":
@@ -354,21 +353,20 @@ class CoordinatesProcessor:
             xml_files = sorted(os.listdir(self.unwrapping_xml_path))
 
 
-        print(f"开始处理 {len(xml_files)} 个文件...")
         with Pool(processes=4) as pool:
             list(tqdm(pool.imap(self.remove_pbc_condensate, xml_files),
                       total=len(xml_files),
-                      desc="去除 PBC 条件",
+                      desc="Remove PBC for condensate",
                       colour='cyan',
                       ncols=100))
 
         init_files = sorted(
             [i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
         with Pool(processes=4) as pool:
-            print("开始处理去周期后的凝聚体文件...")
+            print("Start processing the condensate files after removing condensate PBC...")
             # 使用 tqdm 包装你的可迭代对象
             list(tqdm(pool.imap(self.abstract_coordinates_condensate_pbc, init_files),
                       total=len(init_files),
-                      desc="处理进度",
+                      desc="Process progress",
                       colour="cyan",
                       ncols=100))
