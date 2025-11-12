@@ -131,10 +131,11 @@ class RgCalculator:
 
             # 划分 bin
             bins = 400
+            # 计算概率密度函数
             hist, bin_edges = np.histogram(rg, bins=bins)
             hist = gaussian_filter(hist, sigma=1)
-            # 计算概率
-            probabilities = hist / sum(hist)
+            # 计算概率, 除以总链数和 bin 的宽度
+            probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
 
             ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} $R_{{\mathrm{{g}}}}$")
             ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5)
