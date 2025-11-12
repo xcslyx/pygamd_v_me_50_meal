@@ -175,7 +175,7 @@ class RgRMSDRMSFCalculator:
             hist, bin_edges = np.histogram(rmsd, bins=bins)
             hist = gaussian_filter(hist, sigma=5)
             # 计算概率
-            probabilities = hist / sum(hist)
+            probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
 
             ax.plot(bin_edges[:-1], probabilities, label=f"{mol} RMSD")
             ax.set_xlabel(r'RMSD (nm)')

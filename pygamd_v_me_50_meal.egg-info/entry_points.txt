@@ -1,2 +1,0 @@
-[console_scripts]
-v50 = pygamd_v_me_50_meal.__main__:main
