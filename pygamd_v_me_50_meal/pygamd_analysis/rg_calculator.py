@@ -86,7 +86,8 @@ class RgCalculator:
             chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         self.cur_chain_class = None
-        self.cal_class_rg = list(map(int, input(f"请输入想要计算 Rg 的分子序号：\n{self.data.molecules}\n").split(',')))
+        print(f"您当前的分子类型有：\n{self.data.molecules}\n")
+        self.cal_class_rg = list(map(int, input(f"请输入想要计算 Rg 的分子序号, 以 ',' 分隔：").split(',')))
         self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
         print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
         self.rg_results = {}
@@ -129,9 +130,9 @@ class RgCalculator:
             frame_num = int(len(init_rg_list) / self.data.mol_class_dict[mol][0])
             print(f"{mol} 的帧数：{frame_num}")
 
-            # 划分 bin
-            bins = 400
             # 计算概率密度函数
+            bins = 400  # 划分 bin 的数量
+            # 计算直方图
             hist, bin_edges = np.histogram(rg, bins=bins)
             hist = gaussian_filter(hist, sigma=1)
             # 计算概率, 除以总链数和 bin 的宽度

@@ -31,6 +31,7 @@ class Functions:
         else:
             tree.write(new_xml_file)
 
+
     @staticmethod
     def euclidean_distances(a, b):
         """
@@ -59,6 +60,7 @@ class Functions:
         ed = torch.sqrt(ed_sq)
         return ed
 
+
     @staticmethod
     def cal_sigma_mat(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
         """
@@ -83,6 +85,32 @@ class Functions:
         seq_sigma_list_b = np.array([sigma_dict[i] for i in sequence_b])
         mean_matrix = (seq_sigma_list_a[:, None] + seq_sigma_list_b[None, :]) / 2
         return mean_matrix
+
+
+    @staticmethod
+    def kabsch_align(p, q) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Kabsch算法，用于对齐两个结构。
+        :param p: 参考结构
+        :param q: 待对齐的结构
+        :return: 将参考结构居中的 P_centered: np.ndarray, 对齐后的 Q_aligned: np.ndarray
+        """
+        # 使用Kabsch算法将结构Q对齐到结构P。
+        p_centroid = np.mean(p, axis=0)
+        q_centroid = np.mean(q, axis=0)
+
+        p_centered = p - p_centroid
+        q_centered = q - q_centroid
+
+        covariance_matrix = q_centered.T @ p_centered
+
+        U, _, Vt = np.linalg.svd(covariance_matrix)
+        rotation_matrix = U @ Vt
+
+        q_aligned = np.dot(q_centered, rotation_matrix)
+
+        return p_centered, q_aligned
+
 
     @staticmethod
     def is_chain_wrapped(positions, box_length: list[float], threshold: float = 0.5):
@@ -165,7 +193,7 @@ class Functions:
 
     @staticmethod
     def abstract_centroid(file_name: str, cal_mol: list[str], free_chain_dict: dict[str, list[int]]=None,
-                          mass: bool=False, get_height: bool=False,):
+                            mass: bool=False, get_height: bool=False,):
         x_mat = eval(open(file_name, 'r').read())
 
         # time_step = None

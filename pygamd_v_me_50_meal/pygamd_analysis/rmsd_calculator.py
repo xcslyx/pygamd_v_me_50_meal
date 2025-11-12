@@ -8,13 +8,18 @@ from tqdm import tqdm
 from scipy.ndimage import gaussian_filter
 
 from pygamd_v_me_50_meal.data import Data
+from pygamd_v_me_50_meal.Functions import Functions
 
 
-# 定义一个类，用于计算 Rg, RMSD, RMSF。
-class RgRMSDRMSFCalculator:
-    def __init__(self, path, data: Data, ref):
+# Define a class to calculate RMSD.
+class RMSDCalculator:
+    def __init__(self, path, data: Data, ref=None):
         """
-        用于计算 Rg, RMSD, RMSF。
+        用于计算 RMSD.
+
+        :param path: 路径
+        :param data: Data 类实例
+        :param ref: 参考结构的 XML 文件名
         """
         self.path = path
         self.data = data
@@ -24,45 +29,24 @@ class RgRMSDRMSFCalculator:
         self.save_path = os.path.join(self.path, "draw_log/")
         os.makedirs(self.save_path, exist_ok=True)
 
-        self.ref = ref
+        self.ref = input("请指定含有单个参考结构的 XML 文件名：").replace(".xml", "") if not ref else ref
+        self.init_pos = self.get_init_pos(self.ref)  # 读取参考结构的初始位置
+
+
         self.cal_class_rmsd = []
         self.rmsd_results = {}
         self.cur_chain_class = ""
-        self.init_pos = []
         self.domain = []
+
+        self.balance_cut = None
 
 
     @staticmethod
-    def kabsch_align(p, q) -> tuple[np.ndarray, np.ndarray]:
-        """
-        Kabsch算法，用于对齐两个结构。
-        :param p: 参考结构
-        :param q: 待对齐的结构
-        :return: 将参考结构居中的 P_centered: np.ndarray, 对齐后的 Q_aligned: np.ndarray
-        """
-        # 使用Kabsch算法将结构Q对齐到结构P。
-        p_centroid = np.mean(p, axis=0)
-        q_centroid = np.mean(q, axis=0)
-
-        p_centered = p - p_centroid
-        q_centered = q - q_centroid
-
-        covariance_matrix = q_centered.T @ p_centered
-
-        U, _, Vt = np.linalg.svd(covariance_matrix)
-        rotation_matrix = U @ Vt
-
-        q_aligned = np.dot(q_centered, rotation_matrix)
-
-        return p_centered, q_aligned
-
-
-    def get_init_pos(self):
+    def get_init_pos(filename):
         init_pos = []
-        with open(self.ref + ".xml", 'r') as f:
+        with open(filename + ".xml", 'r') as f:
             f_lines = f.readlines()
             position_flag = 0
-            cnt = 0
             for line in f_lines:
                 if "<position" in line:
                     position_flag = 1
@@ -71,7 +55,6 @@ class RgRMSDRMSFCalculator:
                     break
 
                 if position_flag:
-                    cnt += 1
                     init_pos.append(list(map(float, line.strip('\n').split())))
         return init_pos
 
@@ -87,7 +70,7 @@ class RgRMSDRMSFCalculator:
         if aa_num != len(chain_xyz):
             exit("Error! Length of chain is not equal to that of initial chain.!")
 
-        init_chain_xyz, aligned_chain_xyz = self.kabsch_align(init_chain_xyz, chain_xyz)
+        init_chain_xyz, aligned_chain_xyz = Functions.kabsch_align(init_chain_xyz, chain_xyz)
 
         rmsd = 0
         for i in range(aa_num):
@@ -114,13 +97,15 @@ class RgRMSDRMSFCalculator:
 
 
     def calculate(self):
-        chain_files = os.listdir(self.chain_path)
+        if not self.balance_cut:
+            self.balance_cut = input(
+                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
+        if not self.balance_cut:
+            chain_files = os.listdir(self.chain_path)
+        else:
+            start, end = list(map(int, self.balance_cut.split(',')))
+            chain_files = os.listdir(self.chain_path)[start - 1: end]
 
-        if not self.ref:
-            self.ref = input("请指定含有单个参考结构的 XML 文件名：")
-        self.ref = self.ref.replace(".xml", "")
-
-        self.init_pos = self.get_init_pos()  # 读取参考结构的初始位置
         self.cal_class_rmsd = list(
             map(int, input(f"请输入想要计算 RMSD 的分子序号：\n{self.data.molecules}\n").split(',')))
         self.cal_class_rmsd = [self.data.mol_class_list[i] for i in self.cal_class_rmsd]

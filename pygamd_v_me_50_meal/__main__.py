@@ -17,6 +17,7 @@ from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import Coordinate
 from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rg_rmsd_rmsf_calculator import RgRMSDRMSFCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
+from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
 
@@ -181,18 +182,18 @@ def main():
     if file_args.rg:
         RgCalculator(path, data).calculate()
 
+    if file_args.rmsd:
+        RMSDCalculator(path, data, ref).calculate()
+
     if file_args.mass_density:
         MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel()
-        exit()
 
     if file_args.msd:
         MSDCalculator(path, data).cal_msd_parallel()
         # MSDCalculator().cal_displacement_probability_distribution_parallel()
-        exit()
 
     if file_args.eed:
         EndToEndDistanceCalculator(path, data).cal_end_to_end_distance_parallel()
-        exit()
 
 if __name__ == '__main__':
     print(">>> Running pygamd_v_me_50_meal package...")
