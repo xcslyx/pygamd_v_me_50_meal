@@ -125,6 +125,9 @@ def main():
     parser.add_argument('-mass_density', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算质量密度分布。")
 
+    parser.add_argument('-amino_acid', metavar="T(rue)/F(alse)",
+                        type=str2value, default="unset", help="是否计算质量密度分布。")
+
     parser.add_argument('-msd', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算 MSD。")
 
@@ -175,10 +178,7 @@ def main():
                              ).calculate_contact_map_parallel()
         exit()
 
-    # cal_class_dict = {"Rg": file_args.rg, "RMSD": file_args.rmsd, "RMSF": file_args.rmsf}
-    # if True in cal_class_dict.values():
-    #     RgRMSDRMSFCalculator(path, data, ref).calculate(cal_class_dict)
-    #     exit()
+
     if file_args.rg:
         RgCalculator(path, data).calculate()
     if file_args.rmsd:
@@ -187,7 +187,7 @@ def main():
         RMSFCalculator(path, data, ref).calculate()
 
     if file_args.mass_density:
-        MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel()
+        MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel(amino_acid=file_args.amino_acid)
 
     if file_args.msd:
         MSDCalculator(path, data).cal_msd_parallel()

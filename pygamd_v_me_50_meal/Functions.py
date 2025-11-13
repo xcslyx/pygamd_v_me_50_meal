@@ -196,16 +196,8 @@ class Functions:
                             mass: bool=False, get_height: bool=False,):
         x_mat = eval(open(file_name, 'r').read())
 
-        # time_step = None
-        # match = re.search(r'\d+', file_name)
-        # if match:
-        #     time_step = int(match.group())
-
-        # centroid, condensate_centroid
         molecules = []
         for mol_name in cal_mol:
-            if mol_name == "Na" or mol_name == "Cl":
-                continue
             for chain_idx in range(len(x_mat[mol_name])):
                 if free_chain_dict is not None and chain_idx in free_chain_dict[mol_name]:
                     continue
