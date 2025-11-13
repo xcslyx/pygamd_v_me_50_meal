@@ -97,17 +97,8 @@ class RMSDCalculator:
 
 
     def calculate(self):
-        if not self.balance_cut:
-            self.balance_cut = input(
-                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
-        if not self.balance_cut:
-            chain_files = os.listdir(self.chain_path)
-        else:
-            start, end = list(map(int, self.balance_cut.split(',')))
-            chain_files = os.listdir(self.chain_path)[start - 1: end]
-
         self.cal_class_rmsd = list(
-            map(int, input(f"请输入想要计算 RMSD 的分子序号：\n{self.data.molecules}\n").split(',')))
+            map(lambda x: int(x) - 1, input(f"请输入想要计算 RMSD 的分子序号：\n{self.data.molecules}\n").split(',')))
         self.cal_class_rmsd = [self.data.mol_class_list[i] for i in self.cal_class_rmsd]
         print(f"即将计算 RMSD 的分子：{self.cal_class_rmsd}")
         self.rmsd_results = {}
@@ -121,6 +112,15 @@ class RMSDCalculator:
             print(f"即将计算结构域：{domain}")
         else:
             self.domain = None
+
+        if not self.balance_cut:
+            self.balance_cut = input(
+                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为 'START-END', 例如：1000-2000, 直接回车则不截取：")
+        if not self.balance_cut:
+            chain_files = os.listdir(self.chain_path)
+        else:
+            start, end = list(map(int, self.balance_cut.split('-')))
+            chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         # 使用 tqdm 包装可迭代对象以显示进度条
         list(tqdm(map(self.process_chain_file, sorted(chain_files)),

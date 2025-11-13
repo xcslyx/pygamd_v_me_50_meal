@@ -20,9 +20,6 @@ class RMSFCalculator:
         self.path = path
         self.data = data
 
-        self.mol_class_dict = self.data.mol_class_dict
-        self.length_dict = self.data.length_dict
-
         self.chain_path = os.path.join(self.path, "chain_xyz_unwrapping/")
 
         self.save_path = os.path.join(self.path, "draw_log/")
@@ -34,7 +31,6 @@ class RMSFCalculator:
         self.cal_class_rmsf = []
         self.rmsf_results = {}
         self.cur_chain_class = ""
-        self.init_pos = []
         self.domain = []
 
         self.balance_cut = None
@@ -58,16 +54,16 @@ class RMSFCalculator:
         return init_pos
 
 
-    def cal_rmsf(self, chain_xyz):
-        if self.domain:
-            init_chain_xyz = np.array(self.init_pos[self.domain[0] - 1:self.domain[1]])
+    @staticmethod
+    def cal_rmsf(chain_xyz, init_pos, domain=None):
+        if domain:
+            init_chain_xyz = np.array(init_pos[domain[0] - 1: domain[1]])
         else:
-            init_chain_xyz = np.array(self.init_pos)
+            init_chain_xyz = np.array(init_pos)
         chain_xyz = np.array(chain_xyz)
 
         aa_num = len(init_chain_xyz)
-        if aa_num != len(chain_xyz):
-            exit("Error! Length of chain is not equal to that of initial chain.!")
+        assert aa_num == len(chain_xyz), "The number of residues in the reference structure and the chain is not the same."
 
         init_chain_xyz, aligned_chain_xyz = Functions.kabsch_align(init_chain_xyz, chain_xyz)
 
@@ -92,25 +88,16 @@ class RMSFCalculator:
                     cur_chain_xyz = x_mat[i]
 
             if i in self.cal_class_rmsf:
-                cur_rmsf_results = np.array([self.cal_rmsf(x) for x in cur_chain_xyz])
+                cur_rmsf_results = np.array([self.cal_rmsf(x, self.init_pos, domain=self.domain) for x in cur_chain_xyz])
                 cur_rmsf_results = np.sqrt(np.mean(cur_rmsf_results, axis=0))
                 self.rmsf_results[i] += cur_rmsf_results
         # print(self.rmsf_results)
 
 
     def calculate(self):
-        if not self.balance_cut:
-            self.balance_cut = input(
-                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
-        if not self.balance_cut:
-            chain_files = os.listdir(self.chain_path)
-        else:
-            start, end = list(map(int, self.balance_cut.split(',')))
-            chain_files = os.listdir(self.chain_path)[start - 1: end]
-
-
+        print(f"您当前的分子类型有：\n{self.data.molecules}")
         self.cal_class_rmsf = list(
-            map(int, input(f"请输入想要计算 RMSF 的分子序号：\n{self.data.molecules}\n").split(',')))
+            map(lambda x: int(x) - 1, input(f"请输入想要计算 RMSF 的分子序号, 以 ',' 分隔: ").split(',')))
         self.cal_class_rmsf = [self.data.mol_class_list[i] for i in self.cal_class_rmsf]
         print(f"即将计算 RMSF 的分子：{self.cal_class_rmsf}")
 
@@ -123,12 +110,22 @@ class RMSFCalculator:
             print(f"即将计算结构域：{domain}")
             self.rmsf_results = {i: np.zeros(domain[1] - domain[0] + 1) for i in self.cal_class_rmsf}
         else:
+            self.rmsf_results = {i: np.zeros(self.data.length_dict[i]) for i in self.cal_class_rmsf}
             self.domain = None
+
+        if not self.balance_cut:
+            self.balance_cut = input(
+                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为 'START-END', 例如：1000-2000，直接回车则不截取：")
+        if not self.balance_cut:
+            chain_files = os.listdir(self.chain_path)
+        else:
+            start, end = list(map(int, self.balance_cut.split('-')))
+            chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         # 使用 tqdm 包装可迭代对象以显示进度条
         list(tqdm(map(self.process_chain_file, sorted(chain_files)),
                   total=len(chain_files),
-                  desc="计算中",
+                  desc="calculating RMSF",
                   colour='cyan',
                   bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                   ncols=100))
@@ -136,11 +133,10 @@ class RMSFCalculator:
         # 保存结果
         result_file = os.path.join(self.save_path, f"draw_RMSF_ref_{os.path.basename(self.ref)}.log")
         with open(result_file, 'w') as f:
-            f.write(str(self.rmsf_results))
-        print(f"RMSF 计算完成！结果已保存至文件 {result_file}")
+            f.write(str({key: list(self.rmsf_results[key]) for key in self.rmsf_results.keys()}))
+        print(f"RMSF 计算完成！结果已保存至文件 draw_RMSF_ref_{os.path.basename(self.ref)}.log")
 
         self.draw_rmsf()
-        print(f"RMSF 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_RMSF_ref_{os.path.basename(self.ref)}.png')}")
 
 
     def draw_rmsf(self):
@@ -159,3 +155,5 @@ class RMSFCalculator:
                 ax.legend()
                 plt.savefig(os.path.join(self.save_path, f"draw_RMSF_{mol}_ref_{os.path.basename(self.ref)}.png"))
                 plt.close(fig)
+                print(
+                    f"RMSF 绘图完成！结果已保存至文件 draw_RMSF_{mol}_ref_{os.path.basename(self.ref)}.png")

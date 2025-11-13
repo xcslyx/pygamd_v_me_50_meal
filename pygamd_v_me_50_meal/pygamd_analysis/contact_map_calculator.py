@@ -149,7 +149,7 @@ class ContactMapCalculator:
         if "all" in self.cm_class_list or self.cm_class_list == [""]:
             self.cm_class_list = [[i, j] for i in range(len(self.data.mol_class_list)) for j in range(i, len(self.data.mol_class_list))]
         else:
-            self.cm_class_list = list(map(lambda x: list(map(int, x.split('-'))), self.cm_class_list))
+            self.cm_class_list = list(map(lambda x: list(map(lambda y: int(y) - 1, x.split('-'))), self.cm_class_list))
 
         print("If you only need to calculate the domain, please enter the starting residue number and the last residue number of the domain (starting from 1), separated by -, such as 159-522. \n "
               "Note: Only calculated domains with the same molecular type, such as 0-0 and 1-1.\n "
@@ -171,12 +171,12 @@ class ContactMapCalculator:
 
         if not self.balance_cut:
             print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000,2000, or directly press Enter to skip:")
-            self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
+            self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为 'START-END', 例如：1000-2000，直接回车则不截取：")
 
         if not self.balance_cut:
             files = os.listdir(self.chain_path)
         else:
-            start, end = list(map(int, self.balance_cut.split(',')))
+            start, end = list(map(int, self.balance_cut.split('-')))
             files = os.listdir(self.chain_path)[start: end+1]
 
 

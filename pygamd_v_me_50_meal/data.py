@@ -45,7 +45,7 @@ class Data:
                     # print(f"Molecule: {type_}, number: {num}, length: {self.mol_class_dict[type_][1]}, 起止位置：{self.mol_class_dict[type_][2]}")
 
                     self.mol_class_list = list(self.mol_class_dict.keys())
-                    self.molecules = "\n".join([f"{i}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
+                    self.molecules = "\n".join([f"{i+1}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
             else:
                 raise ValueError("Path name is not valid.")
 
