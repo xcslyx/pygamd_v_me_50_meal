@@ -155,14 +155,16 @@ class RMSDCalculator:
             print(f"{mol} 的帧数：{frame_num}")
 
             # 划分 bin
-            bins = 400
+            bins = 40
             hist, bin_edges = np.histogram(rmsd, bins=bins)
-            hist = gaussian_filter(hist, sigma=5)
+            # hist = gaussian_filter(hist, sigma=5)
             # 计算概率
             probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
 
+            bin_edges += (bin_edges[1] - bin_edges[0]) / 2  # 使 bin 居中
             ax.plot(bin_edges[:-1], probabilities, label=f"{mol} RMSD")
-            ax.hist(rmsd, bins=bins, density=True, alpha=0.5,)
+            ax.hist(init_rmsd_list, bins=bins, density=True, alpha=0.5, color="#99FFFF", edgecolor='black',
+                    label=rf"{mol} RMSD (Histogram)")
             ax.set_xlabel(r'RMSD (nm)')
             ax.set_ylabel('probability')
             ax.set_title(f'Probability Density Function of {mol} RMSD\nref: {os.path.basename(self.ref)}')

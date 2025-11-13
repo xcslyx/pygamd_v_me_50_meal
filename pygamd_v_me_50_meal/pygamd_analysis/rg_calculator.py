@@ -131,15 +131,17 @@ class RgCalculator:
             print(f"{mol} 的帧数：{frame_num}")
 
             # 计算概率密度函数
-            bins = 400  # 划分 bin 的数量
+            bins = 40  # 划分 bin 的数量
             # 计算直方图
             hist, bin_edges = np.histogram(rg, bins=bins)
-            hist = gaussian_filter(hist, sigma=1)
+            # hist = gaussian_filter(hist, sigma=1)
             # 计算概率, 除以总链数和 bin 的宽度
             probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
 
+            bin_edges += (bin_edges[1] - bin_edges[0]) / 2  # 使 bin 居中
             ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} $R_{{\mathrm{{g}}}}$")
-            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5)
+            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, color="#99FFFF", edgecolor='black',
+                    label=rf"{mol} $R_{{\mathrm{{g}}}}$ (Histogram)")
             ax.set_xlabel(r'$R_{\mathrm{g}}$ (nm)')
             ax.set_ylabel('Probability')
             ax.set_title(rf'Probability Density Function of {mol} $R_{{\mathrm{{g}}}}$')

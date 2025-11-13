@@ -198,8 +198,11 @@ def main():
     if file_args.draw:
         draw_class = file_args.draw.lower().split(",")
         for draw_type in draw_class:
+            if draw_type == "rg":
+                RgCalculator(path, data).draw_rg_distribution()
             if draw_type == "rmsd":
                 RMSDCalculator(path, data, ref).draw_rmsd_distribution()
+
 
 if __name__ == '__main__':
     print(">>> Running pygamd_v_me_50_meal package...")
