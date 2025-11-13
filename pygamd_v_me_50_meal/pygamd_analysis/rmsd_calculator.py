@@ -134,10 +134,9 @@ class RMSDCalculator:
         result_file = os.path.join(self.save_path, f"draw_RMSD_ref_{os.path.basename(self.ref)}.log")
         with open(result_file, 'w') as f:
             f.write(str(self.rmsd_results))
-        print(f"RMSD 计算完成！结果已保存至文件 {result_file}")
+        print(f"RMSD 计算完成！结果已保存至文件 draw_RMSD_ref_{os.path.basename(self.ref)}.log")
 
         self.draw_rmsd_distribution()
-        print(f"RMSD 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_RMSD_ref_{os.path.basename(self.ref)}.png')}")
 
 
     def draw_rmsd_distribution(self):
@@ -163,9 +162,11 @@ class RMSDCalculator:
             probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
 
             ax.plot(bin_edges[:-1], probabilities, label=f"{mol} RMSD")
+            ax.hist(rmsd, bins=bins, density=True, alpha=0.5,)
             ax.set_xlabel(r'RMSD (nm)')
             ax.set_ylabel('probability')
             ax.set_title(f'Probability Density Function of {mol} RMSD\nref: {os.path.basename(self.ref)}')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_RMSD_{mol}_ref_{os.path.basename(self.ref)}.png"))
             plt.close(fig)
+            print(f"RMSD 绘图完成！结果已保存至文件 draw_RMSD_{mol}_ref_{os.path.basename(self.ref)}.png")
