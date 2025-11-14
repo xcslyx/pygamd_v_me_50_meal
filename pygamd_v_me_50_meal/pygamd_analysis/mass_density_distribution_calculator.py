@@ -64,7 +64,7 @@ class MassDensityDistributionCalculator:
         if "all" in self.cal_mass_density_distribution_list or self.cal_mass_density_distribution_list == [""]:
             self.cal_mass_density_distribution_list = list(self.mol_class_dict.keys())
         else:
-            self.cal_mass_density_distribution_list = [self.data.mol_class_list[int(i)] for i in self.cal_mass_density_distribution_list]
+            self.cal_mass_density_distribution_list = [self.data.mol_class_list[int(i) - 1] for i in self.cal_mass_density_distribution_list]
         print(f"Molecule(s) to calculate mass density distribution: {self.cal_mass_density_distribution_list}")
 
 
@@ -245,7 +245,7 @@ class MassDensityDistributionCalculator:
 
                     # 累加粒子质量，单位是 g/mol
                     if shell_index < self.num_bins:
-                        shell_count[shell_index] += self.sequence[cal_mol][coord_idx // self.length_dict[cal_mol]][1]
+                        shell_count[shell_index] += self.sequence[cal_mol][coord_idx][1]
 
             # 计算壳层体积，单位是 mL，即 cm^3
             for i in range(self.num_bins):
@@ -473,7 +473,8 @@ class MassDensityDistributionCalculator:
             # 遍历每条链
             for chain in molecules:
                 for coord_idx in range(len(chain)):
-                    cur_aa = self.sequence[cal_mol][coord_idx // self.length_dict[cal_mol]][0]
+                    cur_aa = self.sequence[cal_mol][coord_idx][0]
+                    # print(cur_aa)
                     # 计算到中心的径向距离
                     r = np.linalg.norm(np.array(chain[coord_idx]) - center)
 
@@ -482,28 +483,28 @@ class MassDensityDistributionCalculator:
 
                     # 累加粒子质量，单位是 g/mol
                     if shell_index < self.num_bins:
-                        shell_count[cur_aa][shell_index] += self.sequence[cal_mol][coord_idx // self.length_dict[cal_mol]]
+                        shell_count[cur_aa][shell_index] += self.sequence[cal_mol][coord_idx][1]
 
             # 计算壳层体积，单位是 mL，即 cm^3
             for i in range(self.num_bins):
                 r_inner = i * self.dr
                 r_outer = (i + 1) * self.dr
                 shell_volume[i] = 4 / 3 * np.pi * (r_outer ** 3 - r_inner ** 3) * 1e-21   # 单位为 mL，即 cm^3
-
+            # print(f"shell_count: {shell_count}")
             # 计算密度（质量 / 体积），换算单位为 mg/mL
-            density = {i: list(shell_count[i] / shell_volume / sp.constants.N_A * 1000) for i in shell_count.keys()}  # 单位为 mg/mL
+            density = {i: list(map(lambda x: f'{x:.6f}', shell_count[i] / shell_volume / sp.constants.N_A * 1000)) for i in shell_count.keys()}  # 单位为 mg/mL
 
             # 计算每个壳层的半径中心
-            radii = np.linspace(self.dr / 2, self.r_max - self.dr / 2, self.num_bins)
+            radii = [f"{i:.4f}" for i in np.linspace(self.dr / 2, self.r_max - self.dr / 2, self.num_bins)]
 
             # 保存结果
             if self.new_name:
-                with open(os.path.join(self.mass_density_save_path, name.replace(".xml", "_amino_acid.xml"), 'w')) as f:
+                with open(os.path.join(self.mass_density_save_path, name.replace(".xml", "_amino_acid.xml")), 'w') as f:
                     f.write(','.join(radii) + '\n')
                     f.write(str(density))
 
             else:
-                with open(os.path.join(self.mass_density_path, cal_mol, name.replace(".xml", "_amino_acid.xml"), 'w'))as f:
+                with open(os.path.join(self.mass_density_path, cal_mol, name.replace(".xml", "_amino_acid.xml")), 'w')as f:
                     f.write(','.join(radii) + '\n')
                     f.write(str(density))
 
