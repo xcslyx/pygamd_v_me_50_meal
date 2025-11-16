@@ -207,7 +207,7 @@ class CoordinatesProcessor:
                     if _type in ["Na", "K", "Cl", "Li", ]:
                         # 用空字符代替原来的元素
                         start, end = self.data.mol_class_dict[_type][2][0], self.data.mol_class_dict[_type][2][1]
-                        elem_text_list[start:end] = [''] * (end - start + 1)
+                        elem_text_list[start:end] = [''] * (end - start)
 
                 elem_text_list = [elem_text for elem_text in elem_text_list if elem_text]
                 elem.text = '\n' + '\n'.join(elem_text_list) + '\n'
