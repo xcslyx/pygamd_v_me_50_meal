@@ -170,7 +170,7 @@ class ContactMapCalculator:
                 print(f"Domain to be calculated: {domain}")
 
         if not self.balance_cut:
-            print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000,2000, or directly press Enter to skip:")
+            print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000-2000, or directly press Enter to skip:")
             self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为 'START-END', 例如：1000-2000，直接回车则不截取：")
 
         if not self.balance_cut:

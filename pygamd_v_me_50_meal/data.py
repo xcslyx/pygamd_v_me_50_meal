@@ -5,7 +5,7 @@ class Data:
     _instance = None
     mol_class_dict = {}
     length_dict = {
-        "cGAS": 522, "mcGAS": 507,
+        "cGAS": 522, "hcGAS": 522, "mcGAS": 507,
         "Ga": 466, "Gb": 466, "Gaw": 466, "Gbw": 466,
         "FC": 528,
         "fuslcd": 162,

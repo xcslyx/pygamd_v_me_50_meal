@@ -53,9 +53,7 @@ class XMLConverter:
         chain_num = sum([i[0] for i in self.data.mol_class_dict.values()])
         chain_count = [26] * (chain_num // 26) + [chain_num % 26] if chain_num > 26 else [chain_num]
 
-
         positions, types = self.extract_position_and_type(self.xml_file)
-
         output_file = os.path.join(self.path, output_file) if output_file else self.xml_file.replace('.xml', '.pdb')
         """
         将信息写入PDB文件。
