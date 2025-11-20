@@ -19,7 +19,7 @@ class ContactMapCalculator:
     """
     用于计算和绘制 contact map 的类。
     """
-    def __init__(self, path, data, cm_choice, r_cut: float):
+    def __init__(self, path, data, cm_choice, r_cut: float, draw_limit: bool=False):
         """
         初始化 ContactMapCalculator 类
         :param path:
@@ -30,6 +30,8 @@ class ContactMapCalculator:
         self.mol_class_dict = self.data.mol_class_dict
         self.mol_class_list = self.data.mol_class_list
         self.length_dict = self.data.length_dict
+
+        self.draw_limit = draw_limit
 
         self.chain_path = os.path.join(self.path, f"chain_xyz/")
 
@@ -320,33 +322,24 @@ class ContactMapCalculator:
             max_value_num = float(max_value_sci.split('e')[0])
             exponent = int(max_value_sci.split('e')[1])
 
-            # vmax = 10 * 10 ** exponent  # 最大值设为10的整数倍
-
-            # if max_value_num < 3:
-            #     vmax = 3 * 10 ** exponent
-            # elif 3 <= max_value_num < 5:
-            #     vmax = 5 * 10 ** exponent
-            # elif 5 <= max_value_num < 8:
-            #     vmax = 8 * 10 ** exponent
-            # else:
-            #     vmax = 10 * 10 ** exponent
-
-            if max_value_num <= 2:
-                vmax = 2 * 10 ** exponent
-            elif max_value_num <= 3:
-                vmax = 3 * 10 ** exponent
-            elif max_value_num <= 5:
-                vmax = 5 * 10 ** exponent
-            elif max_value_num <= 9:
-                vmax = 9 * 10 ** exponent
-            else:
-                vmax = 10 * 10 ** exponent
-
             # flights = data_mat.pivot("residues", "residues", "contact number")
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
             # print(data_mat)
             # im = ax.imshow(data_mat, cmap=plt.get_cmap('Reds'), aspect='auto',)
-            im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto', vmin=0., vmax=vmax)
+            if self.draw_limit:
+                if max_value_num <= 2:
+                    vmax = 2 * 10 ** exponent
+                elif max_value_num <= 3:
+                    vmax = 3 * 10 ** exponent
+                elif max_value_num <= 5:
+                    vmax = 5 * 10 ** exponent
+                elif max_value_num <= 9:
+                    vmax = 9 * 10 ** exponent
+                else:
+                    vmax = 10 * 10 ** exponent
+                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto', vmin=0., vmax=vmax)
+            else:
+                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto',)
             ax.invert_yaxis()
 
             ax.set_title(f"{cm_class[0]}-{cm_class[1]} contact map")

@@ -171,11 +171,20 @@ def main():
 
     if file_args.cm:
         print("开始计算 contact map 文件...")
-        ContactMapCalculator(path,
-                             data=data,
-                             cm_choice=file_args.cm_choice,
-                             r_cut=file_args.r_cut,
-                             ).calculate_contact_map_parallel()
+        if file_args.cm is True:
+            ContactMapCalculator(path,
+                                data=data,
+                                cm_choice=file_args.cm_choice,
+                                r_cut=file_args.r_cut,
+                                ).calculate_contact_map_parallel()
+        else:
+            cm = file_args.cm.split(",")
+            draw_limit = str2value(cm[1])
+            ContactMapCalculator(path,
+                                 data=data,
+                                 cm_choice=file_args.cm_choice,
+                                 r_cut=file_args.r_cut,
+                                 draw_limit=draw_limit,).calculate_contact_map_parallel()
         exit()
 
 
