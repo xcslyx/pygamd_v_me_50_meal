@@ -331,8 +331,14 @@ class ContactMapCalculator:
             # else:
             #     vmax = 10 * 10 ** exponent
 
-            if max_value_num < 5:
+            if max_value_num <= 2:
+                vmax = 2 * 10 ** exponent
+            elif max_value_num <= 3:
+                vmax = 3 * 10 ** exponent
+            elif max_value_num <= 5:
                 vmax = 5 * 10 ** exponent
+            elif max_value_num <= 9:
+                vmax = 9 * 10 ** exponent
             else:
                 vmax = 10 * 10 ** exponent
 
