@@ -1,6 +1,6 @@
 [ moleculetype ]
 ; Name            nrexcl
-Cb       3
+Cb       2
 
 [ atoms ]
 ;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
@@ -36,7 +36,7 @@ Cb       3
 [ bonds ]
 ;   ai    aj funct  c0       c1
 ; bonds between atoms in the same residue
-          1      2  1
+     1      2  1
      2      5  1
      5      7  1
      5     25  1

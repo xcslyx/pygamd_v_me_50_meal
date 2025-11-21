@@ -99,9 +99,6 @@ class XMLConverter:
                         else:
                             residue_name = self.residue_name_mapping.get(types[i], types[i])
 
-                        if self.chain_info[chain_index] == "DNA" and i >= chain_end_index - 2:
-                            residue_name += 't'
-
                         occupancy = 1.00
                         b_factor = 1.00
                         if types[i] in ["Ph", "Su", "Ab", "Cb", "Gb", "Tb"]:
@@ -115,6 +112,12 @@ class XMLConverter:
                         # residue_serial 重置逻辑，限制最大值为 9999，超过则重置为 0
                         # residue_serial = residue_serial // 3
                         residue_serial = residue_serial % 10000  # 如果 atom_serial 达到 10000，则从 0 开始
+
+                        if self.chain_info[chain_index] == "DNA" and i == chain_end_index - 2:
+                            pdb_file.write(
+                                f"ATOM  {atom_serial + 1:5d} {'Ph':<4} {residue_name:<3} {chain_name}{residue_serial // 3 + 1:4d}    "
+                                f"{x * 10:8.3f}{y * 10:8.3f}{z * 10:8.3f}{occupancy:6.2f}{b_factor:6.2f}          {element:>2}\n"
+                            )
 
                         pdb_file.write(
                             f"ATOM  {atom_serial+1:5d} {atom_name:<4} {residue_name:<3} {chain_name}{residue_serial//3+1:4d}    "
