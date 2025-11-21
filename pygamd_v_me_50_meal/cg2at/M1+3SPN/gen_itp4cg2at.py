@@ -1,7 +1,4 @@
-rtp = """P       P2  1.5000   1
-      O1P      ON3 -0.7800   2
-      O2P      ON3 -0.7800   2
-      O5'      ON2 -0.5700   2
+rtp = """O5'      ON2 -0.5700   2
       C5'     CN8B -0.0800   2
       H5'      HN8  0.0900   2
      H5''      HN8  0.0900   2
@@ -10,20 +7,18 @@ rtp = """P       P2  1.5000   1
       O4'      ON6 -0.5000   3
       C1'     CN7B  0.1600   3
       H1'      HN7  0.0900   3
-       N1     NN2B -0.3400   4
-       C6      CN3  0.1700   4
+       N1      NN2 -0.1300   4
+       C6      CN3  0.0500   4
        H6      HN3  0.1700   4
-       C2     CN1T  0.5100   4
-       O2      ON1 -0.4100   4
-       N3     NN2U -0.4600   4
-       H3      HN2  0.3600   4
-       C4      CN1  0.5000   4
-       O4      ON1 -0.4500   4
-       C5     CN3T -0.1500   4
-      C5M      CN9 -0.1100   4
-      H51      HN9  0.0700   4
-      H52      HN9  0.0700   4
-      H53      HN9  0.0700   4
+       C5      CN3 -0.1300   4
+       H5      HN3  0.0700   4
+       C2      CN1  0.5200   4
+       O2     ON1C -0.4900   4
+       N3      NN3 -0.6600   4
+       C4      CN2  0.6500   4
+       N4      NN1 -0.7500   4
+      H41      HN1  0.3700   4
+      H42      HN1  0.3300   4
       C2'      CN8 -0.1800   5
      H2''      HN8  0.0900   5
       H2'      HN8  0.0900   5
@@ -31,10 +26,7 @@ rtp = """P       P2  1.5000   1
       H3'      HN7  0.0900   6
       O3'      ON2 -0.5700   6"""
 
-bond = """P   O1P
-        P   O2P
-        P   O5'
-      O5'   C5'
+bond = """O5'   C5'
       C5'   C4'
       C4'   O4'
       C4'   C3'
@@ -44,25 +36,24 @@ bond = """P   O1P
        N1    C2
        N1    C6
        C2    N3
-       N3    H3
-       N3    C4
+       C4    N4
+       N4   H41
+       N4   H42
        C4    C5
-       C5   C5M
       C2'   C3'
       C3'   O3'
+      O3'    +P
       C1'   H1'
       C2'  H2''
       C3'   H3'
       C4'   H4'
       C5'   H5'
       C5'  H5''
+       C5    H5
        C6    H6
-      C5M   H51
-      C5M   H52
-      C5M   H53
        C2    O2
-       C4    O4
        C5    C6
+       N3    C4
       C2'   H2'"""
 mass_dict_atom = {"C": 12.011, "N": 14.007, "O": 15.999, "P": 30.974, 'H': 1.008, 'S': 32}
 q_tot = 0
@@ -73,7 +64,7 @@ for line_idx in range(len(lines)):
     atoms.append(atom_name)
     q_tot += float(charge)
     # 1        CN7      1    ATP    C4'      1       0.16     13.019   ; qtot 0.16
-    print(f"{line_idx+1:>6d} {ff_name:>10s}       1    DT  {atom_name:>5s}      1     {float(charge):>6.2f}   {mass_dict_atom[atom_name[0]]:>8.3f}   ; qtot {q_tot:6.2f}")
+    print(f"{line_idx+1:>6d} {ff_name:>10s}       1    DC  {atom_name:>5s}      1     {float(charge):>6.2f}   {mass_dict_atom[atom_name[0]]:>8.3f}   ; qtot {q_tot:6.2f}")
 
 bonds = []
 for line in bond.split('\n'):

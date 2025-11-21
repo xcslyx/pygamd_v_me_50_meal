@@ -98,6 +98,10 @@ class XMLConverter:
                                 residue_name = self.residue_name_mapping.get(types[i], types[i - 1])
                         else:
                             residue_name = self.residue_name_mapping.get(types[i], types[i])
+
+                        if self.chain_info[chain_index] == "DNA" and i >= chain_end_index - 2:
+                            residue_name += 't'
+
                         occupancy = 1.00
                         b_factor = 1.00
                         if types[i] in ["Ph", "Su", "Ab", "Cb", "Gb", "Tb"]:
