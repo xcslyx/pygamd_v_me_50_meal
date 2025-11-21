@@ -5,11 +5,73 @@ Ab       3
 [ atoms ]
 ;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
 ; residue   1 Ab rtp Ab  q -1.0
-;     1        CN7      1    ATP    C4'      1       0.16     13.019   ; qtot 0.16
-;     2        HN7      1    ATP    H4'      2       0.09          0   ; qtot 0.25
-;     3       ON6B      1    ATP    O4'      3       -0.5    15.9994   ; qtot -0.25
-;     4       CN7B      1    ATP    C1'      4       0.16     13.019   ; qtot -0.09
+     1         P2       1    DA      P      1       1.50     30.974   ; qtot   1.50
+     2        ON3       1    DA    O1P      1      -0.78     15.999   ; qtot   0.72
+     3        ON3       1    DA    O2P      1      -0.78     15.999   ; qtot  -0.06
+     4        ON2       1    DA    O5'      1      -0.57     15.999   ; qtot  -0.63
+     5       CN8B       1    DA    C5'      1      -0.08     12.011   ; qtot  -0.71
+     6        HN8       1    DA    H5'      1       0.09      1.008   ; qtot  -0.62
+     7        HN8       1    DA   H5''      1       0.09      1.008   ; qtot  -0.53
+     8        CN7       1    DA    C4'      1       0.16     12.011   ; qtot  -0.37
+     9        HN7       1    DA    H4'      1       0.09      1.008   ; qtot  -0.28
+    10        ON6       1    DA    O4'      1      -0.50     15.999   ; qtot  -0.78
+    11       CN7B       1    DA    C1'      1       0.16     12.011   ; qtot  -0.62
+    12        HN7       1    DA    H1'      1       0.09      1.008   ; qtot  -0.53
+    13        NN2       1    DA     N9      1      -0.05     14.007   ; qtot  -0.58
+    14        CN5       1    DA     C5      1       0.28     12.011   ; qtot  -0.30
+    15        NN4       1    DA     N7      1      -0.71     14.007   ; qtot  -1.01
+    16        CN4       1    DA     C8      1       0.34     12.011   ; qtot  -0.67
+    17        HN3       1    DA     H8      1       0.12      1.008   ; qtot  -0.55
+    18       NN3A       1    DA     N1      1      -0.74     14.007   ; qtot  -1.29
+    19        CN4       1    DA     C2      1       0.50     12.011   ; qtot  -0.79
+    20        HN3       1    DA     H2      1       0.13      1.008   ; qtot  -0.66
+    21       NN3A       1    DA     N3      1      -0.75     14.007   ; qtot  -1.41
+    22        CN5       1    DA     C4      1       0.43     12.011   ; qtot  -0.98
+    23        CN2       1    DA     C6      1       0.46     12.011   ; qtot  -0.52
+    24        NN1       1    DA     N6      1      -0.77     14.007   ; qtot  -1.29
+    25        HN1       1    DA    H61      1       0.38      1.008   ; qtot  -0.91
+    26        HN1       1    DA    H62      1       0.38      1.008   ; qtot  -0.53
+    27        CN8       1    DA    C2'      1      -0.18     12.011   ; qtot  -0.71
+    28        HN8       1    DA   H2''      1       0.09      1.008   ; qtot  -0.62
+    29        HN8       1    DA    H2'      1       0.09      1.008   ; qtot  -0.53
+    30        CN7       1    DA    C3'      1       0.01     12.011   ; qtot  -0.52
+    31        HN7       1    DA    H3'      1       0.09      1.008   ; qtot  -0.43
+    32        ON2       1    DA    O3'      1      -0.57     15.999   ; qtot  -1.00
 
 [ bonds ]
 ;   ai    aj funct  c0       c1
 ; bonds between atoms in the same residue
+     1      2  1
+     1      3  1
+     1      4  1
+     4      5  1
+     5      8  1
+     8     10  1
+     8     30  1
+    10     11  1
+    11     13  1
+    11     27  1
+    13     22  1
+    13     16  1
+    22     21  1
+    19     18  1
+    23     24  1
+    24     25  1
+    24     26  1
+    23     14  1
+    14     15  1
+    27     30  1
+    30     32  1
+    11     12  1
+    27     28  1
+    30     31  1
+     8      9  1
+     5      6  1
+     5      7  1
+    16     17  1
+    19     20  1
+    18     23  1
+    19     21  1
+    22     14  1
+    15     16  1
+    27     29  1
