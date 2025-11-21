@@ -104,6 +104,7 @@ class XMLConverter:
                         atom_serial = atom_serial % 100000  # 如果 atom_serial 达到 100000，则从 0 开始
 
                         # residue_serial 重置逻辑，限制最大值为 9999，超过则重置为 0
+                        residue_serial = residue_serial // 3
                         residue_serial = residue_serial % 10000  # 如果 atom_serial 达到 10000，则从 0 开始
 
                         pdb_file.write(
