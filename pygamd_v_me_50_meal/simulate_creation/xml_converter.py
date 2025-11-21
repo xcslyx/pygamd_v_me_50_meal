@@ -13,14 +13,22 @@ class XMLConverter:
 
         # 残基名称映射表
         self.residue_name_mapping = {
-                                    'A': 'ALA', 'F': 'PHE', 'C': 'CYS', 'U': 'SEC', 'D': 'ASP',
-                                    'N': 'ASN', 'E': 'GLU', 'Q': 'GLN', 'G': 'GLY', 'H': 'HIS',
-                                    'L': 'LEU', 'I': 'ILE', 'K': 'LYS', 'O': 'PYL', 'M': 'MET',
-                                    'P': 'PRO', 'R': 'ARG', 'S': 'SER', 'T': 'THR', 'V': 'VAL',
-                                    'W': 'TRP', 'Y': 'TYR'
-                                    }
+            # 蛋白质
+            'A': 'ALA', 'F': 'PHE', 'C': 'CYS', 'U': 'SEC', 'D': 'ASP',
+            'N': 'ASN', 'E': 'GLU', 'Q': 'GLN', 'G': 'GLY', 'H': 'HIS',
+            'L': 'LEU', 'I': 'ILE', 'K': 'LYS', 'O': 'PYL', 'M': 'MET',
+            'P': 'PRO', 'R': 'ARG', 'S': 'SER', 'T': 'THR', 'V': 'VAL',
+            'W': 'TRP', 'Y': 'TYR',
+            # DNA
+            "Ab": "Ab", "Cb": "Cb", "Gb": "Gb", "Tb": "Tb",
+        }
 
         self.sequence = GetSequence(path, xml_file, data)
+
+        self.chain_info = []
+        for _type in self.data.mol_class_dict.keys():
+            self.chain_info.extend([_type] * self.data.mol_class_dict[_type][0])
+        # print("chain_info: ", self.chain_info)
 
 
     @staticmethod
@@ -58,37 +66,62 @@ class XMLConverter:
         """
         将信息写入PDB文件。
         """
-        with open(output_file, 'w', encoding='utf-8') as pdb_file:
-            atom_serial = 0
-            residue_serial = 0
+        if len(chain_count) == 1:
+            with open(output_file, 'w', encoding='utf-8') as pdb_file:
+                atom_serial = 0
+                residue_serial = 0
 
-            # 生成每个链
-            chain_names = [chr(65 + i % 26) for i in range(chain_count)]  # A, B, ..., Z, A, B, ...
-            for chain_index, chain_name in enumerate(chain_names):
-                chain_start_index = start_index + chain_index * chain_length
-                chain_end_index = chain_start_index + chain_length
+                # 生成每个链
+                chain_names = [chr(65 + i % 26) for i in range(chain_count[0])]  # A, B, ..., Z, A, B, ...
+                for chain_index, chain_name in enumerate(chain_names):
+                    chain_length = self.data.mol_class_dict[self.chain_info[chain_index]][1]
+                    chain_start_index = chain_index * chain_length
+                    chain_end_index = chain_start_index + chain_length
 
-                for i in range(chain_start_index, chain_end_index):
-                    x, y, z = positions[i]
-                    atom_name = "CA"
-                    residue_name = self.residue_name_mapping.get(types[i][0], "UNK")
-                    occupancy = 1.00
-                    b_factor = 1.00
-                    element = "C"
+                    for i in range(chain_start_index, chain_end_index):
+                        x, y, z = positions[i]
+                        if types[i] in ["Ph", "Su", "Ab", "Cb", "Gb", "Tb"]:
+                            atom_name = types[i]
+                        else:
+                            atom_name = "CA"
+                        if types[i] == "Ph":
+                            residue_name = self.residue_name_mapping.get(types[i], types[i + 2])
+                        elif types[i] == "Su":
+                            try:
+                                residue_name = self.residue_name_mapping.get(types[i], types[i + 1])
+                            except IndexError:
+                                residue_name = self.residue_name_mapping.get(types[i], types[i - 1])
+                        else:
+                            residue_name = self.residue_name_mapping.get(types[i], types[i])
+                        occupancy = 1.00
+                        b_factor = 1.00
+                        if types[i] in ["Ph", "Su", "Ab", "Cb", "Gb", "Tb"]:
+                            element = types[i]
+                        else:
+                            element = "C"
 
-                    # atom_serial 重置逻辑，限制最大值为 99999，超过则重置为 0
-                    atom_serial = atom_serial % 100000  # 如果 atom_serial 达到 100000，则从 0 开始
+                        # atom_serial 重置逻辑，限制最大值为 99999，超过则重置为 0
+                        atom_serial = atom_serial % 100000  # 如果 atom_serial 达到 100000，则从 0 开始
 
-                    # residue_serial 重置逻辑，限制最大值为 9999，超过则重置为 0
-                    residue_serial = residue_serial % 10000  # 如果 atom_serial 达到 10000，则从 0 开始
+                        # residue_serial 重置逻辑，限制最大值为 9999，超过则重置为 0
+                        residue_serial = residue_serial % 10000  # 如果 atom_serial 达到 10000，则从 0 开始
 
-                    pdb_file.write(
-                        f"ATOM  {atom_serial:5d} {atom_name:^4} {residue_name:<3} {chain_name}{residue_serial:4d}    "
-                        f"{x * 10:8.3f}{y * 10:8.3f}{z * 10:8.3f}{occupancy:6.2f}{b_factor:6.2f}          {element:>2}\n"
-                    )
-                    atom_serial += 1
-                    residue_serial += 1
+                        pdb_file.write(
+                            f"ATOM  {atom_serial+1:5d} {atom_name:<4} {residue_name:<3} {chain_name}{residue_serial+1:4d}    "
+                            f"{x * 10:8.3f}{y * 10:8.3f}{z * 10:8.3f}{occupancy:6.2f}{b_factor:6.2f}          {element:>2}\n"
+                        )
+                        atom_serial += 1
+                        residue_serial += 1
 
-                residue_serial = 0  # 每条链的残基计数重置
-            pdb_file.write("TER\n")  # 链结束
-            pdb_file.write("END\n")  # 文件结束
+                    residue_serial = 0  # 每条链的残基计数重置
+                pdb_file.write("TER\n")  # 链结束
+                pdb_file.write("END\n")  # 文件结束
+
+
+if __name__ == "__main__":
+    from pygamd_v_me_50_meal.data import Data
+
+    path = "../../test/2DNA-134"
+    data = Data(path)
+
+    XMLConverter(data, path, "45bpDNA.xml").xml2pdb()

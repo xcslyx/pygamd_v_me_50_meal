@@ -1,0 +1,15 @@
+[ moleculetype ]
+; Name            nrexcl
+Ab       3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+; residue   1 Ab rtp Ab  q -1.0
+;     1        CN7      1    ATP    C4'      1       0.16     13.019   ; qtot 0.16
+;     2        HN7      1    ATP    H4'      2       0.09          0   ; qtot 0.25
+;     3       ON6B      1    ATP    O4'      3       -0.5    15.9994   ; qtot -0.25
+;     4       CN7B      1    ATP    C1'      4       0.16     13.019   ; qtot -0.09
+
+[ bonds ]
+;   ai    aj funct  c0       c1
+; bonds between atoms in the same residue
