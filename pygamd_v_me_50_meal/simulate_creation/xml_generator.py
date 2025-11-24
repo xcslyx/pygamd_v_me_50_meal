@@ -10,7 +10,7 @@ import numpy as np
 
 # 定义类 XMLGenerator
 class XMLGenerator:
-    def __init__(self, path: str, filename, box_size: str | float, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
+    def __init__(self, path: str, filename, box_size: str | float=100, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
         if filename.endswith(".pdb"):
             if path is None:
                 if os.path.exists(filename):
@@ -1072,3 +1072,7 @@ class XMLGenerator:
                 f.write("app.run(int(15000000))\n")
             else:
                 f.write("app.run(int(1e9))\n"); print("模拟时间设置为 1e9")
+
+
+    def get_output_file_name(self):
+        return self.output_file
