@@ -166,7 +166,7 @@ class RMSDCalculator:
             ax.hist(init_rmsd_list, bins=bins, density=True, alpha=0.5, color="#99FFFF", edgecolor='black',
                     label=rf"{mol} RMSD (Histogram)")
             ax.set_xlabel(r'RMSD (nm)')
-            ax.set_ylabel('probability')
+            ax.set_ylabel('Probability density')
             ax.set_title(f'Probability Density Function of {mol} RMSD\nref: {os.path.basename(self.ref)}')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_RMSD_{mol}_ref_{os.path.basename(self.ref)}.png"))

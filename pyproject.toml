@@ -13,7 +13,8 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["numpy", "pandas", "matplotlib",
                 "torch", "tqdm", "scipy",
-                "scikit-learn", "MDAnalysis"]
+                "scikit-learn", "MDAnalysis",
+                "pygamd"]
 
 [project.urls]
 Homepage = "https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git"

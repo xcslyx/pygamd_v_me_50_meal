@@ -143,7 +143,7 @@ class RgCalculator:
             ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, color="#99FFFF", edgecolor='black',
                     label=rf"{mol} $R_{{\mathrm{{g}}}}$ (Histogram)")
             ax.set_xlabel(r'$R_{\mathrm{g}}$ (nm)')
-            ax.set_ylabel('Probability')
+            ax.set_ylabel('Probability density')
             ax.set_title(rf'Probability Density Function of {mol} $R_{{\mathrm{{g}}}}$')
             ax.legend()
             fig.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))

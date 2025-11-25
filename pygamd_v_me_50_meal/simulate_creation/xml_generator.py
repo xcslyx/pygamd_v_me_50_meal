@@ -210,8 +210,8 @@ class XMLGenerator:
                         domain_request = input("是否要对结构域单独设置粒子类型？(y(es)/n(o))：")
                         if domain_request.lower() in ["y", "yes"]:
                             self.add_domain_flag = True
-                        else:
-                            self.add_rigid_body = False
+                        # else:
+                        #     self.add_rigid_body = False
 
                     if self.add_domain_flag:
                         for domain_idx in range(len(self.rigid_domain_list)):
@@ -421,7 +421,7 @@ class XMLGenerator:
         positions_elem = root.find('position')
         positions = positions_elem.text.strip('\n').split('\n')
 
-        sequence_position: list[str, list[str]] = []
+        sequence_position: list = []
         for i in sequence:
             sequence_position.append([i])
         for line in positions:
