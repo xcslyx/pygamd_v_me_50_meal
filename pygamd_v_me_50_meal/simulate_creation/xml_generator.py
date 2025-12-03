@@ -343,7 +343,7 @@ class XMLGenerator:
                     else:
                         cur_tag = root_configuration.find(tag.tag)
                         if cur_tag.text:
-                            cur_tag.text += tag.text
+                            cur_tag.text += tag.text.strip('\n') + '\n'
                         if cur_tag.get("num") and tag.get("num"):
                             cur_tag.set("num", str(int(cur_tag.get("num")) + int(tag.get("num"))))
 

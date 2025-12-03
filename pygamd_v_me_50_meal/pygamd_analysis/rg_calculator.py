@@ -86,7 +86,7 @@ class RgCalculator:
             chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         self.cur_chain_class = None
-        print(f"您当前的分子类型有：\n{self.data.molecules}\n")
+        print(f"您当前的分子类型有：\n{self.data.molecules}")
         self.cal_class_rg = list(map(lambda x: int(x) - 1, input(f"请输入想要计算 Rg 的分子序号, 以 ',' 分隔：").split(',')))
         self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
         print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
