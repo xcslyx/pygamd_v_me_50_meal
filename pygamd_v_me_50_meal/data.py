@@ -35,7 +35,7 @@ class Data:
                     self.mol_class_dict[type_] = [int(num)]
                     if not length:
                         if type_ not in self.length_dict:
-                            self.length_dict[type_] = int(input(f"未知的分子类型: {type_}，请手动输入长度："))
+                            self.length_dict[type_] = int(input(f"Unkonwn molecule type: {type_}, please input its length："))
                     else:
                         self.length_dict[type_] = int(length)
                     self.mol_class_dict[type_].append(self.length_dict[type_])
