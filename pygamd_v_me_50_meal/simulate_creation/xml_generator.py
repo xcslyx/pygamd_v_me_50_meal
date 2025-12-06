@@ -622,6 +622,12 @@ class XMLGenerator:
                 f.write("0\n")
             f.write("</molecule>\n")
 
+            # set body
+            f.write('<body num="{}">\n'.format(n_atoms))
+            for i in range(n_atoms):
+                f.write("-1\n")
+            f.write("</body>\n")
+
             # set bond
             f.write('<bond num="{}">\n'.format(n_atoms - 1))
             for i in range(0, n_atoms, 3):
