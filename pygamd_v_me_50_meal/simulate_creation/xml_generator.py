@@ -568,10 +568,14 @@ class XMLGenerator:
                 x += float(i[1]) * self.mass_dict_atom[i[0][0]]
                 y += float(i[2]) * self.mass_dict_atom[i[0][0]]
                 z += float(i[3]) * self.mass_dict_atom[i[0][0]]
-            x /= m
-            y /= m
-            z /= m
-            new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
+            try:
+                x /= m
+                y /= m
+                z /= m
+                new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
+            except ZeroDivisionError:
+                # new_sequence.remove(new_seq)
+                continue
 
         with open(os.path.join(self.xml_dir, file.replace(".log", ".xml")), 'w') as f:
             n_atoms = len(new_sequence_position)
