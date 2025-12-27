@@ -29,7 +29,7 @@ def create_folder(folder_name, folder_path, overwrite=False):
 
 
 def check_xml_start_tag(xml_file):
-    if xml_file.startswith("particles") or xml_file.startswith("monomer"):
+    if xml_file.startswith("particles") or xml_file.startswith("monomer") or xml_file.startswith("simulation"):
         return True
     return None
 

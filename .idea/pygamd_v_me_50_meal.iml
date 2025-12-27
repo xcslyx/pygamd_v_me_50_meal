@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test/1hcGAS" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/2DNA-134" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/simulate_creation" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/pygamd_v_me_50_meal.egg-info" />
     </content>
     <orderEntry type="jdk" jdkName="shisk" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
