@@ -18,14 +18,14 @@ def str2value(value):
 def create_folder(folder_name, folder_path, overwrite=False):
     if folder_name not in os.listdir(folder_path):
         os.mkdir(os.path.join(folder_path, folder_name))
-        print(f"✅ 创建 {folder_name} 文件夹...")
+        print(f"✅ Create folder: {folder_name}...")
     elif overwrite:
-        print(f"⚠️ {folder_name} 文件夹已存在，正在删除...")
+        print(f"⚠️ {folder_name} exists, deleting...")
         shutil.rmtree(os.path.join(folder_path, folder_name))
         os.mkdir(os.path.join(folder_path, folder_name))
-        print(f"✅ 创建 {folder_name} 文件夹...")
+        print(f"✅ Create folder: {folder_name}...")
     else:
-        print(f"❌ {folder_name} 文件夹已存在")
+        print(f"❌ {folder_name} exists")
 
 
 def check_xml_start_tag(xml_file):

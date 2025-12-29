@@ -268,6 +268,7 @@ class CoordinatesProcessor:
 
         print("All files have been processed.")
 
+
     def remove_pbc_condensate(self, xml_file):
         """
         去除凝聚体的 PBC 条件，使得凝聚体的坐标不再受到 PBC 条件的限制。

@@ -16,7 +16,6 @@ from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
 from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
 from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
-from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.rmsf_calculator import RMSFCalculator
@@ -177,6 +176,7 @@ def main():
         CoordinatesProcessor(path, data, file_args.remove_ions_zhy, remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
+        from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
         print("开始计算 contact map 文件...")
         if file_args.cm is True:
             ContactMapCalculator(path,
