@@ -7,6 +7,8 @@ import argparse
 
 import matplotlib.pyplot as plt
 
+from pygamd_v_me_50_meal.version_check import check_update
+
 from pygamd_v_me_50_meal.data import Data
 from pygamd_v_me_50_meal.utils import str2value
 
@@ -215,6 +217,8 @@ def main():
 
 
 if __name__ == '__main__':
+    print(">>> Checking for updates...")
+    check_update()
     print(">>> Running pygamd_v_me_50_meal package...")
     main()
 
