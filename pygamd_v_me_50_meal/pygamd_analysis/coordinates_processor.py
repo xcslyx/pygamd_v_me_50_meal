@@ -327,7 +327,7 @@ class CoordinatesProcessor:
                 new_chains.append(cur_chain)
                 new_positions_copy = new_positions_copy[length:]
 
-        print(len(new_chains))
+        # print(len(new_chains))
         new_in_box_positions = np.vstack(new_chains)
 
 
