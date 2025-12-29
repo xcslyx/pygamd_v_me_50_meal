@@ -128,7 +128,7 @@ class CoordinatesProcessor:
 
             positions[type_] = mol_positions
             unwrapped_positions[type_] = unwrapped_mol_positions
-            print(positions)
+            # print(positions)
         with open(os.path.join(self.path, "chain_xyz/",
                                xml_file), 'w') as f_chain_xyz:
             f_chain_xyz.writelines(str(positions))
@@ -309,7 +309,21 @@ class CoordinatesProcessor:
 
         # 更新后的蛋白质位置
         new_positions = np.vstack(re_ordered_positions)
-        print(len(new_positions))
+
+
+        new_positions_copy = new_positions.copy()
+        new_chains = []
+        for type_ in self.data.mol_class_dict:
+            if type_ in ["Na", "K+", "Cl", "Br", "I-"]:
+                continue
+            count = self.data.mol_class_dict[type_][0]
+            length = self.data.mol_class_dict[type_][1]
+            for _ in range(count):
+                new_chains.append(new_positions_copy[:length])
+                new_positions_copy = new_positions_copy[length:]
+
+        print(len(new_chains))
+
 
         new_xml_file = xml_file.replace(".xml", ".new.xml")
         if self.remove_ions_zhy:
