@@ -291,7 +291,7 @@ class Functions:
         return new_re_positions
 
     @staticmethod
-    def move_chain_into_box(chain_positions, box_size: list[float], max_group_core):
+    def move_chain_into_box(chain_positions, box_size: list[float], max_group_core=np.array([0, 0, 0])):
         # 若链的质心不在盒子内，则使其位于盒子内
         # print(f"chain_positions: {chain_positions}")
         # exit()
