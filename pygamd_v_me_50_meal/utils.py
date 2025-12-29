@@ -29,11 +29,19 @@ def create_folder(folder_name, folder_path, overwrite=False):
 
 
 def check_xml_start_tag(xml_file):
-    if (
-            xml_file.startswith("particles") or xml_file.startswith("monomer") or xml_file.startswith("simulation")
-    ) or (xml_file.endswith("0.xml") and os.path.isfile(xml_file)):
+    if xml_file.startswith("particles") or xml_file.startswith("monomer") or xml_file.startswith("simulation"):
         return True
     return None
+
+
+def chain_in_box(chain_positions, box_size) -> list[bool]:
+    box_length = list(map(lambda x: x / 2, box_size))
+    in_box = [True, True, True]
+    for pos in chain_positions:
+        for i in range(3):
+            if pos[i] < -box_length[i] or pos[i] > box_length[i]:
+                in_box[i] = False
+    return in_box
 
 
 def backup_folder(backup_path, init_folder_name, backup_folder_name):

@@ -62,9 +62,6 @@ class CoordinatesProcessor:
 
         self.unwrap_xml_flag: bool = True
 
-        print("Starting coordinate extraction...")
-        self.cal_xyz(remove_condensate_pbc=remove_condensate_pbc)
-
 
     def remove_enm_bonds_from_xml(self, xml_file):
         if utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml"):
@@ -92,6 +89,7 @@ class CoordinatesProcessor:
 
     def abstract_coordinates_normal(self, xml_file):
         if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml")):
+            print(f"{xml_file} is not a valid xml file.")
             return
 
         positions, unwrapped_positions = {}, {}
@@ -102,6 +100,7 @@ class CoordinatesProcessor:
         # 读取 position 数据
         position_elem = root.find('.//position')
         position_elem_text = position_elem.text
+        # print(position_elem_text)
         while "\n\n" in position_elem_text:
             position_elem_text = position_elem_text.replace("\n\n", "\n")
         position, unwrapped_position = [], []
@@ -110,9 +109,6 @@ class CoordinatesProcessor:
 
 
         for type_ in self.data.mol_class_dict:
-            # if type_ in ["Na", "K", "Cl", "Li", ] and self.remove_ions_zhy:
-            #     continue
-
             mol_positions, unwrapped_mol_positions = [], []
             count = self.data.mol_class_dict[type_][0]
             length = self.data.mol_class_dict[type_][1]
@@ -132,7 +128,7 @@ class CoordinatesProcessor:
 
             positions[type_] = mol_positions
             unwrapped_positions[type_] = unwrapped_mol_positions
-
+            print(positions)
         with open(os.path.join(self.path, "chain_xyz/",
                                xml_file), 'w') as f_chain_xyz:
             f_chain_xyz.writelines(str(positions))
@@ -221,8 +217,8 @@ class CoordinatesProcessor:
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
+        print("Starting coordinate extraction...")
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
-
         print("Staring to extract sequence information...")
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
@@ -313,6 +309,7 @@ class CoordinatesProcessor:
 
         # 更新后的蛋白质位置
         new_positions = np.vstack(re_ordered_positions)
+        print(len(new_positions))
 
         new_xml_file = xml_file.replace(".xml", ".new.xml")
         if self.remove_ions_zhy:
@@ -330,6 +327,10 @@ class CoordinatesProcessor:
             tree.write(os.path.join(self.remove_pbc_condensate_remove_ions_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
         else:
             tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
+
+
+    def move_chain_into_box_after_remove_pbc_condensate(self):
+        ...
 
 
     def remove_pbc_condensate_parallel(self, ):

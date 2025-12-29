@@ -7,18 +7,12 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-from pygamd_v_me_50_meal.version_check import check_update
-
 from pygamd_v_me_50_meal.data import Data
 from pygamd_v_me_50_meal.utils import str2value
 
 from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
 from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
 from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
-from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
-from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
-from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
-from pygamd_v_me_50_meal.pygamd_analysis.rmsf_calculator import RMSFCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
 
@@ -42,6 +36,7 @@ plt.rcParams["axes.formatter.use_mathtext"] = True
 def main():
 
     print(">>> Checking for updates...")
+    from pygamd_v_me_50_meal.version_check import check_update
     check_update()
     print(">>> Running pygamd_v_me_50_meal package...")
 
@@ -173,6 +168,7 @@ def main():
         exit()
 
     if file_args.xyz:
+        from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
         CoordinatesProcessor(path, data, file_args.remove_ions_zhy, remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
@@ -196,10 +192,13 @@ def main():
 
 
     if file_args.rg:
+        from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
         RgCalculator(path, data).calculate()
     if file_args.rmsd:
+        from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
         RMSDCalculator(path, data, ref).calculate()
     if file_args.rmsf:
+        from pygamd_v_me_50_meal.pygamd_analysis.rmsf_calculator import RMSFCalculator
         RMSFCalculator(path, data, ref).calculate()
 
     if file_args.mass_density:
@@ -216,8 +215,10 @@ def main():
         draw_class = file_args.draw.lower().split(",")
         for draw_type in draw_class:
             if draw_type == "rg":
+                from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
                 RgCalculator(path, data).draw_rg_distribution()
             if draw_type == "rmsd":
+                from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
                 RMSDCalculator(path, data, ref).draw_rmsd_distribution()
 
 
