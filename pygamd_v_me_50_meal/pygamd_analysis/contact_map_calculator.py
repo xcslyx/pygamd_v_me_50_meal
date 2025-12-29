@@ -78,16 +78,23 @@ class ContactMapCalculator:
             length = 0
             for domain in self.domains:
                 length += domain[1] - domain[0] + 1
-            cm_matrix = torch.zeros(length, length, device=self.device)
+            cm_matrix = torch.zeros(length, length,
+                                    device=self.device)
         else:
             cm_matrix = torch.zeros(
                 (self.mol_class_dict[self.cm_class[0]][1], self.mol_class_dict[self.cm_class[1]][1]),
                                     device=self.device)
 
         for ii in range(len(x_mat[self.cm_class[0]])):
-            range_j = range(len(x_mat[self.cm_class[1]])) if self.cm_class[0] != self.cm_class[1] else range(ii+1, len(x_mat[self.cm_class[1]]))
+            range_j = (
+                range(len(x_mat[self.cm_class[1]]))
+            ) if (
+                    (self.cm_class[0] != self.cm_class[1]) or (len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1)
+            ) else (
+                range(ii+1, len(x_mat[self.cm_class[1]]))
+            )
+
             for jj in range_j:
-                # if ii < jj or (len(x_mat[self.cm_class[0]]) == 1 and len(x_mat[self.cm_class[1]]) == 1):
                 if self.domain is not None:
                     x_a = torch.tensor(x_mat[self.cm_class[0]][ii][self.domain[0] - 1:self.domain[1]],
                                        device=self.device)
@@ -111,8 +118,9 @@ class ContactMapCalculator:
                 if self.cm_class[0] != self.cm_class[1]:
                     cm_matrix += c
                 else:
-                    cm_matrix += c.transpose(0, 1)
                     cm_matrix += c
+                    if not len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1:
+                        cm_matrix += c.transpose(0, 1)
 
                     # cm_matrix += c.transpose(0, 1) + c
 
@@ -306,10 +314,7 @@ class ContactMapCalculator:
 
 
             data_mat = pd.DataFrame(data_matrix, dtype=np.float64)
-            # data_mat.to_csv(os.path.join(self.path, f"draw_log/draw_cm_{cm_class[0]}_{cm_class[1]}_r_cut_{r_cut}_avg_by_{avg_class}.csv"), index=False, header=False)
-            # print(data_mat.shape)
-            # data_mat = data_mat / data_mat.sum().sum()  # 归一化
-            data_mat = gaussian_filter(data_mat, sigma=1.5)
+            # data_mat = gaussian_filter(data_mat, sigma=1.5)
 
             # 计算数据矩阵的最大值，并根据最大值设置颜色范围
             max_value = data_mat.max().max()
@@ -324,8 +329,7 @@ class ContactMapCalculator:
 
             # flights = data_mat.pivot("residues", "residues", "contact number")
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
-            # print(data_mat)
-            # im = ax.imshow(data_mat, cmap=plt.get_cmap('Reds'), aspect='auto',)
+
             if self.draw_limit:
                 if max_value_num <= 2:
                     vmax = 2 * 10 ** exponent
@@ -403,7 +407,7 @@ class ContactMapCalculator:
             locator = MaxNLocator(steps=[1, 2, 5])  # 默认的steps可能会导致不以0.5为间隔
             cbar.ax.yaxis.set_major_locator(locator)
             # 设置颜色条上的刻度为科学计数法
-            if exponent >= 2:
+            if abs(exponent) >= 2:
                 formatter = ScalarFormatter()
                 formatter.set_scientific(True)
                 formatter.set_powerlimits((-1, 1))  # 设置科学计数法的显示范围
