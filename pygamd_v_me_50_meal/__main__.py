@@ -41,6 +41,11 @@ plt.rcParams["axes.formatter.use_mathtext"] = True
 
 
 def main():
+
+    print(">>> Checking for updates...")
+    check_update()
+    print(">>> Running pygamd_v_me_50_meal package...")
+
     parser = argparse.ArgumentParser(
         # prog=f'{os.path.basename(__file__)} v0.0.20 增强版',
         # description='Do something you want to do in your system.',
@@ -217,9 +222,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print(">>> Checking for updates...")
-    check_update()
-    print(">>> Running pygamd_v_me_50_meal package...")
     main()
 
 
