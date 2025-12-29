@@ -29,7 +29,6 @@ class Data:
 
             matches = re.findall(r'(\d+)([a-zA-Z\d]+)(?:-(\d+))?', self.system_name)
             if matches:
-                print("The following molecular information was extracted:")
                 start = 0
                 for num, type_, length in matches:
                     self.mol_class_dict[type_] = [int(num)]
@@ -41,11 +40,13 @@ class Data:
                     self.mol_class_dict[type_].append(self.length_dict[type_])
                     self.mol_class_dict[type_].append([start, start + int(num) * self.length_dict[type_]])
                     start += int(num) * self.length_dict[type_]
-                    print(f"Molecule: {type_}, number: {num}, length: {self.mol_class_dict[type_][1]}")
-                    # print(f"Molecule: {type_}, number: {num}, length: {self.mol_class_dict[type_][1]}, 起止位置：{self.mol_class_dict[type_][2]}")
 
                     self.mol_class_list = list(self.mol_class_dict.keys())
                     self.molecules = "\n".join([f"{i+1}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
+
+                print("The following molecular information was extracted:")
+                for mol in self.mol_class_dict:
+                    print(f"Molecule: {mol}, number: {self.mol_class_dict[mol][0]}, length: {self.mol_class_dict[mol][1]}")
             else:
                 raise ValueError("Path name is not valid.")
 
