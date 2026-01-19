@@ -372,9 +372,9 @@ class EnergyMapCalculator:
                     vmax = 9 * 10 ** exponent
                 else:
                     vmax = 10 * 10 ** exponent
-                im = ax.imshow(data_mat, emap=plt.get_emap('jet'), aspect='auto', vmin=0., vmax=vmax)
+                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto', vmin=0., vmax=vmax)
             else:
-                im = ax.imshow(data_mat, emap=plt.get_emap('jet'), aspect='auto',)
+                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto',)
             ax.invert_yaxis()
 
             ax.set_title(f"{em_class[0]}-{em_class[1]} energy map")
