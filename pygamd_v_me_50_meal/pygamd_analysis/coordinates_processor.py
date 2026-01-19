@@ -18,7 +18,7 @@ from .get_sequence import GetSequence
 # 处理坐标文件
 class CoordinatesProcessor:
     def __init__(self, path: str, data, remove_ions_zhy: bool=False,
-                 remove_enm=None, remove_condensate_pbc=False):
+                 remove_enm=None):
         self.path = path
         self.data = data
 
@@ -53,10 +53,13 @@ class CoordinatesProcessor:
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
+        init_xml_file = ""
         for i in range(len(self.xml_files)):
             if utils.check_xml_start_tag(self.xml_files[i]) and self.xml_files[i].endswith("0.xml"):
                 init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
                 break
+        if not init_xml_file:
+            raise ValueError("Cannot find a valid initial xml file.")
         init_root = ET.parse(init_xml_file).getroot()
         self.box_size: list[float] = [float(init_root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
 
@@ -319,10 +322,13 @@ class CoordinatesProcessor:
             count = self.data.mol_class_dict[type_][0]
             length = self.data.mol_class_dict[type_][1]
             for _ in range(count):
-                new_chains.append(new_positions_copy[:length])
+                cur_chain = new_positions_copy[:length]
+                cur_chain = Functions.move_chain_into_box(cur_chain, self.box_size)
+                new_chains.append(cur_chain)
                 new_positions_copy = new_positions_copy[length:]
 
-        print(len(new_chains))
+        # print(len(new_chains))
+        new_in_box_positions = np.vstack(new_chains)
 
 
         new_xml_file = xml_file.replace(".xml", ".new.xml")
@@ -334,7 +340,7 @@ class CoordinatesProcessor:
 
         # 找到 position 标签
         position_element = root.find('.//position')
-        pos_text = "\n".join(["    ".join(map(str, p)) for p in new_positions])
+        pos_text = "\n".join(["    ".join(map(str, p)) for p in new_in_box_positions])
         position_element.text = f"\n{pos_text}\n"
         # 保存更新后的XML文件
         if self.remove_ions_zhy:
@@ -343,8 +349,6 @@ class CoordinatesProcessor:
             tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
 
 
-    def move_chain_into_box_after_remove_pbc_condensate(self):
-        ...
 
 
     def remove_pbc_condensate_parallel(self, ):

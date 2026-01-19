@@ -7,11 +7,8 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-from pygamd_v_me_50_meal.data import Data
 from pygamd_v_me_50_meal.utils import str2value
 
-from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
-from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
 from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
 from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
@@ -158,21 +155,24 @@ def main():
     ref = file_args.ref
 
     if file_args.pdb2xml:
+        from pygamd_v_me_50_meal.simulate_creation.xml_generator import XMLGenerator
         XMLGenerator(path, file_args.pdb2xml, file_args.box_size,
                      add_enm_bond=file_args.add_enm_bond, add_rigid_body=file_args.add_rigid_body,
                      add_domain=file_args.add_domain,
                      dna_model=file_args.dna_model)
         exit()
 
+    from pygamd_v_me_50_meal.data import Data
     data = Data(path)
 
     if file_args.get_seq:
+        from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
         GetSequence(path, file_args.get_seq, data=data)
         exit()
 
     if file_args.xyz:
         from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
-        CoordinatesProcessor(path, data, file_args.remove_ions_zhy,).cal_xyz(remove_condensate_pbc=file_args.remove_condensate_pbc)
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz(remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
         from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
