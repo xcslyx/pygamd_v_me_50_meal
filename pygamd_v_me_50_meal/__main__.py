@@ -196,12 +196,11 @@ def main():
     if file_args.em:
         from pygamd_v_me_50_meal.pygamd_analysis.energy_map_calculator import EnergyMapCalculator
         print("开始计算 energy matrix 文件...")
-        if file_args.cm is True:
-            EnergyMapCalculator(path,
-                                 data=data,
-                                 em_choice=file_args.cm_choice,
-                                 r_cut=file_args.r_cut,
-                                 ).calculate_energy_map_parallel()
+        EnergyMapCalculator(path,
+                             data=data,
+                             em_choice=file_args.cm_choice,
+                             r_cut=file_args.r_cut,
+                             ).calculate_energy_map_parallel()
 
 
     if file_args.rg:

@@ -54,6 +54,7 @@ class EnergyMapCalculator:
 
         self.avg_sigma_mat = None
         self.avg_lambda_mat = None
+        self.avg_charge_mat = None
 
         self.sequence = {}
         with open(f"{os.path.join(self.path, self.data.system_name)}_sequence.txt") as f:
@@ -119,7 +120,7 @@ class EnergyMapCalculator:
                 sig = self.avg_sigma_mat
                 lam = self.avg_lambda_mat
 
-                r_safe = np.maximum(d, 1e-6)
+                r_safe = torch.maximum(d, torch.tensor(1e-6, device=d.device))
                 U_LJ = 4 * epsilon * ((sig / r_safe) ** 12 - (sig / r_safe) ** 6)
 
                 r_cut = 2 ** (1 / 6) * sig
@@ -131,12 +132,20 @@ class EnergyMapCalculator:
                         + (lam * U_LJ) * mask_att
                 )
 
+                epsilon_r = 74.19
+                k = 138.935 / epsilon_r  # 1 / (4 * pi * epsilon_0)
+                debye_length = 0.794
+                prefactor = k * self.avg_charge_mat
+                screening = torch.exp(-r_safe / debye_length)
+
+                U_DH = prefactor * screening / r_safe
+
                 if self.em_class[0] != self.em_class[1]:
-                    U_matrix += U_AH
+                    U_matrix += U_AH + U_DH
                 else:
-                    U_matrix += U_AH
+                    U_matrix += U_AH + U_DH
                     if not len(x_mat[self.em_class[0]]) == len(x_mat[self.em_class[1]]) == 1:
-                        U_matrix += U_AH.T
+                        U_matrix += U_AH.T + U_DH.T
                         U_matrix /= 2
 
                     # em_matrix += c.transpose(0, 1) + c
@@ -213,7 +222,9 @@ class EnergyMapCalculator:
 
             self.avg_sigma_mat = torch.tensor(self.r_cut + Functions.cal_sigma_mat(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
                                                device=self.device)
-            self.avg_lambda_mat = torch.tensor(self.r_cut + Functions.cal_lambda_mat(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
+            self.avg_lambda_mat = torch.tensor(Functions.cal_lambda_mat(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
+                                               device=self.device)
+            self.charge_mat = torch.tensor(Functions.cal_charge_dict(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
                                                device=self.device)
             self.cur_em_path = os.path.join(self.em_path, f"{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}")
             if os.path.exists(self.cur_em_path):

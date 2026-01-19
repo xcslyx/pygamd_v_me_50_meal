@@ -115,6 +115,22 @@ class Functions:
 
 
     @staticmethod
+    def cal_charge_dict(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
+        charge_dict = {
+            # Amino acids
+            'K': 1, 'R': 1, 'D': -1, 'E': -1,
+            # DNA coarse-grained beads
+            "Ph": -1,
+        }
+
+        # 计算平均分子体积矩阵
+        seq_charge_list_a = np.array([charge_dict[i] if i in charge_dict else 0 for i in sequence_a])
+        seq_charge_list_b = np.array([charge_dict[i] if i in charge_dict else 0 for i in sequence_b])
+        charge_mean_matrix = (seq_charge_list_a[:, None] * seq_charge_list_b[None, :])
+        return charge_mean_matrix
+
+
+    @staticmethod
     def kabsch_align(p, q) -> tuple[np.ndarray, np.ndarray]:
         """
         Kabsch算法，用于对齐两个结构。
