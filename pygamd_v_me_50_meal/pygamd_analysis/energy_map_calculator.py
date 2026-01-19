@@ -54,7 +54,7 @@ class EnergyMapCalculator:
 
         self.avg_sigma_mat = None
         self.avg_lambda_mat = None
-        self.avg_charge_mat = None
+        self.charge_mat = None
 
         self.sequence = {}
         with open(f"{os.path.join(self.path, self.data.system_name)}_sequence.txt") as f:
@@ -135,7 +135,7 @@ class EnergyMapCalculator:
                 epsilon_r = 74.19
                 k = 138.935 / epsilon_r  # 1 / (4 * pi * epsilon_0)
                 debye_length = 0.794
-                prefactor = k * self.avg_charge_mat
+                prefactor = k * self.charge_mat
                 screening = torch.exp(-r_safe / debye_length)
 
                 U_DH = prefactor * screening / r_safe
