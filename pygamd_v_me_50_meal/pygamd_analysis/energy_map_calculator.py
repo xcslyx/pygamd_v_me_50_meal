@@ -120,15 +120,15 @@ class EnergyMapCalculator:
                 sig = self.avg_sigma_mat
                 lam = self.avg_lambda_mat
 
-                mask_nonzero = d != 0   # 生成 mask，距离非零为 True
+                mask_minimum = d >= 0.3   # 生成 mask，距离非零为 True
 
                 r_safe = torch.maximum(d, torch.tensor(1e-6, device=d.device))
                 U_LJ = 4 * epsilon * ((sig / r_safe) ** 12 - (sig / r_safe) ** 6)
-                U_LJ = U_LJ * mask_nonzero  # 对零距离的 pair 置 0
+                U_LJ = U_LJ * mask_minimum  # 对零距离的 pair 置 0
 
                 r_cut = 2 ** (1 / 6) * sig
-                mask_rep = (r_safe <= r_cut) & mask_nonzero  # 排斥区
-                mask_att = (r_safe > r_cut) & mask_nonzero  # 吸引区
+                mask_rep = (r_safe <= r_cut) & mask_minimum  # 排斥区
+                mask_att = (r_safe > r_cut) & mask_minimum  # 吸引区
 
                 U_AH = (
                         (U_LJ + epsilon * (1 - lam)) * mask_rep
@@ -141,7 +141,8 @@ class EnergyMapCalculator:
                 prefactor = k * self.charge_mat
                 screening = torch.exp(-r_safe / debye_length)
 
-                U_DH = U_DH * mask_nonzero  # 对零距离的 pair 置 0
+                U_DH = prefactor * screening / r_safe
+                U_DH = U_DH * mask_minimum  # 对零距离的 pair 置 0
 
                 if self.em_class[0] != self.em_class[1]:
                     U_matrix += U_AH + U_DH
