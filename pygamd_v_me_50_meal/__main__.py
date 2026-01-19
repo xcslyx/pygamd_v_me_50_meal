@@ -93,6 +93,9 @@ def main():
     parser.add_argument('-cm', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算接触图（contact map），计算后会自动绘图。")
 
+    parser.add_argument('-em', metavar="T(rue)/F(alse)",
+                        type=str2value, default="unset", help="是否计算 Energy Matrix，计算后会自动绘图。")
+
     parser.add_argument('-r_cut', metavar="r_cut of contact map",
                         type=float, default=4.0, help="计算接触图的截断半径，默认值为 4.0 Å。")
 
@@ -169,7 +172,7 @@ def main():
 
     if file_args.xyz:
         from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
-        CoordinatesProcessor(path, data, file_args.remove_ions_zhy, remove_condensate_pbc=file_args.remove_condensate_pbc)
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy,).cal_xyz(remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
         from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
@@ -189,6 +192,16 @@ def main():
                                  r_cut=file_args.r_cut,
                                  draw_limit=draw_limit,).calculate_contact_map_parallel()
         exit()
+
+    if file_args.em:
+        from pygamd_v_me_50_meal.pygamd_analysis.energy_map_calculator import EnergyMapCalculator
+        print("开始计算 energy matrix 文件...")
+        if file_args.cm is True:
+            EnergyMapCalculator(path,
+                                 data=data,
+                                 cm_choice=file_args.cm_choice,
+                                 r_cut=file_args.r_cut,
+                                 ).calculate_energy_map_parallel()
 
 
     if file_args.rg:

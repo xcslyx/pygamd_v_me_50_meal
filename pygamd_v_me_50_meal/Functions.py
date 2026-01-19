@@ -88,6 +88,31 @@ class Functions:
         mean_matrix = (seq_sigma_list_a[:, None] + seq_sigma_list_b[None, :]) / 2
         return mean_matrix
 
+    @staticmethod
+    def cal_lambda_mat(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
+        """
+        计算两个序列的平均分子体积矩阵。
+        :param sequence_a: 序列 A，可以是字符串或列表
+        :param sequence_b: 序列 B，可以是字符串或列表
+        :return: 平均分子体积矩阵，形状为 (len(sequence_a), len(sequence_b))
+        """
+        lambda_dict = {
+            # Amino acids
+            'A': 0.0011162643859539204, 'R': 0.7249915947715212, 'N': 0.43832729970272843, 'D': 0.029182123776349763, 'C': 0.610362354303913,
+            'Q': 0.3268188050525212, 'E': 0.006100281608649786, 'G': 0.7012713677972457, 'H': 0.46519480823469783, 'I': 0.6075268330845265,
+            'L': 0.5563020305733198, 'K': 0.058617173158697924, 'M': 0.7458993420826714, 'F': 0.9216959832175945, 'P': 0.37296418535993475,
+            'S': 0.46485701300656046, 'T': 0.5379777613307019, 'W': 0.9844235478393931, 'Y': 0.9950108229594323, 'V': 0.41850068525598694,
+
+            # DNA coarse-grained beads
+            "Ph": 0.459459, "Su": 0.756757, "Ab": 0.351351, "Gb": 0.540541, "Cb": 0.297297, "Tb": 0.594595,
+        }
+
+        # 计算平均分子体积矩阵
+        seq_lambda_list_a = np.array([lambda_dict[i] for i in sequence_a])
+        seq_lambda_list_b = np.array([lambda_dict[i] for i in sequence_b])
+        lambda_mean_matrix = (seq_lambda_list_a[:, None] + seq_lambda_list_b[None, :]) / 2
+        return lambda_mean_matrix
+
 
     @staticmethod
     def kabsch_align(p, q) -> tuple[np.ndarray, np.ndarray]:
