@@ -19,7 +19,7 @@ class EnergyMapCalculator:
     """
     用于计算和绘制 energy map 的类。
     """
-    def __init__(self, path, data, cm_choice, r_cut: float, draw_limit: bool=False):
+    def __init__(self, path, data, em_choice, r_cut: float, draw_limit: bool=False):
         """
         初始化 ContactMapCalculator 类
         :param path:
@@ -40,14 +40,14 @@ class EnergyMapCalculator:
 
         self.device = None
 
-        self.cm_class = []
-        self.cm_class_list = []
+        self.em_class = []
+        self.em_class_list = []
         self.balance_cut = ""
         self.domain_cut = []
-        if cm_choice != '/':
-            cm_choice = cm_choice.split('/')
-            self.cm_class_list = cm_choice[0].split(',')
-            self.balance_cut = cm_choice[1]
+        if em_choice != '/':
+            em_choice = em_choice.split('/')
+            self.em_class_list = em_choice[0].split(',')
+            self.balance_cut = em_choice[1]
 
         self.domain = None
         self.domains = None
@@ -66,8 +66,8 @@ class EnergyMapCalculator:
         self.draw_path = os.path.join(self.path, f"draw_log/")
         if not os.path.exists(self.draw_path):
             os.makedirs(self.draw_path, exist_ok=True)
-        self.cm_path = os.path.join(self.path, f"draw_log/cm/")
-        self.cur_cm_path = ""
+        self.em_path = os.path.join(self.path, f"draw_log/em/")
+        self.cur_em_path = ""
 
 
     def calculate_energy_map(self, name):
@@ -83,35 +83,35 @@ class EnergyMapCalculator:
                                     device=self.device)
         else:
             U_matrix = torch.zeros(
-                (self.mol_class_dict[self.cm_class[0]][1], self.mol_class_dict[self.cm_class[1]][1]),
+                (self.mol_class_dict[self.em_class[0]][1], self.mol_class_dict[self.em_class[1]][1]),
                                     device=self.device)
 
-        for ii in range(len(x_mat[self.cm_class[0]])):
+        for ii in range(len(x_mat[self.em_class[0]])):
             range_j = (
-                range(len(x_mat[self.cm_class[1]]))
+                range(len(x_mat[self.em_class[1]]))
             ) if (
-                    (self.cm_class[0] != self.cm_class[1]) or (len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1)
+                    (self.em_class[0] != self.em_class[1]) or (len(x_mat[self.em_class[0]]) == len(x_mat[self.em_class[1]]) == 1)
             ) else (
-                range(ii+1, len(x_mat[self.cm_class[1]]))
+                range(ii+1, len(x_mat[self.em_class[1]]))
             )
 
             for jj in range_j:
                 if self.domain is not None:
-                    x_a = torch.tensor(x_mat[self.cm_class[0]][ii][self.domain[0] - 1:self.domain[1]],
+                    x_a = torch.tensor(x_mat[self.em_class[0]][ii][self.domain[0] - 1:self.domain[1]],
                                        device=self.device)
-                    x_b = torch.tensor(x_mat[self.cm_class[1]][jj][self.domain[0] - 1:self.domain[1]],
+                    x_b = torch.tensor(x_mat[self.em_class[1]][jj][self.domain[0] - 1:self.domain[1]],
                                        device=self.device)
                 elif self.domains is not None:
                     x_a_list = []
                     x_b_list = []
                     for domain in self.domains:
-                        x_a_list.extend(x_mat[self.cm_class[0]][ii][domain[0] - 1:domain[1]])
-                        x_b_list.extend(x_mat[self.cm_class[1]][jj][domain[0] - 1:domain[1]])
+                        x_a_list.extend(x_mat[self.em_class[0]][ii][domain[0] - 1:domain[1]])
+                        x_b_list.extend(x_mat[self.em_class[1]][jj][domain[0] - 1:domain[1]])
                     x_a = torch.tensor(x_a_list, device=self.device)
                     x_b = torch.tensor(x_b_list, device=self.device)
                 else:
-                    x_a = torch.tensor(x_mat[self.cm_class[0]][ii], device=self.device)
-                    x_b = torch.tensor(x_mat[self.cm_class[1]][jj], device=self.device)
+                    x_a = torch.tensor(x_mat[self.em_class[0]][ii], device=self.device)
+                    x_b = torch.tensor(x_mat[self.em_class[1]][jj], device=self.device)
                 # 计算欧氏距离
                 d = Functions.euclidean_distances(x_a, x_b)
 
@@ -131,19 +131,19 @@ class EnergyMapCalculator:
                         + (lam * U_LJ) * mask_att
                 )
 
-                if self.cm_class[0] != self.cm_class[1]:
+                if self.em_class[0] != self.em_class[1]:
                     U_matrix += U_AH
                 else:
                     U_matrix += U_AH
-                    if not len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1:
+                    if not len(x_mat[self.em_class[0]]) == len(x_mat[self.em_class[1]]) == 1:
                         U_matrix += U_AH.T
                         U_matrix /= 2
 
-                    # cm_matrix += c.transpose(0, 1) + c
+                    # em_matrix += c.transpose(0, 1) + c
 
         U_matrix = U_matrix.cpu().numpy()
         # 保存 energy map
-        with open(os.path.join(self.cur_cm_path, name), 'w') as m:
+        with open(os.path.join(self.cur_em_path, name), 'w') as m:
             for i in range(len(U_matrix)):
                 for j in range(len(U_matrix[0])):
                     m.write(str(U_matrix[i][j]))
@@ -168,15 +168,15 @@ class EnergyMapCalculator:
         if mp.get_start_method(allow_none=True) is None:
             mp.set_start_method('spawn')
 
-        if not self.cm_class_list:
+        if not self.em_class_list:
             print(f"\nYour molecule types are：\n{self.data.molecules}")
             print("Please enter the index of the two molecules you want to calculate the energy map for, for example: \"1-1,2-2,1-2\", or all or directly press Enter to calculate all combinations:")
-            self.cm_class_list = input("请输入您想要计算的 energy map 的分子对，以逗号分隔，如\"1-1,2-2,1-2\"。\n"
+            self.em_class_list = input("请输入您想要计算的 energy map 的分子对，以逗号分隔，如\"1-1,2-2,1-2\"。\n"
                                         "如需计算全部分子组合，请输入 all 或直接回车：").split(',')
-        if "all" in self.cm_class_list or self.cm_class_list == [""]:
-            self.cm_class_list = [[i, j] for i in range(len(self.data.mol_class_list)) for j in range(i, len(self.data.mol_class_list))]
+        if "all" in self.em_class_list or self.em_class_list == [""]:
+            self.em_class_list = [[i, j] for i in range(len(self.data.mol_class_list)) for j in range(i, len(self.data.mol_class_list))]
         else:
-            self.cm_class_list = list(map(lambda x: list(map(lambda y: int(y) - 1, x.split('-'))), self.cm_class_list))
+            self.em_class_list = list(map(lambda x: list(map(lambda y: int(y) - 1, x.split('-'))), self.em_class_list))
 
         print("If you only need to calculate the domain, please enter the starting residue number and the last residue number of the domain (starting from 1), separated by -, such as 159-522. \n "
               "Note: Only calculated domains with the same molecular type, such as 0-0 and 1-1.\n "
@@ -207,19 +207,19 @@ class EnergyMapCalculator:
             files = os.listdir(self.chain_path)[start: end+1]
 
 
-        for cm_class in self.cm_class_list:
-            self.cm_class = [self.data.mol_class_list[cm_class[0]], self.data.mol_class_list[cm_class[1]]]
-            print(f"Calculating energy map of {' 和 '.join(self.cm_class)}")
+        for em_class in self.em_class_list:
+            self.em_class = [self.data.mol_class_list[em_class[0]], self.data.mol_class_list[em_class[1]]]
+            print(f"Calculating energy map of {' 和 '.join(self.em_class)}")
 
-            self.avg_sigma_mat = torch.tensor(self.r_cut + Functions.cal_sigma_mat(self.sequence[self.cm_class[0]], self.sequence[self.cm_class[1]]),
+            self.avg_sigma_mat = torch.tensor(self.r_cut + Functions.cal_sigma_mat(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
                                                device=self.device)
-            self.avg_lambda_mat = torch.tensor(self.r_cut + Functions.cal_lambda_mat(self.sequence[self.cm_class[0]], self.sequence[self.cm_class[1]]),
+            self.avg_lambda_mat = torch.tensor(self.r_cut + Functions.cal_lambda_mat(self.sequence[self.em_class[0]], self.sequence[self.em_class[1]]),
                                                device=self.device)
-            self.cur_cm_path = os.path.join(self.cm_path, f"{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}")
-            if os.path.exists(self.cur_cm_path):
-                print(f"✅ {self.cur_cm_path} has already existed, removing...")
-                os.system(f"rm -rf {self.cur_cm_path}")
-            os.makedirs(self.cur_cm_path, exist_ok=True)
+            self.cur_em_path = os.path.join(self.em_path, f"{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}")
+            if os.path.exists(self.cur_em_path):
+                print(f"✅ {self.cur_em_path} has already existed, removing...")
+                os.system(f"rm -rf {self.cur_em_path}")
+            os.makedirs(self.cur_em_path, exist_ok=True)
             with Pool(processes=4) as pool:
                 # 使用 tqdm 包装可迭代对象
                 list(tqdm(pool.imap(self.calculate_energy_map, files),
@@ -235,8 +235,8 @@ class EnergyMapCalculator:
         self.draw_energy_map()
 
 
-    def avg_cm_file(self, cm_file):
-        with open(os.path.join(self.cur_cm_path, cm_file), 'r') as f:
+    def avg_em_file(self, em_file):
+        with open(os.path.join(self.cur_em_path, em_file), 'r') as f:
             data_matrix = []
             for line in f.readlines():
                 float_line = list(map(float, line.strip().split(" ")))
@@ -245,51 +245,51 @@ class EnergyMapCalculator:
 
 
     def average_energy_map(self):
-        for cm_class in self.cm_class_list:
-            self.cm_class = [self.data.mol_class_list[cm_class[0]], self.data.mol_class_list[cm_class[1]]]
-            self.cur_cm_path = os.path.join(self.cm_path, f"{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}")
-            if not os.path.exists(self.cur_cm_path):
-                print(f"未找到 {self.cur_cm_path} 文件夹，请先进行计算。")
+        for em_class in self.em_class_list:
+            self.em_class = [self.data.mol_class_list[em_class[0]], self.data.mol_class_list[em_class[1]]]
+            self.cur_em_path = os.path.join(self.em_path, f"{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}")
+            if not os.path.exists(self.cur_em_path):
+                print(f"未找到 {self.cur_em_path} 文件夹，请先进行计算。")
                 return
-            cm_files = os.listdir(self.cur_cm_path)
+            em_files = os.listdir(self.cur_em_path)
 
             # 使用多进程读取和处理 CM 文件
             with Pool(processes=4) as pool:
-                results = list(tqdm(pool.imap(self.avg_cm_file, cm_files),
-                                    total=len(cm_files),
+                results = list(tqdm(pool.imap(self.avg_em_file, em_files),
+                                    total=len(em_files),
                                     desc="Averaging energy map",
                                     colour='cyan',
                                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                                     ncols=100))
 
-            # 计算 cm_mat 的维度
-            cm_mat = np.zeros_like(results[0])  # 假设所有的结果有相同的形状
+            # 计算 em_mat 的维度
+            em_mat = np.zeros_like(results[0])  # 假设所有的结果有相同的形状
             for dataMat in results:
-                cm_mat += dataMat
+                em_mat += dataMat
 
             cn_list = np.zeros(len(results))
             for i, dataMat in enumerate(results):
                 cn_list[i] = np.sum(dataMat)
 
             # 保存 cn_list
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_cn_list.log"),
+            with open(os.path.join(self.em_path, f"draw_em_{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}_cn_list.log"),
                       'w') as save_file:
                 for i in range(len(cn_list)):
                     save_file.write(f"{i+1} {cn_list[i]}\n")
 
-            avg_cm_mat = (cm_mat / len(cm_files))
+            avg_em_mat = (em_mat / len(em_files))
 
             # 保存平均后的 energy map
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_avg_matrix.log"),
+            with open(os.path.join(self.em_path, f"draw_em_{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}_avg_matrix.log"),
                           'w') as save_file:
-                    for i in avg_cm_mat:
+                    for i in avg_em_mat:
                         save_file.write(" ".join(map(str, i)) + '\n')
 
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_avg.log"),
+            with open(os.path.join(self.em_path, f"draw_em_{self.em_class[0]}_{self.em_class[1]}_r_cut_{self.r_cut:.2f}_avg.log"),
                       'w') as save_file:
-                for i in range(len(avg_cm_mat)):
-                    for j in range(len(avg_cm_mat[i])):
-                        save_file.write(f"{i + 1} {j + 1} {avg_cm_mat[i][j]}\n")
+                for i in range(len(avg_em_mat)):
+                    for j in range(len(avg_em_mat[i])):
+                        save_file.write(f"{i + 1} {j + 1} {avg_em_mat[i][j]}\n")
 
 
     def draw_energy_map(self):
@@ -297,21 +297,21 @@ class EnergyMapCalculator:
         绘制 energy map
         :return:
         """
-        cm_files = sorted(os.listdir(self.cm_path))
-        for cm_file in cm_files:
-            match = re.match(r"draw_cm_(\w+)_(\w+)_r_cut_(\d+\.\d+)_avg_matrix.log", cm_file)
+        em_files = sorted(os.listdir(self.em_path))
+        for em_file in em_files:
+            match = re.match(r"draw_em_(\w+)_(\w+)_r_cut_(\d+\.\d+)_avg_matrix.log", em_file)
             if not match:
                 continue
 
-            cm_class = [match.group(1), match.group(2)]
+            em_class = [match.group(1), match.group(2)]
             r_cut = float(match.group(3))
             if len(match.groups()) != 3:
-                print(f"❌ 无法解析文件名 {cm_file} {match.groups()}")
+                print(f"❌ 无法解析文件名 {em_file} {match.groups()}")
                 continue
 
-            print(f"✅ Drawing energy map of {cm_class[0]}-{cm_class[1]}, r_cut is {r_cut}")
+            print(f"✅ Drawing energy map of {em_class[0]}-{em_class[1]}, r_cut is {r_cut}")
 
-            with open(os.path.join(self.cm_path, cm_file), 'r') as f:
+            with open(os.path.join(self.em_path, em_file), 'r') as f:
                 data_matrix = []
                 if self.domain is not None:
                     # f_lines = f.readlines()[self.domain[0]-1:self.domain[1]]
@@ -319,18 +319,18 @@ class EnergyMapCalculator:
                     # f_lines = np.zeros((self.domain[0] - 1, self.domain[1] - self.domain[0] + 1))
                     # print(len(f_lines))
                     f_lines.extend(f.readlines())
-                    f_lines.extend([' '.join(['0'] * (self.domain[1] - self.domain[0] + 1))] * (self.data.length_dict[cm_class[1]] - self.domain[1]))
+                    f_lines.extend([' '.join(['0'] * (self.domain[1] - self.domain[0] + 1))] * (self.data.length_dict[em_class[1]] - self.domain[1]))
                     # print(len(f_lines))
                     for line in f_lines:
                         cur_line = ['0'] * (self.domain[0] - 1)
                         cur_line.extend(line.strip().split())
-                        cur_line.extend(['0'] * (self.data.length_dict[cm_class[1]] - self.domain[1]))
+                        cur_line.extend(['0'] * (self.data.length_dict[em_class[1]] - self.domain[1]))
                         # print(len(cur_line))
                         data_matrix.append(cur_line)
                 else:
-                    f_lines = f.readlines()[:self.data.length_dict[cm_class[0]]]
+                    f_lines = f.readlines()[:self.data.length_dict[em_class[0]]]
                     for line in f_lines:
-                        data_matrix.append(line.strip().split()[:self.data.length_dict[cm_class[1]]])
+                        data_matrix.append(line.strip().split()[:self.data.length_dict[em_class[1]]])
 
 
             data_mat = pd.DataFrame(data_matrix, dtype=np.float64)
@@ -361,14 +361,14 @@ class EnergyMapCalculator:
                     vmax = 9 * 10 ** exponent
                 else:
                     vmax = 10 * 10 ** exponent
-                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto', vmin=0., vmax=vmax)
+                im = ax.imshow(data_mat, emap=plt.get_emap('jet'), aspect='auto', vmin=0., vmax=vmax)
             else:
-                im = ax.imshow(data_mat, cmap=plt.get_cmap('jet'), aspect='auto',)
+                im = ax.imshow(data_mat, emap=plt.get_emap('jet'), aspect='auto',)
             ax.invert_yaxis()
 
-            ax.set_title(f"{cm_class[0]}-{cm_class[1]} energy map")
-            ax.set_ylabel(f"{cm_class[0]} residues")
-            ax.set_xlabel(f"{cm_class[1]} residues")
+            ax.set_title(f"{em_class[0]}-{em_class[1]} energy map")
+            ax.set_ylabel(f"{em_class[0]} residues")
+            ax.set_xlabel(f"{em_class[1]} residues")
 
             # plt.xticks(rotation=-45)  # 设置x轴表明文字的方向
             if self.domain is not None:
@@ -380,8 +380,8 @@ class EnergyMapCalculator:
                 xticks = np.arange(self.domain[0], self.domain[1] + 1, 50) - 1  # 刻度位置，包括最大值
                 yticks = np.arange(self.domain[0], self.domain[1] + 1, 50) - 1  # 刻度位置，包括最大值
             else:
-                length_y = self.data.length_dict[cm_class[0]]
-                length_x = self.data.length_dict[cm_class[1]]
+                length_y = self.data.length_dict[em_class[0]]
+                length_x = self.data.length_dict[em_class[1]]
 
                 # 设置刻度位置和标签
                 xticks = np.arange(1, length_x + 1, 50) - 1  # 刻度位置，包括最大值
@@ -434,5 +434,5 @@ class EnergyMapCalculator:
                 formatter.set_useOffset(False)  # 确保不使用偏移量
                 cbar.ax.yaxis.set_major_formatter(formatter)
             # plt.tight_layout()
-            plt.savefig(os.path.join(self.cm_path, f"draw_cm_{cm_class[0]}_{cm_class[1]}_r_cut_{r_cut}_avg.png"), dpi=300)
+            plt.savefig(os.path.join(self.em_path, f"draw_em_{em_class[0]}_{em_class[1]}_r_cut_{r_cut}_avg.png"), dpi=300)
             plt.close(fig)

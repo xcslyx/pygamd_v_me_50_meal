@@ -199,7 +199,7 @@ def main():
         if file_args.cm is True:
             EnergyMapCalculator(path,
                                  data=data,
-                                 cm_choice=file_args.cm_choice,
+                                 em_choice=file_args.cm_choice,
                                  r_cut=file_args.r_cut,
                                  ).calculate_energy_map_parallel()
 
