@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygamd_v_me_50_meal"
-version = "0.4.4"
+version = "0.4.5"
 description = "MD analysis toolkit for cGAS-DNA simulations"
 authors = [
     { name = "Yuxi Leng", email = "1203969713@qq.com" }

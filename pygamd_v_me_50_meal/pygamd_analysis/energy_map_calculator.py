@@ -120,20 +120,24 @@ class EnergyMapCalculator:
                 sig = self.avg_sigma_mat
                 lam = self.avg_lambda_mat
 
-                mask_minimum = d >= 0.3   # 生成 mask，距离非零为 True
-
                 r_safe = torch.maximum(d, torch.tensor(1e-6, device=d.device))
                 U_LJ = 4 * epsilon * ((sig / r_safe) ** 12 - (sig / r_safe) ** 6)
-                U_LJ = U_LJ * mask_minimum  # 对零距离的 pair 置 0
+                U_LJ = U_LJ  # 对零距离的 pair 置 0
 
                 r_cut = 2 ** (1 / 6) * sig
-                mask_rep = (r_safe <= r_cut) & mask_minimum  # 排斥区
-                mask_att = (r_safe > r_cut) & mask_minimum  # 吸引区
+                mask_rep = (r_safe <= r_cut)  # 排斥区
+                mask_att = (r_safe > r_cut)  # 吸引区
 
                 U_AH = (
                         (U_LJ + epsilon * (1 - lam)) * mask_rep
                         + (lam * U_LJ) * mask_att
                 )
+
+                # 这里的 cap 是一个张量，每个值对应 U_AH 的最大允许能量
+                cap = self.avg_lambda_mat * epsilon
+
+                # 使用 torch.min 进行截断（打顶），这样当 U_AH 超过 cap 时，会被强制等于 cap；低于 cap 时保持原值
+                U_AH = torch.min(U_AH, cap)
 
                 epsilon_r = 74.19
                 k = 138.935 / epsilon_r  # 1 / (4 * pi * epsilon_0)
@@ -142,7 +146,6 @@ class EnergyMapCalculator:
                 screening = torch.exp(-r_safe / debye_length)
 
                 U_DH = prefactor * screening / r_safe
-                U_DH = U_DH * mask_minimum  # 对零距离的 pair 置 0
 
                 if self.em_class[0] != self.em_class[1]:
                     U_matrix += U_AH + U_DH
