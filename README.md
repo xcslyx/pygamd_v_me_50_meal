@@ -37,14 +37,15 @@
 
 ##### 蛋白质粗粒化模型：一个氨基酸粗粒化为一个粒子：Dignon G L, Zheng W, Kim Y C, Best R B, Mittal J. PLOS Computational Biology, 2018, 14(1): e1005941
 ##### DNA 粗粒化模型：目前支持两种模型
-1. 3SPN 模型
-> Knotts T A, Rathore N, Schwartz D C, De Pablo J J. A coarse grain model for DNA[J]. _The Journal of Chemical Physics_, **2007**, 126(8): 084901.
+1. 3SPN 模型 
+   > Knotts T A, Rathore N, Schwartz D C, De Pablo J J. A coarse grain model for DNA[J]. _The Journal of Chemical Physics_, **2007**, 126(8): 084901.
+
 2. Mittal 2 Bead 模型：
->Kapoor U, Kim Y C, Mittal J. Coarse-Grained Models to Study Protein–DNA Interactions and Liquid–Liquid Phase Separation[J]. _Journal of Chemical Theory and Computation_, **2023**: acs.jctc.3c00525.
+   > Kapoor U, Kim Y C, Mittal J. Coarse-Grained Models to Study Protein–DNA Interactions and Liquid–Liquid Phase Separation[J]. _Journal of Chemical Theory and Computation_, **2023**: acs.jctc.3c00525.
 
 注意：目前“Mittal 2 Bead 模型”还未能成功在 PYGAMD 中实现。
-    
-    
+
+
 ## 分子动力学模拟后的文件处理
 
 ### 1. 坐标提取

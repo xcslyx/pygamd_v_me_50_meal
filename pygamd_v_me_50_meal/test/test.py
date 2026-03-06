@@ -25,7 +25,7 @@ lam = 0.5
 
 d = torch.tensor(np.arange(0, 2, 0.01), device="cuda:0")
 print(d)
-mask_minimum = d >= 0   # 生成 mask，距离非零为 True
+mask_minimum = d >= 0.3   # 生成 mask，距离非零为 True
 
 r_safe = torch.maximum(d, torch.tensor(1e-6, device=d.device))
 U_LJ = 4 * epsilon * ((sig / r_safe) ** 12 - (sig / r_safe) ** 6)
@@ -42,7 +42,7 @@ U_AH = (
 
 # 建议的平滑处理逻辑
 U_max = lam * epsilon  # 设定一个你能接受的最大能量值
-U_AH = torch.clamp(U_AH, max=U_max)
+# U_AH = torch.clamp(U_AH, max=U_max)
 
 d = d.cpu(); U_AH = U_AH.cpu()
 plt.plot(d, U_AH)
