@@ -111,6 +111,7 @@ class MSDCalculator:
             self.condensate_centroid_dict[mol_name][file_idx] = {'centroid': mol_condensate_centroid.tolist(),
                                                                  'variance': mol_condensate_centroid_variance.tolist()}
 
+
     def abstract_centroid_parallel(self):
         if not os.path.exists(os.path.join(self.msd_path, "centroid.txt")):
             self.centroid_dict: dict = dict(zip(self.cal_msd_list,
@@ -170,7 +171,8 @@ class MSDCalculator:
             msd = []
             for dt in range(1, int(n_frames / 2 + 1)):
                 displacements = traj[mol_idx, dt:] - traj[mol_idx, :-dt]
-                squared_displacements = np.sum(displacements ** 2, axis=1) / (n_frames - dt)
+                # squared_displacements = np.sum(displacements ** 2, axis=1) / (n_frames - dt)
+                squared_displacements = np.sum(displacements ** 2, axis=1)
                 msd_dt = np.mean(squared_displacements)
                 msd.append(msd_dt)
             self.msd_dict[mol_name][mol_idx] = msd

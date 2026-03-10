@@ -62,64 +62,36 @@ def _parse_utc(ts: str):
 
 
 def check_update(timeout: float = 2.0):
-    if os.getenv("PYGAMD_NO_UPDATE_CHECK"):
-        _debug("Update check disabled by environment variable")
+    local_version = _get_local_version()
+    repo_info = _get_repo_info(timeout)
+
+    # ===== 优先级 1：release / tag =====
+    latest_release = _get_latest_release_version(timeout)
+
+    if local_version and latest_release:
+        if latest_release > local_version:
+            print(
+                f"[pygamd] New version available: "
+                f"{local_version} → {latest_release}\n"
+                f"https://gitee.com/{OWNER}/{REPO}"
+            )
         return
 
-    try:
-        local_version = _get_local_version()
-        repo_info = _get_repo_info(timeout)
+    _debug("Release-based check not available, using pushed_at fallback")
 
-        # ===== 优先级 1：release / tag =====
-        try:
-            latest_release = _get_latest_release_version(timeout)
-        except Exception as e:
-            latest_release = None
-            _debug(f"Release query failed: {e}")
+    # ===== fallback：pushed_at =====
+    pushed_at = repo_info.get("pushed_at")
 
-        if local_version and latest_release:
-            if latest_release > local_version:
-                print(
-                    f"[pygamd] New version available: "
-                    f"{local_version} → {latest_release}\n"
-                    f"https://gitee.com/{OWNER}/{REPO}"
-                )
-            else:
-                _debug("Local version is up to date with latest release")
-            return
+    remote_time = _parse_utc(pushed_at)
+    dist = importlib.metadata.distribution(PKG_NAME)
+    local_time = datetime.fromtimestamp(dist._path.stat().st_mtime, tz=timezone.utc)
 
-        _debug("Release-based check not available, using pushed_at fallback")
+    if remote_time > local_time:
+        print(
+            "[pygamd] Repository has been updated since your local installation.\n"
+            f"Please run 'pip install git+https://gitee.com/{OWNER}/{REPO}'"
+        )
 
-        # ===== fallback：pushed_at =====
-        pushed_at = repo_info.get("pushed_at")
-        if not pushed_at:
-            _debug("No pushed_at field in repo info")
-            return
-
-        remote_time = _parse_utc(pushed_at)
-        _debug(f"Repository last pushed at: {remote_time.isoformat()}")
-
-        try:
-            dist = importlib.metadata.distribution(PKG_NAME)
-            local_time = datetime.fromtimestamp(
-                dist._path.stat().st_mtime, tz=timezone.utc
-            )
-            _debug(f"Local install time: {local_time.isoformat()}")
-        except Exception as e:
-            _debug(f"Failed to determine local install time: {e}")
-            return
-
-        if remote_time > local_time:
-            print(
-                "[pygamd] Repository has been updated since "
-                "your local installation.\n"
-                f"Please run 'pip install git+https://gitee.com/{OWNER}/{REPO}'"
-            )
-        else:
-            _debug("Local installation is newer than repo push time")
-
-    except Exception as e:
-        _debug(f"Unexpected failure during update check: {e}")
 
 
 if __name__ == "__main__":
