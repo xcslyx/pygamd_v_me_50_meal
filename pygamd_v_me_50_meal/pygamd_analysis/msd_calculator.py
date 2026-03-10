@@ -177,6 +177,7 @@ class MSDCalculator:
                 msd.append(msd_dt)
             self.msd_dict[mol_name][mol_idx] = msd
 
+
     def cal_msd_parallel(self):
         # 计算 MSD
         print("✅ 开始计算 MSD")
