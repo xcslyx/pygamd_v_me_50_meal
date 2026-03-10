@@ -34,7 +34,10 @@ def main():
 
     print(">>> Checking for updates...")
     from pygamd_v_me_50_meal.version_check import check_update
-    check_update()
+    try:
+        check_update()
+    except Exception as e:
+        print(e)
     print(">>> Running pygamd_v_me_50_meal package...")
 
     parser = argparse.ArgumentParser(
