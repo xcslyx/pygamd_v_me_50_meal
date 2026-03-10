@@ -12,6 +12,7 @@ OWNER = "lyxlyxlyxxx"
 REPO = "pygamd_v_me_50_meal"
 PKG_NAME = "pygamd_v_me_50_meal"
 
+
 def _debug(msg: str):
     if os.getenv("PYGAMD_UPDATE_DEBUG"):
         print(f"[pygamd:update] {msg}", file=sys.stderr)
@@ -34,27 +35,37 @@ def _get_repo_info(timeout):
         return json.load(resp)
 
 
-def _get_latest_release_version(timeout):
-    url = (
-        f"https://gitee.com/api/v5/repos/"
-        f"{OWNER}/{REPO}/releases/latest"
-    )
-    _debug("Querying latest release info")
-    with urllib.request.urlopen(url, timeout=timeout) as resp:
-        data = json.load(resp)
-
-    tag = data.get("tag_name")
-    if not tag:
-        _debug("No tag_name found in latest release")
-        return None
+# 【核心修改点】：不再请求 releases，改为请求 tags 接口并解析最大版本号
+def _get_latest_tag_version(timeout):
+    url = f"https://gitee.com/api/v5/repos/{OWNER}/{REPO}/tags"
+    _debug("Querying tags info")
 
     try:
-        v = Version(tag.lstrip("v"))
-        _debug(f"Latest release version: {v}")
-        return v
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            data = json.load(resp)
     except Exception as e:
-        _debug(f"Invalid tag format '{tag}': {e}")
+        _debug(f"Failed to fetch tags: {e}")
         return None
+
+    if not data:
+        _debug("No tags found in repository")
+        return None
+
+    versions = []
+    for tag_info in data:
+        tag_name = tag_info.get("name")
+        if tag_name:
+            try:
+                versions.append(Version(tag_name.lstrip("v")))
+            except Exception as e:
+                _debug(f"Invalid tag format '{tag_name}': {e}")
+
+    if not versions:
+        return None
+
+    latest_version = max(versions)
+    _debug(f"Latest tag version: {latest_version}")
+    return latest_version
 
 
 def _parse_utc(ts: str):
@@ -70,27 +81,27 @@ def check_update(timeout: float = 2.0):
         local_version = _get_local_version()
         repo_info = _get_repo_info(timeout)
 
-        # ===== 优先级 1：release / tag =====
+        # ===== 优先级 1：基于 Tag 的版本对比 =====
         try:
-            latest_release = _get_latest_release_version(timeout)
+            latest_version = _get_latest_tag_version(timeout)
         except Exception as e:
-            latest_release = None
-            _debug(f"Release query failed: {e}")
+            latest_version = None
+            _debug(f"Tag query failed: {e}")
 
-        if local_version and latest_release:
-            if latest_release > local_version:
+        if local_version and latest_version:
+            if latest_version > local_version:
                 print(
-                    f"[pygamd] New version available: "
-                    f"{local_version} → {latest_release}\n"
+                    f"[pygamd] 新版本可用: "
+                    f"{local_version} → {latest_version}\n"
                     f"https://gitee.com/{OWNER}/{REPO}"
                 )
             else:
-                _debug("Local version is up to date with latest release")
+                _debug("Local version is up to date with latest tag")
             return
 
-        _debug("Release-based check not available, using pushed_at fallback")
+        _debug("Tag-based check not available, using pushed_at fallback")
 
-        # ===== fallback：pushed_at =====
+        # ===== fallback：基于推送时间的对比 =====
         pushed_at = repo_info.get("pushed_at")
         if not pushed_at:
             _debug("No pushed_at field in repo info")
@@ -111,9 +122,8 @@ def check_update(timeout: float = 2.0):
 
         if remote_time > local_time:
             print(
-                "[pygamd] Repository has been updated since "
-                "your local installation.\n"
-                f"Please run 'pip install git+https://gitee.com/{OWNER}/{REPO}'"
+                "[pygamd] 远程仓库有更新。\n"
+                f"请运行 'pip install git+https://gitee.com/{OWNER}/{REPO}'"
             )
         else:
             _debug("Local installation is newer than repo push time")
@@ -123,5 +133,6 @@ def check_update(timeout: float = 2.0):
 
 
 if __name__ == "__main__":
+    # 如果你想测试，可以取消下面这行的注释来查看详细日志
     # os.environ["PYGAMD_UPDATE_DEBUG"] = "1"
     check_update()
