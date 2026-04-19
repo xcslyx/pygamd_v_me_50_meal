@@ -138,6 +138,18 @@ def main():
     parser.add_argument('-eed', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算末端距。")
 
+    parser.add_argument('-nc', metavar="T(rue)/F(alse)",
+                        type=str2value, default="unset", help="是否计算网络聚类。")
+
+    parser.add_argument('-nc_node', metavar="node_molecule_type",
+                        type=str, default=None, help="网络聚类的节点分子类型，如 'cGAS'。")
+
+    parser.add_argument('-nc_edge', metavar="edge_molecule_type",
+                        type=str, default=None, help="网络聚类的边分子类型，如 'MED1'。")
+
+    parser.add_argument('-nc_threshold', metavar="distance_threshold",
+                        type=float, default=10.0, help="网络构建的距离阈值，默认 10.0 Å。")
+
     file_args = parser.parse_args()
 
     # current_dir_path = os.getcwd()
@@ -169,7 +181,7 @@ def main():
     data = Data(path)
 
     if file_args.get_seq:
-        from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
+        from pygamd_v_me_50_meal.pygamd_analysis.sequence_extractor import GetSequence
         GetSequence(path, file_args.get_seq, data=data)
         exit()
 
@@ -225,6 +237,27 @@ def main():
 
     if file_args.eed:
         EndToEndDistanceCalculator(path, data).cal_end_to_end_distance_parallel()
+
+    if file_args.nc:
+        from pygamd_v_me_50_meal.pygamd_analysis.network_cluster_calculator import NetworkClusterCalculator
+        print("开始计算网络聚类...")
+        if file_args.nc_node is None or file_args.nc_edge is None:
+            print(f"Your molecule types are：\n{data.molecules}")
+            node_idx = int(input("请输入网络聚类的节点分子类型编号（例如 1）：")) - 1
+            edge_idx = int(input("请输入网络聚类的边分子类型编号（例如 2）：")) - 1
+            node_mol = data.mol_class_list[node_idx-1]
+            edge_mol = data.mol_class_list[edge_idx-1]
+        else:
+            node_mol = file_args.nc_node
+            edge_mol = file_args.nc_edge
+        
+        NetworkClusterCalculator(
+            path=path,
+            data=data,
+            node_mol_type=node_mol,
+            edge_mol_type=edge_mol,
+            distance_threshold=file_args.nc_threshold
+        ).calculate_parallel()
 
     if file_args.draw:
         draw_class = file_args.draw.lower().split(",")

@@ -12,7 +12,7 @@ from multiprocessing import Pool
 import pygamd_v_me_50_meal.utils as utils
 from pygamd_v_me_50_meal.Functions import Functions
 
-from .get_sequence import GetSequence
+from .sequence_extractor import GetSequence
 
 
 # 处理坐标文件

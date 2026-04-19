@@ -2,7 +2,7 @@ import os
 
 import xml.etree.ElementTree as ET
 
-from pygamd_v_me_50_meal.pygamd_analysis.get_sequence import GetSequence
+from pygamd_v_me_50_meal.pygamd_analysis.sequence_extractor import GetSequence
 
 
 class XMLConverter:
