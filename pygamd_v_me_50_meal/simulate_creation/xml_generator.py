@@ -8,27 +8,43 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 
-# 定义类 XMLGenerator
+
 class XMLGenerator:
     def __init__(self, path: str, filename, box_size: str | float=100, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
-        if filename.endswith(".pdb"):
-            if path is None:
-                if os.path.exists(filename):
-                    path = os.path.dirname(filename)
-                    if not path:
-                        path = os.getcwd()
-                    print(f"系统目录路径未提供，已设置为 {path}")
-                    filename = os.path.basename(filename)
-                    assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
-                else:
-                    raise ValueError("需要转换的 PDB 文件不存在！ Please provide a valid PDB file!")
-            else:
-                if path == os.path.dirname(filename):
-                    filename = filename = os.path.basename(filename)
-                    assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
-            print(f"开始转换 PDB 文件 {filename} 为 XML 文件...")
-        else:
+        """
+        初始化 XMLGenerator 类
+        
+        Args:
+            path: 系统目录路径
+            filename: PDB 文件路径或文件名
+            box_size: 盒子大小，默认 100
+            add_enm_bond: 弹性网络结构域列表，格式如 "159-522,523-600"
+            add_rigid_body: 刚体结构域列表，格式如 "159-522,523-600"
+            add_domain: 是否对结构域单独设置粒子类型
+            dna_model: DNA 模型，"1" 表示 3SPN，"2" 表示 2BeadMittal
+            gen_run_file: 是否生成 PYGAMD 运行文件
+        """
+        # 验证文件格式
+        if not filename.endswith(".pdb"):
             raise ValueError("文件格式错误，请提供 PDB 文件！")
+        
+        # 处理路径
+        if path is None:
+            if os.path.exists(filename):
+                path = os.path.dirname(filename)
+                if not path:
+                    path = os.getcwd()
+                print(f"系统目录路径未提供，已设置为 {path}")
+                filename = os.path.basename(filename)
+                assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
+            else:
+                raise ValueError("需要转换的 PDB 文件不存在！ Please provide a valid PDB file!")
+        else:
+            if path == os.path.dirname(filename):
+                filename = os.path.basename(filename)
+                assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
+        
+        print(f"开始转换 PDB 文件 {filename} 为 XML 文件...")
 
         self.path = path
         self.filename = filename
@@ -48,12 +64,14 @@ class XMLGenerator:
         self.mol_num = 0
         self.mol_class = []
 
+        # 处理弹性网络
         if add_enm_bond:
             self.add_enm_bond_flag = True
             self.enm_domain_list = add_enm_bond.split(',')
         else:
             self.add_enm_bond_flag = False
 
+        # 处理刚体
         if add_rigid_body:
             self.add_rigid_body = True
             self.rigid_domain_list = add_rigid_body.split(',')
@@ -61,12 +79,13 @@ class XMLGenerator:
             self.add_rigid_body = False
         self.rigid_body_index = 0
 
+        # 处理结构域
         if add_domain:
             self.add_domain_flag = True
         else:
             self.add_domain_flag = False
 
-
+        # 处理模型选择
         self.protein_model = None
         self.dna_model = None
         self.rna_model = None
@@ -78,16 +97,24 @@ class XMLGenerator:
 
         self.output_file = filename.replace(".pdb", ".xml")
         self.output_tree = ET.ElementTree(ET.Element("galamost_xml", {"version": "1.0"}))
-        self.pdb2xml()
-        # 合并xml文件
-        self.merge_xml()
-        print("PDB 转换为 XML 完成！")
+        
+        try:
+            self.pdb2xml()
+            self.merge_xml()
+            print("PDB 转换为 XML 完成！")
+        except Exception as e:
+            print(f"转换过程中出错：{e}")
+            raise
 
+        # 生成运行文件
         if gen_run_file is None:
-            run_file_request = input("是否要生成对应的 PYGAMD 运行文件？(y(es)/n(o))：")
-            if run_file_request.lower() in ["y", "yes"]:
-                print("正在生成对应的 PYGAMD 运行文件...")
-                self.generate_pygamd_run_file()
+            try:
+                run_file_request = input("是否要生成对应的 PYGAMD 运行文件？(y(es)/n(o))：")
+                if run_file_request.lower() in ["y", "yes"]:
+                    print("正在生成对应的 PYGAMD 运行文件...")
+                    self.generate_pygamd_run_file()
+            except EOFError:
+                print("未检测到用户输入，跳过生成运行文件")
         elif gen_run_file:
             print("正在生成对应的 PYGAMD 运行文件...")
             self.generate_pygamd_run_file()
@@ -115,22 +142,22 @@ class XMLGenerator:
                         molecules.append(atoms)
                     atoms = []
                     continue
+        
         self.mol_num = len(molecules)
+        if self.mol_num == 0:
+            raise ValueError("PDB 文件中未找到分子结构")
+        
         self.mol_class = [""] * self.mol_num
 
+        # 创建目录
         self.log_dir = os.path.join(self.path, "log")
         self.xml_dir = os.path.join(self.path, "xml")
-        dirs = os.listdir(self.path)
-        if "log" not in dirs:
-            os.mkdir(os.path.join(self.path, "log"))
-        else:
-            shutil.rmtree(os.path.join(self.path, "log"))
-            os.mkdir(os.path.join(self.path, "log"))
-        if "xml" not in dirs:
-            os.mkdir(os.path.join(self.path, "xml"))
-        else:
-            shutil.rmtree(os.path.join(self.path, "xml"))
-            os.mkdir(os.path.join(self.path, "xml"))
+        
+        # 清理并创建目录
+        for dir_path in [self.log_dir, self.xml_dir]:
+            if os.path.exists(dir_path):
+                shutil.rmtree(dir_path)
+            os.makedirs(dir_path, exist_ok=True)
 
         for i in range(self.mol_num):
             root = ET.Element("molecule")
@@ -188,7 +215,10 @@ class XMLGenerator:
                 pos_elem.text += "{:5}\t\t{:10}\t{:10}\t{:10}\t{}     {}\n".format(
                     atom[2], atom[6], atom[7], atom[8], k, atom[3])
                 res = atom[5]
-            with open(os.path.join(self.path, f"log/mol{i}_log.xml"), 'w') as f:
+            
+            # 保存 log 文件
+            log_file = os.path.join(self.path, f"log/mol{i}_log.xml")
+            with open(log_file, 'w') as f:
                 f.write(f"<?xml version='1.0' encoding='utf-8'?>\n<molecule num_atoms='{k}'>")
                 f.write(f"\n<{seq_elem.tag}>" + seq_elem.text + f"</{seq_elem.tag}>\n")
                 f.write(f"<{pos_elem.tag}>" + pos_elem.text + f"</{pos_elem.tag}>\n")
@@ -255,11 +285,22 @@ class XMLGenerator:
                 if self.rna_model == "3SPN":
                     self.rna_log2xml_3SPN(file=f"mol{i}_log.xml")
 
-        shutil.rmtree(os.path.join(self.path, "log"))
+        # 清理 log 目录
+        if os.path.exists(self.log_dir):
+            shutil.rmtree(self.log_dir)
 
 
     def merge_xml(self):
+        """
+        合并多个 XML 文件为一个完整的 XML 文件
+        """
+        if not os.path.exists(self.xml_dir):
+            raise FileNotFoundError(f"XML 目录不存在：{self.xml_dir}")
+        
         xml_files = os.listdir(self.xml_dir)
+        if not xml_files:
+            raise ValueError("XML 目录中没有文件")
+            
         if self.mol_num == 1:
             for file in xml_files:
                 filename = os.path.join(self.xml_dir, file)
@@ -269,7 +310,6 @@ class XMLGenerator:
                 else:
                     self.output_file = os.path.join(self.path, self.filename.replace(".pdb", ".xml"))
                     shutil.move(filename, str(self.output_file))
-                    # TODO
         else:
             root = self.output_tree.getroot()
             root.text = '\n'
@@ -277,8 +317,7 @@ class XMLGenerator:
             root_configuration = root.find("configuration")
             root_configuration.text = '\n'
             root_configuration_tags = ["box"]
-            # print(root_configuration.iter())
-            # print(root.tag)
+            
             for file in sorted(xml_files):
                 file = os.path.join(self.xml_dir, file)
                 file_tree = ET.parse(file)
@@ -352,6 +391,14 @@ class XMLGenerator:
 
 
     def add_enm_bond(self, file, start, end):
+        """
+        为指定结构域添加弹性网络键
+        
+        Args:
+            file: XML 文件路径
+            start: 结构域起始残基编号
+            end: 结构域结束残基编号
+        """
         filename = os.path.join(self.xml_dir, file)
         if filename.endswith("enm.xml"):
             new_filename = filename

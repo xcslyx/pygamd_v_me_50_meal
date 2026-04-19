@@ -93,7 +93,7 @@ def check_update(timeout: float = 2.0):
                 print(
                     f"[pygamd] 新版本可用: "
                     f"{local_version} → {latest_version}\n"
-                    f"https://gitee.com/{OWNER}/{REPO}"
+                    f"pip install git+https://gitee.com/{OWNER}/{REPO}"
                 )
             else:
                 _debug("Local version is up to date with latest tag")

@@ -135,17 +135,17 @@ def main():
     parser.add_argument('-eed', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算末端距。")
 
-    parser.add_argument('-ncpr', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 NCPR。")
+    parser.add_argument('-seq_analysis', metavar="T(rue)/F(alse)",
+                        type=str2value, default="unset", help="是否进行序列分析。")
 
-    parser.add_argument('-ncpr_seq', metavar="path/to/sequence_file or sequence_string",
-                        type=str, default=None, help="NCPR 分析的序列文件路径或直接传入的序列字符串。")
+    parser.add_argument('-seq', metavar="path/to/sequence_file or sequence_string",
+                        type=str, default=None, help="序列文件路径或直接传入的序列字符串。")
 
-    parser.add_argument('-ncpr_window', metavar="window_size",
-                        type=int, default=15, help="NCPR 分析的滑动窗口大小，默认 15。")
+    parser.add_argument('-seq_window', metavar="window_size",
+                        type=int, default=15, help="序列分析的滑动窗口大小，默认 15。")
 
-    parser.add_argument('-ncpr_output', metavar="output_file",
-                        type=str, default=None, help="NCPR 分析的输出文件路径。")
+    parser.add_argument('-seq_output', metavar="output_file",
+                        type=str, default=None, help="序列分析的输出文件路径。")
 
     parser.add_argument('-nc', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算网络聚类。")
@@ -161,14 +161,14 @@ def main():
 
     file_args = parser.parse_args()
 
-    # NCPR 分析作为独立功能，不需要 -p 参数
-    if file_args.ncpr:
-        print("开始计算 NCPR...")
-        if file_args.ncpr_seq:
-            # 动态导入 NCPRAnalyzer，避免其他模块的依赖问题
-            from pygamd_v_me_50_meal.pygamd_analysis.sequence_analysis.ncpr_analysis import NCPRAnalyzer
+    # 序列分析作为独立功能，不需要 -p 参数
+    if file_args.seq_analysis:
+        print("开始序列分析...")
+        if file_args.seq:
+            # 动态导入 SequenceAnalyzer，避免其他模块的依赖问题
+            from pygamd_v_me_50_meal.pygamd_analysis.sequence_analysis.sequence_analyzer import SequenceAnalyzer
             
-            seq_input = file_args.ncpr_seq
+            seq_input = file_args.seq
             
             # 检查是否是文件路径
             if os.path.exists(seq_input):
@@ -186,16 +186,36 @@ def main():
                 seq = list(seq_input.strip())
                 base_name = "sequence"
             
-            analyzer = NCPRAnalyzer(window=file_args.ncpr_window)
-            output_path = file_args.ncpr_output
-            if not output_path:
-                output_path = f"{base_name}_NCPR.png"
-            fig, ax, ncpr_values = analyzer.plot_ncpr(seq, save_path=output_path)
-            print(f"NCPR 分析完成，结果保存至: {output_path}")
-            print(f"NCPR values shape: {ncpr_values.shape}")
+            analyzer = SequenceAnalyzer(window=file_args.seq_window)
+            
+            # 交互式选择分析类型
+            print("请选择序列分析类型：")
+            print("1. NCPR (Net Charge Per Residue) 分析")
+            print("2. 芳香性分析")
+            choice = input("请输入选项编号 (1-2): ")
+            
+            if choice == "1":
+                analysis_type = "ncpr"
+                output_path = file_args.seq_output
+                if not output_path:
+                    output_path = f"{base_name}_NCPR.png"
+                fig, ax, values = analyzer.plot_ncpr(seq, save_path=output_path)
+                print(f"NCPR 分析完成，结果保存至: {output_path}")
+                print(f"NCPR values shape: {values.shape}")
+            elif choice == "2":
+                analysis_type = "aromatic"
+                output_path = file_args.seq_output
+                if not output_path:
+                    output_path = f"{base_name}_aromaticity.png"
+                fig, ax, values = analyzer.plot_aromaticity(seq, save_path=output_path)
+                print(f"芳香性分析完成，结果保存至: {output_path}")
+                print(f"Aromaticity values shape: {values.shape}")
+            else:
+                print("错误: 无效的选项，请重新运行并输入正确的选项编号。")
+                exit()
             exit()
         else:
-            print("错误: 请提供序列文件路径或序列字符串 -ncpr_seq")
+            print("错误: 请提供序列文件路径或序列字符串 -seq")
             exit()
 
     # 其他分析功能需要 -p 参数
