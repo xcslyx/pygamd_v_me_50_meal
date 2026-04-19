@@ -9,11 +9,8 @@ import matplotlib.pyplot as plt
 
 from pygamd_v_me_50_meal.utils import str2value
 
-from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
-from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
-from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
 
-
+# 设置 matplotlib 参数
 plt.rcParams["font.family"] = "DejaVu Sans"
 plt.rcParams["axes.linewidth"] = .8
 plt.rcParams["axes.labelsize"] = 22
@@ -33,8 +30,8 @@ plt.rcParams["axes.formatter.use_mathtext"] = True
 def main():
 
     print(">>> Checking for updates...")
-    from pygamd_v_me_50_meal.version_check import check_update
     try:
+        from pygamd_v_me_50_meal.version_check import check_update
         check_update()
     except Exception as e:
         print(e)
@@ -138,6 +135,18 @@ def main():
     parser.add_argument('-eed', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算末端距。")
 
+    parser.add_argument('-ncpr', metavar="T(rue)/F(alse)",
+                        type=str2value, default="unset", help="是否计算 NCPR。")
+
+    parser.add_argument('-ncpr_seq', metavar="path/to/sequence_file or sequence_string",
+                        type=str, default=None, help="NCPR 分析的序列文件路径或直接传入的序列字符串。")
+
+    parser.add_argument('-ncpr_window', metavar="window_size",
+                        type=int, default=15, help="NCPR 分析的滑动窗口大小，默认 15。")
+
+    parser.add_argument('-ncpr_output', metavar="output_file",
+                        type=str, default=None, help="NCPR 分析的输出文件路径。")
+
     parser.add_argument('-nc', metavar="T(rue)/F(alse)",
                         type=str2value, default="unset", help="是否计算网络聚类。")
 
@@ -152,6 +161,44 @@ def main():
 
     file_args = parser.parse_args()
 
+    # NCPR 分析作为独立功能，不需要 -p 参数
+    if file_args.ncpr:
+        print("开始计算 NCPR...")
+        if file_args.ncpr_seq:
+            # 动态导入 NCPRAnalyzer，避免其他模块的依赖问题
+            from pygamd_v_me_50_meal.pygamd_analysis.sequence_analysis.ncpr_analysis import NCPRAnalyzer
+            
+            seq_input = file_args.ncpr_seq
+            
+            # 检查是否是文件路径
+            if os.path.exists(seq_input):
+                # 是文件路径，读取文件内容
+                import ast
+                with open(seq_input, 'r') as f:
+                    seq_content = f.read()
+                    try:
+                        seq = list(ast.literal_eval(seq_content))
+                    except:
+                        seq = list(seq_content.strip())
+                base_name = os.path.splitext(os.path.basename(seq_input))[0]
+            else:
+                # 不是文件路径，直接作为序列字符串处理
+                seq = list(seq_input.strip())
+                base_name = "sequence"
+            
+            analyzer = NCPRAnalyzer(window=file_args.ncpr_window)
+            output_path = file_args.ncpr_output
+            if not output_path:
+                output_path = f"{base_name}_NCPR.png"
+            fig, ax, ncpr_values = analyzer.plot_ncpr(seq, save_path=output_path)
+            print(f"NCPR 分析完成，结果保存至: {output_path}")
+            print(f"NCPR values shape: {ncpr_values.shape}")
+            exit()
+        else:
+            print("错误: 请提供序列文件路径或序列字符串 -ncpr_seq")
+            exit()
+
+    # 其他分析功能需要 -p 参数
     # current_dir_path = os.getcwd()
     path = str(file_args.path)
 
@@ -229,13 +276,16 @@ def main():
         RMSFCalculator(path, data, ref).calculate()
 
     if file_args.mass_density:
+        from pygamd_v_me_50_meal.pygamd_analysis.mass_density_distribution_calculator import MassDensityDistributionCalculator
         MassDensityDistributionCalculator(path, data).cal_mass_density_distribution_parallel(amino_acid=file_args.amino_acid)
 
     if file_args.msd:
+        from pygamd_v_me_50_meal.pygamd_analysis.msd_calculator import MSDCalculator
         MSDCalculator(path, data).cal_msd_parallel()
         # MSDCalculator().cal_displacement_probability_distribution_parallel()
 
     if file_args.eed:
+        from pygamd_v_me_50_meal.pygamd_analysis.end_to_end_distance_calculator import EndToEndDistanceCalculator
         EndToEndDistanceCalculator(path, data).cal_end_to_end_distance_parallel()
 
     if file_args.nc:
@@ -272,8 +322,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
