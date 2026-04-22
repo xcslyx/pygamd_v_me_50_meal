@@ -237,7 +237,7 @@ v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 ### v1.0.0
 - 初始版本
 - 支持蛋白质、DNA、RNA 粗粒化模型生成
-- 实现序列分析功能（NCPR 和芳香性分析）
+- 实现序列分析功能（NCPR、芳香性分析和疏水性分析）
 - 提供接触图、Rg、RMSD、RMSF 计算
 - 支持质量密度分布分析
 
