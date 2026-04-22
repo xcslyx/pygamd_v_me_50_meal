@@ -26,16 +26,72 @@ plt.rcParams["xtick.top"] = True
 plt.rcParams["ytick.right"] = True
 plt.rcParams["axes.formatter.use_mathtext"] = True
 
+# 中英文提示词字典
+messages = {
+    'zh': {
+        'checking_updates': '>>> 检查更新中...',
+        'running_package': '>>> 运行 pygamd_v_me_50_meal 包...',
+        'start_seq_analysis': '开始序列分析...',
+        'error_no_seq': '错误: 请提供序列文件路径或序列字符串 -seq',
+        'select_analysis_type': '请选择序列分析类型：',
+        'ncpr_analysis': '1. NCPR (Net Charge Per Residue) 分析',
+        'aromatic_analysis': '2. 芳香性分析',
+        'enter_option': '请输入选项编号 (1-2): ',
+        'error_invalid_option': '错误: 无效的选项，请重新运行并输入正确的选项编号。',
+        'ncpr_analysis_done': 'NCPR 分析完成，结果保存至: {output_path}',
+        'ncpr_values_shape': 'NCPR values shape: {shape}',
+        'aromatic_analysis_done': '芳香性分析完成，结果保存至: {output_path}',
+        'aromatic_values_shape': 'Aromaticity values shape: {shape}',
+        'please_provide_path': 'Please provide the path to the system directory.',
+        'start_calculating_cm': '开始计算接触图文件...',
+        'start_calculating_em': '开始计算 energy matrix 文件...',
+        'your_molecule_types': '你的分子类型有: \n{data}',
+        'enter_node_mol_idx': '请输入网络聚类的节点分子类型编号 (例如 1): ',
+        'enter_edge_mol_idx': '请输入网络聚类的边分子类型编号 (例如 2): ',
+        'start_calculating_nc': '开始计算网络聚类...',
+    },
+    'en': {
+        'checking_updates': '>>> Checking for updates...',
+        'running_package': '>>> Running pygamd_v_me_50_meal package...',
+        'start_seq_analysis': 'Starting sequence analysis...',
+        'error_no_seq': 'Error: Please provide sequence file path or sequence string with -seq',
+        'select_analysis_type': 'Please select sequence analysis type:',
+        'ncpr_analysis': '1. NCPR (Net Charge Per Residue) analysis',
+        'aromatic_analysis': '2. Aromaticity analysis',
+        'enter_option': 'Please enter option number (1-2): ',
+        'error_invalid_option': 'Error: Invalid option, please run again and enter the correct option number.',
+        'ncpr_analysis_done': 'NCPR analysis completed, results saved to: {output_path}',
+        'ncpr_values_shape': 'NCPR values shape: {shape}',
+        'aromatic_analysis_done': 'Aromaticity analysis completed, results saved to: {output_path}',
+        'aromatic_values_shape': 'Aromaticity values shape: {shape}',
+        'please_provide_path': 'Please provide the path to the system directory.',
+        'start_calculating_cm': 'Starting to calculate contact map files...',
+        'start_calculating_em': 'Starting to calculate energy matrix files...',
+        'your_molecule_types': 'Your molecule types are: \n{data}',
+        'enter_node_mol_idx': 'Please enter the node molecule type number for network clustering (e.g., 1): ',
+        'enter_edge_mol_idx': 'Please enter the edge molecule type number for network clustering (e.g., 2): ',
+        'start_calculating_nc': 'Starting network clustering calculation...',
+    }
+}
 
 def main():
+    print(f"New version notification {__version__}.")
+    print("Now you can use command v50_en to run the package, which is in English.")
+    run_main('zh')
 
-    print(">>> Checking for updates...")
+def main_en():
+    run_main('en')
+
+def run_main(lang):
+    msg = messages[lang]
+
+    print(msg['checking_updates'])
     try:
         from pygamd_v_me_50_meal.version_check import check_update
         check_update()
     except Exception as e:
         print(e)
-    print(">>> Running pygamd_v_me_50_meal package...")
+    print(msg['running_package'])
 
     parser = argparse.ArgumentParser(
         # prog=f'{os.path.basename(__file__)} v0.0.20 增强版',
@@ -46,124 +102,106 @@ def main():
     parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v0.0.14')
 
     parser.add_argument('-p', '--path', metavar="/path/to/system",
-                        type=str, default=None, help='体系目录路径.')
+                        type=str, default=None, help='体系目录路径.' if lang == 'zh' else 'System directory path.')
 
     parser.add_argument('-o', "--output",
-                        type=str, help="输出文件名称")
+                        type=str, help="输出文件名称" if lang == 'zh' else "Output file name")
 
     parser.add_argument('-box_size', metavar="box_size",
-                        type=float, default=100.0, help="用于 pdb-xml 转换的盒子大小, 默认为 100.0 nm.")
+                        type=float, default=100.0, help="用于 pdb-xml 转换的盒子大小, 默认为 100.0 nm." if lang == 'zh' else "Box size for pdb-xml conversion, default 100.0 nm.")
 
     parser.add_argument("-pdb2xml", metavar="/path/to/pdb_file or filename.pdb with -p /path/to/system.",
-                        type=str, default=None, help="将 PDB 文件转换供 GALAMOST 模拟的 XML 文件。")
+                        type=str, default=None, help="将 PDB 文件转换供 PYGAMD 模拟的 XML 文件。" if lang == 'zh' else "Convert PDB file to XML file for PYGAMD simulation.")
 
     parser.add_argument("-add_enm_bond", metavar="enm_domain_list",
                         type=str2value, default=None,
-                        help="若要设置弹性网络，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。")
+                        help="若要设置弹性网络，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。" if lang == 'zh' else "To set up elastic network, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
 
     parser.add_argument("-add_rigid_body", metavar="rigid_body_domain_list",
                         type=str2value, default=None,
-                        help="若要设置刚体，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。")
+                        help="若要设置刚体，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。" if lang == 'zh' else "To set up rigid body, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
 
-    parser.add_argument("-add_domain", metavar="domain_list",
-                        type=str2value, default=None,
-                        help="若要将结构域残基单独设置粒子类型（例如甘氨酸A→AD），请设置为 True，将以rigid body 或 enm bond 的结构域列表来设置单独的粒子类型。")
+    parser.add_argument('-add_domain', action='store_true', help="若要将结构域残基单独设置粒子类型（例如甘氨酸A→AD），请设置为 True，将以rigid body 或 enm bond 的结构域列表来设置单独的粒子类型。" if lang == 'zh' else "To set separate particle types for domain residues (e.g., glycine A→AD), set to True. It will use rigid body or enm bond domain lists to set separate particle types.")
 
     parser.add_argument("-dna_model", metavar="DNA model",
-                        type=str, default="unset", help="设置 DNA 蛋白质模型，可选：略.")
+                        type=str, default="unset", help="设置 DNA 蛋白质模型，可选：略." if lang == 'zh' else "Set DNA protein model, options: see details.")
 
-    parser.add_argument("-gen_run_file", metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否生成 PYGAMD 动力学模拟脚本.")
+    parser.add_argument("-gen_run_file", action='store_true', help="是否生成 PYGAMD 动力学模拟脚本." if lang == 'zh' else "Whether to generate PYGAMD dynamics simulation script.")
 
-    parser.add_argument('-xyz', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否提取坐标文件.")
+    parser.add_argument('-xyz', action='store_true', help="是否提取坐标文件." if lang == 'zh' else "Whether to extract coordinate files.")
 
-    parser.add_argument('-remove_enm', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否移除弹性键。")
+    parser.add_argument('-remove_enm', action='store_true', help="是否移除弹性键。" if lang == 'zh' else "Whether to remove elastic bonds.")
 
-    parser.add_argument('-remove_condensate_pbc', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否移除凝聚体的 PBC。")
+    parser.add_argument('-remove_condensate_pbc', action='store_true', help="是否移除凝聚体的 PBC。" if lang == 'zh' else "Whether to remove PBC and move the largest condensate to the center of the box.")
 
-    parser.add_argument('-remove_ions_zhy', metavar="T(rue)/F(alse)",
-                        type=str2value, default=False, help="是否移除 xml 文件中的离子。")
+    parser.add_argument('-remove_ions_zhy', action='store_true', help="是否移除 xml 文件中的离子。" if lang == 'zh' else "Whether to remove ions from xml files.")
 
-    parser.add_argument('-cm', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算接触图（contact map），计算后会自动绘图。")
+    parser.add_argument('-cm', action='store_true', help="是否计算接触图, 计算后会自动绘图。" if lang == 'zh' else "Whether to calculate contact map, will automatically plot after calculation.")
 
-    parser.add_argument('-em', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 Energy Matrix，计算后会自动绘图。")
+    parser.add_argument('-em', action='store_true', help="是否计算 Energy Matrix, 计算后会自动绘图。" if lang == 'zh' else "Whether to calculate Energy Matrix, will automatically plot after calculation.")
 
     parser.add_argument('-r_cut', metavar="r_cut of contact map",
-                        type=float, default=4.0, help="计算接触图的截断半径，默认值为 4.0 Å。")
+                        type=float, default=4.0, help="计算接触图的截断半径，默认值为 4.0 Å。" if lang == 'zh' else "Cutoff radius for contact map calculation, default value is 4.0 Å.")
 
-    parser.add_argument('-draw', metavar="想要绘制图像的类型，如cm,rmsd,rmsf。",
-                        type=str, default=None, help="用于无需计算的情况下绘图。")
+    parser.add_argument('-draw', metavar="想要绘制图像的类型, 如cm,rmsd,rmsf。",
+                        type=str, default=None, help="用于无需计算的情况下绘图。" if lang == 'zh' else "For drawing without calculation.")
 
     parser.add_argument('-cm_choice', metavar="分子组合/轨迹切片",
-                        type=str, default="/", help="计算接触图的选择，如“0-0,1-1/1000,2000”。"
-                                                    "不提供某一项代表全选，如“0-0,1-1/”代表只计算0-0和1-1之间的接触图，选取所有轨迹。"
-                                                    "若不提供，则会在运行中进行提示，此选项供 nohup 使用。")
+                        type=str, default="/", help="计算接触图的选择，如“0-0,1-1/1000,2000”。" if lang == 'zh' else "Contact map calculation options, e.g., '0-0,1-1/1000,2000'." +
+                                                    "不提供某一项代表全选，如“0-0,1-1/”代表只计算0-0和1-1之间的接触图，选取所有轨迹。" if lang == 'zh' else "Omitting an item means selecting all, e.g., '0-0,1-1/' means only calculating contact maps between 0-0 and 1-1, selecting all trajectories." +
+                                                    "若不提供，则会在运行中进行提示，此选项供 nohup 使用。" if lang == 'zh' else "If not provided, it will prompt during runtime, this option is for nohup use.")
 
     # TODO: 增加对接触图平均的功能
     parser.add_argument('-avg', metavar="计算类型",
-                        type=str, default="unset", help="用于无需计算的情况系进行平均（还不好用）。")
+                        type=str, default="unset", help="用于无需计算的情况系进行平均（还不好用）。" if lang == 'zh' else "For averaging without calculation (not fully functional yet).")
 
-    parser.add_argument('-rg', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 Rg.")
+    parser.add_argument('-rg', action='store_true', help="是否计算 Rg." if lang == 'zh' else "Whether to calculate Rg.")
 
-    parser.add_argument('-rmsd', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 RMSD.")
+    parser.add_argument('-rmsd', action='store_true', help="是否计算 RMSD." if lang == 'zh' else "Whether to calculate RMSD.")
 
-    parser.add_argument('-rmsf', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 RMSF.")
+    parser.add_argument('-rmsf', action='store_true', help="是否计算 RMSF." if lang == 'zh' else "Whether to calculate RMSF.")
 
     parser.add_argument('-ref', metavar="/path/to/reference_structure.xml",
-                        type=str, default=None, help="RMSD/RMSF 计算的参考结构文件路径。")
+                        type=str, default=None, help="RMSD/RMSF 计算的参考结构文件路径。" if lang == 'zh' else "Reference structure file path for RMSD/RMSF calculation.")
 
     parser.add_argument('-get_seq', metavar="/path/to/file or filename with -p /path/to/system.",
-                        type=str, default=None, help="获取 XML 文件或 PDB 文件的序列。")
+                        type=str, default=None, help="获取 XML 文件或 PDB 文件的序列。" if lang == 'zh' else "Get sequence from XML file or PDB file.")
 
-    parser.add_argument('-mass_density', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算质量密度分布。")
+    parser.add_argument('-mass_density', action='store_true', help="是否计算质量密度分布。" if lang == 'zh' else "Whether to calculate mass density distribution.")
 
-    parser.add_argument('-amino_acid', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算质量密度分布。")
+    parser.add_argument('-amino_acid', action='store_true', help="按照氨基酸类型计算质量密度分布。" if lang == 'zh' else "Calculate mass density distribution by amino acid type.")
 
-    parser.add_argument('-msd', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算 MSD。")
+    parser.add_argument('-msd', action='store_true', help="是否计算 MSD。" if lang == 'zh' else "Whether to calculate MSD.")
 
-    parser.add_argument('-eed', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算末端距。")
+    parser.add_argument('-eed', action='store_true', help="是否计算末端距。" if lang == 'zh' else "Whether to calculate end-to-end distance.")
 
-    parser.add_argument('-seq_analysis', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否进行序列分析。")
+    parser.add_argument('-seq_analysis', action='store_true', help="是否进行序列分析。" if lang == 'zh' else "Whether to perform sequence analysis.")
 
     parser.add_argument('-seq', metavar="path/to/sequence_file or sequence_string",
-                        type=str, default=None, help="序列文件路径或直接传入的序列字符串。")
+                        type=str, default=None, help="序列文件路径或直接传入的序列字符串。" if lang == 'zh' else "Sequence file path or directly passed sequence string.")
 
     parser.add_argument('-seq_window', metavar="window_size",
-                        type=int, default=15, help="序列分析的滑动窗口大小，默认 15。")
+                        type=int, default=15, help="序列分析的滑动窗口大小，默认 15。" if lang == 'zh' else "Sliding window size for sequence analysis, default 15.")
 
     parser.add_argument('-seq_output', metavar="output_file",
-                        type=str, default=None, help="序列分析的输出文件路径。")
+                        type=str, default=None, help="序列分析的输出文件路径。" if lang == 'zh' else "Output file path for sequence analysis.")
 
-    parser.add_argument('-nc', metavar="T(rue)/F(alse)",
-                        type=str2value, default="unset", help="是否计算网络聚类。")
+    parser.add_argument('-nc', action='store_true', help="是否计算网络聚类。" if lang == 'zh' else "Whether to calculate network clustering.")
 
     parser.add_argument('-nc_node', metavar="node_molecule_type",
-                        type=str, default=None, help="网络聚类的节点分子类型，如 'cGAS'。")
+                        type=str, default=None, help="网络聚类的节点分子类型，如 'cGAS'。" if lang == 'zh' else "Node molecule type for network clustering, e.g., 'cGAS'.")
 
     parser.add_argument('-nc_edge', metavar="edge_molecule_type",
-                        type=str, default=None, help="网络聚类的边分子类型，如 'MED1'。")
+                        type=str, default=None, help="网络聚类的边分子类型，如 'MED1'。" if lang == 'zh' else "Edge molecule type for network clustering, e.g., 'MED1'.")
 
     parser.add_argument('-nc_threshold', metavar="distance_threshold",
-                        type=float, default=10.0, help="网络构建的距离阈值，默认 10.0 Å。")
+                        type=float, default=10.0, help="网络构建的距离阈值，默认 10.0 Å。" if lang == 'zh' else "Distance threshold for network construction, default 10.0 Å.")
 
     file_args = parser.parse_args()
 
     # 序列分析作为独立功能，不需要 -p 参数
     if file_args.seq_analysis:
-        print("开始序列分析...")
+        print(msg['start_seq_analysis'])
         if file_args.seq:
             # 动态导入 SequenceAnalyzer，避免其他模块的依赖问题
             from pygamd_v_me_50_meal.pygamd_analysis.sequence_analysis.sequence_analyzer import SequenceAnalyzer
@@ -189,10 +227,10 @@ def main():
             analyzer = SequenceAnalyzer(window=file_args.seq_window)
             
             # 交互式选择分析类型
-            print("请选择序列分析类型：")
-            print("1. NCPR (Net Charge Per Residue) 分析")
-            print("2. 芳香性分析")
-            choice = input("请输入选项编号 (1-2): ")
+            print(msg['select_analysis_type'])
+            print(msg['ncpr_analysis'])
+            print(msg['aromatic_analysis'])
+            choice = input(msg['enter_option'])
             
             if choice == "1":
                 analysis_type = "ncpr"
@@ -200,22 +238,22 @@ def main():
                 if not output_path:
                     output_path = f"{base_name}_NCPR.png"
                 fig, ax, values = analyzer.plot_ncpr(seq, save_path=output_path)
-                print(f"NCPR 分析完成，结果保存至: {output_path}")
-                print(f"NCPR values shape: {values.shape}")
+                print(msg['ncpr_analysis_done'].format(output_path=output_path))
+                print(msg['ncpr_values_shape'].format(shape=values.shape))
             elif choice == "2":
                 analysis_type = "aromatic"
                 output_path = file_args.seq_output
                 if not output_path:
                     output_path = f"{base_name}_aromaticity.png"
                 fig, ax, values = analyzer.plot_aromaticity(seq, save_path=output_path)
-                print(f"芳香性分析完成，结果保存至: {output_path}")
-                print(f"Aromaticity values shape: {values.shape}")
+                print(msg['aromatic_analysis_done'].format(output_path=output_path))
+                print(msg['aromatic_values_shape'].format(shape=values.shape))
             else:
-                print("错误: 无效的选项，请重新运行并输入正确的选项编号。")
+                print(msg['error_invalid_option'])
                 exit()
             exit()
         else:
-            print("错误: 请提供序列文件路径或序列字符串 -seq")
+            print(msg['error_no_seq'])
             exit()
 
     # 其他分析功能需要 -p 参数
@@ -230,7 +268,7 @@ def main():
             if not path:
                 path = os.getcwd()
         else:
-            raise ValueError("请提供体系目录路径。Please provide the path to the system directory.")
+            raise ValueError(msg['please_provide_path'])
 
     # path = os.path.join(current_dir_path, path)
 
@@ -241,7 +279,7 @@ def main():
         XMLGenerator(path, file_args.pdb2xml, file_args.box_size,
                      add_enm_bond=file_args.add_enm_bond, add_rigid_body=file_args.add_rigid_body,
                      add_domain=file_args.add_domain,
-                     dna_model=file_args.dna_model)
+                     dna_model=file_args.dna_model, gen_run_file=file_args.gen_run_file)
         exit()
 
     from pygamd_v_me_50_meal.data import Data
@@ -258,26 +296,17 @@ def main():
 
     if file_args.cm:
         from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator
-        print("开始计算 contact map 文件...")
-        if file_args.cm is True:
-            ContactMapCalculator(path,
-                                data=data,
-                                cm_choice=file_args.cm_choice,
-                                r_cut=file_args.r_cut,
-                                ).calculate_contact_map_parallel()
-        else:
-            cm = file_args.cm.split(",")
-            draw_limit = str2value(cm[1])
-            ContactMapCalculator(path,
-                                 data=data,
-                                 cm_choice=file_args.cm_choice,
-                                 r_cut=file_args.r_cut,
-                                 draw_limit=draw_limit,).calculate_contact_map_parallel()
+        print(msg['start_calculating_cm'])
+        ContactMapCalculator(path,
+                            data=data,
+                            cm_choice=file_args.cm_choice,
+                            r_cut=file_args.r_cut,
+                            ).calculate_contact_map_parallel()
         exit()
 
     if file_args.em:
         from pygamd_v_me_50_meal.pygamd_analysis.energy_map_calculator import EnergyMapCalculator
-        print("开始计算 energy matrix 文件...")
+        print(msg['start_calculating_em'])
         EnergyMapCalculator(path,
                              data=data,
                              em_choice=file_args.cm_choice,
@@ -310,11 +339,11 @@ def main():
 
     if file_args.nc:
         from pygamd_v_me_50_meal.pygamd_analysis.network_cluster_calculator import NetworkClusterCalculator
-        print("开始计算网络聚类...")
+        print(msg['start_calculating_nc'])
         if file_args.nc_node is None or file_args.nc_edge is None:
-            print(f"Your molecule types are：\n{data.molecules}")
-            node_idx = int(input("请输入网络聚类的节点分子类型编号（例如 1）：")) - 1
-            edge_idx = int(input("请输入网络聚类的边分子类型编号（例如 2）：")) - 1
+            print(msg['your_molecule_types'].format(data=data.molecules))
+            node_idx = int(input(msg['enter_node_mol_idx'])) - 1
+            edge_idx = int(input(msg['enter_edge_mol_idx'])) - 1
             node_mol = data.mol_class_list[node_idx-1]
             edge_mol = data.mol_class_list[edge_idx-1]
         else:

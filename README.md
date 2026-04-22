@@ -98,35 +98,36 @@ v50 -pdb2xml /path/to/pdb_file.pdb -dna_model 1  # 1=3SPN, 2=2BeadMittal
 例如，体系中含有 40 个长度为 256 的 A 分子、20 个长度为 512 的 B 分子、30 个长度为 729 的 C 分子，
 须将体系命名为"40A-256+20B-512+30C-729" (本手册将以`40A-256+20B-512+30C-729`文件夹为例). 
 2. 请将分子动力学模拟得到的 XML 文件放置在提供的目录下或者在该目录下的 xml 文件夹内。
-3. 进行坐标提取：`v50 -p 40A-256+20B-512+30C-729 -xyz t`
+3. 进行坐标提取：`v50 -p 40A-256+20B-512+30C-729 -xyz`
 4. #### 可选参数 
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `-remove_enm` | 如果加入了弹性网络，可用此选项移除弹性键 | `unset` |
-| `-remove_condensate_pbc` | 若设置为 t，则会去除 PBC，并将最大的凝聚体移动到盒子中央 | `unset` |
+| `-remove_enm` | 是否移除弹性键 | 无 |
+| `-remove_condensate_pbc` | 是否去除 PBC，并将最大的凝聚体移动到盒子中央 | 无 |
 
 使用示例：
 ```
-v50 -p 40A-256+20B-512+30C-729 -xyz t -remove_enm t
-v50 -p 40A-256+20B-512+30C-729 -xyz t -remove_condensate_pbc t
+v50 -p 40A-256+20B-512+30C-729 -xyz -remove_enm
+v50 -p 40A-256+20B-512+30C-729 -xyz -remove_condensate_pbc
 ```
 
 
 ### 2. 计算接触图 (Contact Map)
 注意，在计算分子间的 Contact Map 时，已经排除了单个分子内的相互作用。 
 
-    v50 -p 40A-256+20B-512+30C-729 -cm t
+    v50 -p 40A-256+20B-512+30C-729 -cm
 
 **参数说明：**
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `-r_cut` | 设置计算 Contact Map 的 $r_{cut}$ | `默认值` |
+| `-cm` | 是否计算接触图（contact map），计算后会自动绘图 | 无 |
+| `-r_cut` | 设置计算 Contact Map 的 $r_{cut}$ | 4.0 |
 
 使用示例：
 ```
-v50 -p 40A-256+20B-512+30C-729 -cm t -r_cut 4.0
+v50 -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
 ```
 
 ### 3. 计算 Rg、RMSD、RMSF
@@ -135,16 +136,16 @@ v50 -p 40A-256+20B-512+30C-729 -cm t -r_cut 4.0
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `-rg` | 是否计算回旋半径 (Rg)，设为 `t` 启用 | `unset` |
-| `-rmsd` | 是否计算均方根偏差 (RMSD)，设为 `t` 启用 | `unset` |
-| `-rmsf` | 是否计算均方根涨落 (RMSF)，设为 `t` 启用 | `unset` |
+| `-rg` | 是否计算回旋半径 (Rg) | 无 |
+| `-rmsd` | 是否计算均方根偏差 (RMSD) | 无 |
+| `-rmsf` | 是否计算均方根涨落 (RMSF) | 无 |
 | `-ref` | 参考结构文件路径，用于 RMSD 和 RMSF 计算 | `None` |
 
 使用示例：
 ```
-v50 -p 40A-256+20B-512+30C-729 -rg t
-v50 -p 40A-256+20B-512+30C-729 -rmsd t -ref reference_file.xml
-v50 -p 40A-256+20B-512+30C-729 -rmsf t -ref reference_file.xml
+v50 -p 40A-256+20B-512+30C-729 -rg
+v50 -p 40A-256+20B-512+30C-729 -rmsd -ref reference_file.xml
+v50 -p 40A-256+20B-512+30C-729 -rmsf -ref reference_file.xml
 ```
 
 在运行过程中会询问需要计算的分子，ref 提供的哪个就计算哪个
@@ -156,11 +157,11 @@ v50 -p 40A-256+20B-512+30C-729 -rmsf t -ref reference_file.xml
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `-mass_density` | 是否计算质量数密度分布，设为 `t` 启用 | `unset` |
+| `-mass_density` | 是否计算质量数密度分布 | 无 |
 
 使用示例：
 ```
-v50 -mass_density t
+v50 -mass_density
 ```
 
 ## 其他分析
@@ -181,29 +182,29 @@ v50 -mass_density t
 
 1. 直接传入序列字符串：
 ```
-v50 -seq_analysis t -seq "MKVDELVQGLLKQISAEELKKARNEIARQHLEKTHQDLKKDILTYLTDRQIKQLEDAFQKLLAEKTEENKLAQAVENSLGQLEEKLKEA"
+v50 -seq_analysis -seq "MKVDELVQGLLKQISAEELKKARNEIARQHLEKTHQDLKKDILTYLTDRQIKQLEDAFQKLLAEKTEENKLAQAVENSLGQLEEKLKEA"
 ```
 
 2. 通过文件路径传入序列：
 ```
-v50 -seq_analysis t -seq pro_sequence.txt
+v50 -seq_analysis -seq pro_sequence.txt
 ```
 
 3. 指定滑动窗口大小（默认 15）：
 ```
-v50 -seq_analysis t -seq pro_sequence.txt -seq_window 20
+v50 -seq_analysis -seq pro_sequence.txt -seq_window 20
 ```
 
 4. 指定输出文件路径：
 ```
-v50 -seq_analysis t -seq pro_sequence.txt -seq_output pro_analysis.png
+v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 ```
 
 **参数说明：**
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `-seq_analysis` | 是否进行序列分析，设为 `t` 启用 | `unset` |
+| `-seq_analysis` | 是否进行序列分析 | 无 |
 | `-seq` | 序列字符串或序列文件路径 | `None` |
 | `-seq_window` | 滑动窗口大小 | `15` |
 | `-seq_output` | 输出图片路径 | `自动生成` |
