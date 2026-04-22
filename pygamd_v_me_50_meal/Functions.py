@@ -6,6 +6,8 @@ import torch as torch
 
 from sklearn.decomposition import PCA
 
+from pygamd_v_me_50_meal.constants import AMINO_ACID_SIGMA, HYDROPHOBICITY_LAMBDA, AMINO_ACID_CHARGE
+
 
 class Functions:
     def __init__(self):
@@ -69,22 +71,10 @@ class Functions:
         :param sequence_b: 序列 B，可以是字符串或列表
         :return: 平均分子体积矩阵，形状为 (len(sequence_a), len(sequence_b))
         """
-        sigma_dict = {'A':0.504, 'R':0.655999, 'N':0.568, 'D':0.558, 'C':0.548,
-                      'Q':0.602, 'E':0.592, 'G':0.45, 'H':0.608, 'I':0.618,
-                      'L':0.618, 'K':0.636, 'M':0.618, 'F':0.636, 'P':0.555999,
-                      'S':0.518, 'T':0.562, 'W':0.678, 'Y':0.646, 'V':0.586000,
-                      "M1": 0.618,
-                      "L2": 0.618,
-                      # RNA
-                      'Ad': 0.844, 'Cd': 0.822, 'Gd': 0.851, 'Ud': 0.817,
-                      # DNA
-                      "Ph": 0.611, "Su": 0.611, "Ab": 0.611, "Gb": 0.611, "Cb": 0.611, "Tb": 0.611,
-                      # Enzo np
-                      "CA": 0.47, "Nda": 0.47, "COH": 0.47, "COO": 0.47, }
 
         # 计算平均分子体积矩阵
-        seq_sigma_list_a = np.array([sigma_dict[i] for i in sequence_a])
-        seq_sigma_list_b = np.array([sigma_dict[i] for i in sequence_b])
+        seq_sigma_list_a = np.array([AMINO_ACID_SIGMA[i] for i in sequence_a])
+        seq_sigma_list_b = np.array([AMINO_ACID_SIGMA[i] for i in sequence_b])
         mean_matrix = (seq_sigma_list_a[:, None] + seq_sigma_list_b[None, :]) / 2
         return mean_matrix
 
@@ -96,36 +86,19 @@ class Functions:
         :param sequence_b: 序列 B，可以是字符串或列表
         :return: 平均分子体积矩阵，形状为 (len(sequence_a), len(sequence_b))
         """
-        lambda_dict = {
-            # Amino acids
-            'A': 0.0011162643859539204, 'R': 0.7249915947715212, 'N': 0.43832729970272843, 'D': 0.029182123776349763, 'C': 0.610362354303913,
-            'Q': 0.3268188050525212, 'E': 0.006100281608649786, 'G': 0.7012713677972457, 'H': 0.46519480823469783, 'I': 0.6075268330845265,
-            'L': 0.5563020305733198, 'K': 0.058617173158697924, 'M': 0.7458993420826714, 'F': 0.9216959832175945, 'P': 0.37296418535993475,
-            'S': 0.46485701300656046, 'T': 0.5379777613307019, 'W': 0.9844235478393931, 'Y': 0.9950108229594323, 'V': 0.41850068525598694,
-
-            # DNA coarse-grained beads
-            "Ph": 0.459459, "Su": 0.756757, "Ab": 0.351351, "Gb": 0.540541, "Cb": 0.297297, "Tb": 0.594595,
-        }
 
         # 计算平均分子体积矩阵
-        seq_lambda_list_a = np.array([lambda_dict[i] for i in sequence_a])
-        seq_lambda_list_b = np.array([lambda_dict[i] for i in sequence_b])
+        seq_lambda_list_a = np.array([HYDROPHOBICITY_LAMBDA[i] for i in sequence_a])
+        seq_lambda_list_b = np.array([HYDROPHOBICITY_LAMBDA[i] for i in sequence_b])
         lambda_mean_matrix = (seq_lambda_list_a[:, None] + seq_lambda_list_b[None, :]) / 2
         return lambda_mean_matrix
 
 
     @staticmethod
     def cal_charge_dict(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
-        charge_dict = {
-            # Amino acids
-            'K': 1, 'R': 1, 'D': -1, 'E': -1,
-            # DNA coarse-grained beads
-            "Ph": -1,
-        }
-
         # 计算平均分子体积矩阵
-        seq_charge_list_a = np.array([charge_dict[i] if i in charge_dict else 0 for i in sequence_a])
-        seq_charge_list_b = np.array([charge_dict[i] if i in charge_dict else 0 for i in sequence_b])
+        seq_charge_list_a = np.array([AMINO_ACID_CHARGE[i] if i in AMINO_ACID_CHARGE else 0 for i in sequence_a])
+        seq_charge_list_b = np.array([AMINO_ACID_CHARGE[i] if i in AMINO_ACID_CHARGE else 0 for i in sequence_b])
         charge_mean_matrix = (seq_charge_list_a[:, None] * seq_charge_list_b[None, :])
         return charge_mean_matrix
 

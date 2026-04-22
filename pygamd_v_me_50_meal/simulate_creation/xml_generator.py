@@ -1026,29 +1026,43 @@ class XMLGenerator:
             f.write("ahdh = force_field_gala.AHDHForce(all_info, neighbor_list, rcut, ShortRangeEpsilon, debye_length, \"ahdh_DNA.force_field\", dna=True)\n")
             f.write("app.add(ahdh)\n\n")
 
-            ahdh_params = {'A':[0.504, 0.0011162643859539204], 'R':[0.655999, 0.7249915947715212],
-                           'N':[0.568, 0.43832729970272843], 'D':[0.558, 0.029182123776349763],
-                           'C':[0.548, 0.610362354303913], 'Q':[0.602, 0.3268188050525212],
-                           'E':[0.592, 0.006100281608649786], 'G':[0.45, 0.7012713677972457],
-                           'H':[0.608, 0.46519480823469783], 'I':[0.618, 0.6075268330845265],
-                           'L':[0.618, 0.5563020305733198], 'K':[0.636, 0.058617173158697924],
-                           'M':[0.618, 0.7458993420826714], 'F':[0.636, 0.9216959832175945],
-                           'P':[0.555999, 0.37296418535993475], 'S':[0.518, 0.46485701300656046],
-                           'T':[0.562, 0.5379777613307019], 'W':[0.678, 0.9844235478393931],
-                           'Y':[0.646, 0.9950108229594323], 'V':[0.586000, 0.41850068525598694],
-                           "AD": [0.504, 0.729729729729730], "RD": [0.65599, 0.0],
-                           "ND": [0.568, 0.432432432432432], "DD": [0.558, 0.378378378378378],
-                           "CD": [0.548, 0.594594594594595], "QD": [0.602, 0.513513513513514],
-                           "ED": [0.592, 0.459459459459459], "GD": [0.45, 0.648648648648649],
-                           "HD": [0.608, 0.513513513513514], "ID": [0.618, 0.972972972972973],
-                           "LD": [0.618, 0.972972972972973], "KD": [0.636, 0.513513513513514],
-                           "MD": [0.618, 0.837837837837838], "FD": [0.636, 1.0],
-                           "PD": [0.555999, 1.0], "SD": [0.518, 0.594594594594595],
-                           "TD": [0.562, 0.675675675675676], "WD": [0.678, 0.945945945945946],
-                           "YD": [0.646, 0.864864864864865], "VD": [0.586000, 0.891891891891892],
-                           "Ph": [0.611, 0.459459], "Su": [0.611, 0.756757],
-                           "Ab": [0.611, 0.351351], "Gb": [0.611, 0.540541],
-                           "Cb": [0.611, 0.297297], "Tb": [0.611, 0.594595]}
+            from pygamd_v_me_50_meal.constants import AMINO_ACID_SIGMA, HYDROPHOBICITY_LAMBDA
+            
+            # 构建ahdh_params字典
+            ahdh_params = {}
+            
+            # 添加标准氨基酸参数
+            amino_acids = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
+            for aa in amino_acids:
+                ahdh_params[aa] = [AMINO_ACID_SIGMA[aa], HYDROPHOBICITY_LAMBDA[aa]]
+            
+            # 添加域内氨基酸参数（带有'D'后缀）
+            domain_amino_acids = {"AD": [AMINO_ACID_SIGMA['A'], 0.729729729729730], 
+                                 "RD": [AMINO_ACID_SIGMA['R'], 0.0],
+                                 "ND": [AMINO_ACID_SIGMA['N'], 0.432432432432432], 
+                                 "DD": [AMINO_ACID_SIGMA['D'], 0.378378378378378],
+                                 "CD": [AMINO_ACID_SIGMA['C'], 0.594594594594595], 
+                                 "QD": [AMINO_ACID_SIGMA['Q'], 0.513513513513514],
+                                 "ED": [AMINO_ACID_SIGMA['E'], 0.459459459459459], 
+                                 "GD": [AMINO_ACID_SIGMA['G'], 0.648648648648649],
+                                 "HD": [AMINO_ACID_SIGMA['H'], 0.513513513513514], 
+                                 "ID": [AMINO_ACID_SIGMA['I'], 0.972972972972973],
+                                 "LD": [AMINO_ACID_SIGMA['L'], 0.972972972972973], 
+                                 "KD": [AMINO_ACID_SIGMA['K'], 0.513513513513514],
+                                 "MD": [AMINO_ACID_SIGMA['M'], 0.837837837837838], 
+                                 "FD": [AMINO_ACID_SIGMA['F'], 1.0],
+                                 "PD": [AMINO_ACID_SIGMA['P'], 1.0], 
+                                 "SD": [AMINO_ACID_SIGMA['S'], 0.594594594594595],
+                                 "TD": [AMINO_ACID_SIGMA['T'], 0.675675675675676], 
+                                 "WD": [AMINO_ACID_SIGMA['W'], 0.945945945945946],
+                                 "YD": [AMINO_ACID_SIGMA['Y'], 0.864864864864865], 
+                                 "VD": [AMINO_ACID_SIGMA['V'], 0.891891891891892]}
+            ahdh_params.update(domain_amino_acids)
+            
+            # 添加DNA珠子参数
+            dna_beads = ["Ph", "Su", "Ab", "Gb", "Cb", "Tb"]
+            for bead in dna_beads:
+                ahdh_params[bead] = [AMINO_ACID_SIGMA[bead], HYDROPHOBICITY_LAMBDA[bead]]
 
             with open(os.path.join(self.path, "ahdh_DNA.force_field"), "w") as f_force_field:
                 f_force_field.write("<ah_params>\n")

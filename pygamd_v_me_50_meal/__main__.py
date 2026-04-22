@@ -7,6 +7,7 @@ import argparse
 
 import matplotlib.pyplot as plt
 
+import pygamd_v_me_50_meal as p50
 from pygamd_v_me_50_meal.utils import str2value
 
 
@@ -34,14 +35,15 @@ messages = {
         'start_seq_analysis': '开始序列分析...',
         'error_no_seq': '错误: 请提供序列文件路径或序列字符串 -seq',
         'select_analysis_type': '请选择序列分析类型：',
-        'ncpr_analysis': '1. NCPR (Net Charge Per Residue) 分析',
-        'aromatic_analysis': '2. 芳香性分析',
-        'enter_option': '请输入选项编号 (1-2): ',
+        'seq_analysis': '1. NCPR (Net Charge Per Residue) 分析\n2. 芳香性分析\n3. 疏水性分析',
+        'enter_option': '请输入选项编号 (1-3): ',
         'error_invalid_option': '错误: 无效的选项，请重新运行并输入正确的选项编号。',
         'ncpr_analysis_done': 'NCPR 分析完成，结果保存至: {output_path}',
         'ncpr_values_shape': 'NCPR values shape: {shape}',
         'aromatic_analysis_done': '芳香性分析完成，结果保存至: {output_path}',
         'aromatic_values_shape': 'Aromaticity values shape: {shape}',
+        'hydrophobicity_analysis_done': '疏水性分析完成，结果保存至: {output_path}',
+        'hydrophobicity_values_shape': 'Hydrophobicity values shape: {shape}',
         'please_provide_path': 'Please provide the path to the system directory.',
         'start_calculating_cm': '开始计算接触图文件...',
         'start_calculating_em': '开始计算 energy matrix 文件...',
@@ -56,14 +58,15 @@ messages = {
         'start_seq_analysis': 'Starting sequence analysis...',
         'error_no_seq': 'Error: Please provide sequence file path or sequence string with -seq',
         'select_analysis_type': 'Please select sequence analysis type:',
-        'ncpr_analysis': '1. NCPR (Net Charge Per Residue) analysis',
-        'aromatic_analysis': '2. Aromaticity analysis',
-        'enter_option': 'Please enter option number (1-2): ',
+        'seq_analysis': '1. NCPR (Net Charge Per Residue) analysis,\n2. Aromaticity analysis\n3. Hydrophobicity analysis',
+        'enter_option': 'Please enter option number (1-3): ''',
         'error_invalid_option': 'Error: Invalid option, please run again and enter the correct option number.',
         'ncpr_analysis_done': 'NCPR analysis completed, results saved to: {output_path}',
         'ncpr_values_shape': 'NCPR values shape: {shape}',
         'aromatic_analysis_done': 'Aromaticity analysis completed, results saved to: {output_path}',
         'aromatic_values_shape': 'Aromaticity values shape: {shape}',
+        'hydrophobicity_analysis_done': 'Hydrophobicity analysis completed, results saved to: {output_path}',
+        'hydrophobicity_values_shape': 'Hydrophobicity values shape: {shape}',
         'please_provide_path': 'Please provide the path to the system directory.',
         'start_calculating_cm': 'Starting to calculate contact map files...',
         'start_calculating_em': 'Starting to calculate energy matrix files...',
@@ -75,7 +78,7 @@ messages = {
 }
 
 def main():
-    print(f"New version notification {__version__}.")
+    print(f"New version notification {p50.__version__}.")
     print("Now you can use command v50_en to run the package, which is in English.")
     run_main('zh')
 
@@ -228,8 +231,7 @@ def run_main(lang):
             
             # 交互式选择分析类型
             print(msg['select_analysis_type'])
-            print(msg['ncpr_analysis'])
-            print(msg['aromatic_analysis'])
+            print(msg['seq_analysis'])
             choice = input(msg['enter_option'])
             
             if choice == "1":
@@ -248,6 +250,14 @@ def run_main(lang):
                 fig, ax, values = analyzer.plot_aromaticity(seq, save_path=output_path)
                 print(msg['aromatic_analysis_done'].format(output_path=output_path))
                 print(msg['aromatic_values_shape'].format(shape=values.shape))
+            elif choice == "3":
+                analysis_type = "hydrophobicity"
+                output_path = file_args.seq_output
+                if not output_path:
+                    output_path = f"{base_name}_hydrophobicity.png"
+                fig, ax, values = analyzer.plot_hydrophobicity(seq, save_path=output_path)
+                print(msg['hydrophobicity_analysis_done'].format(output_path=output_path))
+                print(msg['hydrophobicity_values_shape'].format(shape=values.shape))
             else:
                 print(msg['error_invalid_option'])
                 exit()

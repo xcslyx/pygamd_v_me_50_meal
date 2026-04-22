@@ -7,28 +7,34 @@
 ---
 ## 安装
 可直接使用 `pip` 安装：
-
-    pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+```bash
+pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+```
 
 或者
-
-    git clone https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
-    cd pygamd_v_me_50_meal
-    pip install -e .
+```bash
+git clone https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+cd pygamd_v_me_50_meal
+pip install -e .
+```
 
 ---
 ## 分子动力学模拟前的文件生成
 
 ### 生成 XML 文件
 从 PDB 文件生成模拟所需要的粗粒化 XML 文件，目前支持蛋白质、DNA 和 RNA 粗粒化模型的生成。
-#### 使用
-    v50 -pdb2xml /path/to/pdb_file.pdb
-    v50 -p /path/to/system -pdb2xml filename.pdb
+#### 使用方法：
+```bash
+v50 -pdb2xml /path/to/pdb_file.pdb
+v50 -p /path/to/system -pdb2xml filename.pdb
+```
 
 例如，要将 `/home/protein` 文件夹下的 **1kx5.pdb** 转化为 **xml** 文件，输入 
-
-    v50 -pdb2xml /home/protein/1kx5.pdb
-    或 v50 -p /home/protein -pdb2xml 1kx5.pdb
+```bash
+v50 -pdb2xml /home/protein/1kx5.pdb
+# 或
+v50 -p /home/protein -pdb2xml 1kx5.pdb
+```
 
 即可生成 **1kx5.xml** 文件。
 
@@ -40,16 +46,13 @@
 - 设置刚体结构域
 - 对结构域单独设置粒子类型
 
-##### 蛋白质粗粒化模型：一个氨基酸粗粒化为一个粒子：Dignon G L, Zheng W, Kim Y C, Best R B, Mittal J. PLOS Computational Biology, 2018, 14(1): e1005941
+##### 蛋白质粗粒化模型：一个氨基酸粗粒化为一个粒子
 - **HPS 模型**：适用于 HPS-Urry、CALVADOS 系列等力场
 - **Mpipi 模型**：另一种蛋白质粗粒化模型
 
 ##### DNA 粗粒化模型：目前支持两种模型
 1. 3SPN 模型 
-   > Knotts T A, Rathore N, Schwartz D C, De Pablo J J. A coarse grain model for DNA[J]. _The Journal of Chemical Physics_, **2007**, 126(8): 084901.
-
-2. Mittal 2 Bead 模型：
-   > Kapoor U, Kim Y C, Mittal J. Coarse-Grained Models to Study Protein–DNA Interactions and Liquid–Liquid Phase Separation[J]. _Journal of Chemical Theory and Computation_, **2023**: acs.jctc.3c00525.
+2. Mittal 2 Bead 模型
 
 注意：目前“Mittal 2 Bead 模型”还未能成功在 PYGAMD 中实现。
 
@@ -107,7 +110,7 @@ v50 -pdb2xml /path/to/pdb_file.pdb -dna_model 1  # 1=3SPN, 2=2BeadMittal
 | `-remove_condensate_pbc` | 是否去除 PBC，并将最大的凝聚体移动到盒子中央 | 无 |
 
 使用示例：
-```
+```bash
 v50 -p 40A-256+20B-512+30C-729 -xyz -remove_enm
 v50 -p 40A-256+20B-512+30C-729 -xyz -remove_condensate_pbc
 ```
@@ -126,7 +129,7 @@ v50 -p 40A-256+20B-512+30C-729 -xyz -remove_condensate_pbc
 | `-r_cut` | 设置计算 Contact Map 的 $r_{cut}$ | 4.0 |
 
 使用示例：
-```
+```bash
 v50 -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
 ```
 
@@ -142,7 +145,7 @@ v50 -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
 | `-ref` | 参考结构文件路径，用于 RMSD 和 RMSF 计算 | `None` |
 
 使用示例：
-```
+```bash
 v50 -p 40A-256+20B-512+30C-729 -rg
 v50 -p 40A-256+20B-512+30C-729 -rmsd -ref reference_file.xml
 v50 -p 40A-256+20B-512+30C-729 -rmsf -ref reference_file.xml
@@ -160,7 +163,7 @@ v50 -p 40A-256+20B-512+30C-729 -rmsf -ref reference_file.xml
 | `-mass_density` | 是否计算质量数密度分布 | 无 |
 
 使用示例：
-```
+```bash
 v50 -mass_density
 ```
 
@@ -168,35 +171,28 @@ v50 -mass_density
 
 ### 序列分析
 
-序列分析模块提供了两种分析功能：NCPR（净电荷分析）和芳香性分析。
-
-**功能特点：**
-- 统一的命令行接口，通过交互式界面选择分析类型
-- 支持直接传入序列字符串或序列文件路径
-- 边缘自适应补全算法，保持输出长度等于输入长度
-- 分段着色（NCPR：红色正电荷，蓝色负电荷；芳香性：紫色）
-- 面积填充，增强可视化效果
-- 自动调整 x 轴刻度间隔，适应不同长度的序列
+序列分析模块提供了两种分析功能：NCPR（净电荷分析）、芳香性分析和疏水性分析。
 
 **使用方法：**
 
 1. 直接传入序列字符串：
-```
+```bash
 v50 -seq_analysis -seq "MKVDELVQGLLKQISAEELKKARNEIARQHLEKTHQDLKKDILTYLTDRQIKQLEDAFQKLLAEKTEENKLAQAVENSLGQLEEKLKEA"
 ```
 
 2. 通过文件路径传入序列：
-```
+```bash
 v50 -seq_analysis -seq pro_sequence.txt
 ```
 
 3. 指定滑动窗口大小（默认 15）：
-```
+```bash
 v50 -seq_analysis -seq pro_sequence.txt -seq_window 20
 ```
 
 4. 指定输出文件路径：
-```
+
+```bash
 v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 ```
 
@@ -211,7 +207,7 @@ v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 
 **使用流程：**
 1. 运行命令后，会提示选择分析类型
-2. 输入 `1` 选择 NCPR 分析，输入 `2` 选择芳香性分析
+2. 输入 `1` 选择 NCPR 分析，输入 `2` 选择芳香性分析，输入 `3` 选择疏水性分析
 3. 分析完成后会生成相应的 PNG 格式图片
 
 ## 故障排除
@@ -235,7 +231,6 @@ v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 4. **坐标提取失败**
    - 确保目录命名格式正确（如 "40A-256+20B-512"）
    - 检查 XML 文件是否存在于正确位置
-   - 对于大型体系，可能需要增加内存限制
 
 ## 版本信息
 
@@ -265,7 +260,7 @@ v50 -pdb2xml /path/to/protein.pdb
 
 ```bash
 # 分析序列文件
-v50 -seq_analysis t -seq protein_sequence.txt -seq_window 20
+v50 -seq_analysis -seq protein_sequence.txt -seq_window 20
 
 # 运行过程中选择：
 # 1. NCPR 分析

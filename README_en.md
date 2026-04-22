@@ -7,14 +7,17 @@ This software consists of two parts: file generation before molecular dynamics s
 ---
 ## Installation
 You can directly install using `pip`:
-
-    pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+```bash
+pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+```
 
 Or
 
+```bash
     git clone https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
     cd pygamd_v_me_50_meal
     pip install -e .
+```
 
 ---
 ## File Generation Before Molecular Dynamics Simulation
@@ -23,13 +26,13 @@ Or
 Generate coarse-grained XML files for simulation from PDB files, currently supporting the generation of protein, DNA, and RNA coarse-grained models.
 
 #### Usage
-    v50 -pdb2xml /path/to/pdb_file.pdb
-    v50 -p /path/to/system -pdb2xml filename.pdb
+    v50_en -pdb2xml /path/to/pdb_file.pdb
+    v50_en -p /path/to/system -pdb2xml filename.pdb
 
 For example, to convert **1kx5.pdb** in the `/home/protein` folder to an **xml** file, enter
 
-    v50 -pdb2xml /home/protein/1kx5.pdb
-    or v50 -p /home/protein -pdb2xml 1kx5.pdb
+    v50_en -pdb2xml /home/protein/1kx5.pdb
+    or v50_en -p /home/protein -pdb2xml 1kx5.pdb
 
 This will generate the **1kx5.xml** file.
 
@@ -41,16 +44,13 @@ This will generate the **1kx5.xml** file.
 - Setting rigid body domains
 - Setting separate particle types for domains
 
-##### Protein coarse-grained model: one amino acid coarse-grained into one particle: Dignon G L, Zheng W, Kim Y C, Best R B, Mittal J. PLOS Computational Biology, 2018, 14(1): e1005941
+##### Protein coarse-grained model: one amino acid coarse-grained into one particle
 - **HPS model**: suitable for HPS-Urry, CALVADOS series force fields
 - **Mpipi model**: another protein coarse-grained model
 
 ##### DNA coarse-grained models: currently supporting two models
 1. 3SPN model
-   > Knotts T A, Rathore N, Schwartz D C, De Pablo J J. A coarse grain model for DNA[J]. _The Journal of Chemical Physics_, **2007**, 126(8): 084901.
-
 2. Mittal 2 Bead model:
-   > Kapoor U, Kim Y C, Mittal J. Coarse-Grained Models to Study Protein–DNA Interactions and Liquid–Liquid Phase Separation[J]. _Journal of Chemical Theory and Computation_, **2023**: acs.jctc.3c00525.
 
 Note: Currently, the "Mittal 2 Bead model" has not been successfully implemented in PYGAMD.
 
@@ -73,19 +73,19 @@ Note: Currently, the "Mittal 2 Bead model" has not been successfully implemented
 Usage examples:
 ```bash
 # Set box size
-v50 -pdb2xml /path/to/pdb_file.pdb -box_size 150
+v50_en -pdb2xml /path/to/pdb_file.pdb -box_size 150
 
 # Predefine elastic network
-v50 -pdb2xml /path/to/pdb_file.pdb -add_enm_bond "1-50,51-100"
+v50_en -pdb2xml /path/to/pdb_file.pdb -add_enm_bond "1-50,51-100"
 
 # Predefine rigid body domains
-v50 -pdb2xml /path/to/pdb_file.pdb -add_rigid_body "1-50,51-100"
+v50_en -pdb2xml /path/to/pdb_file.pdb -add_rigid_body "1-50,51-100"
 
 # Automatically generate run file
-v50 -pdb2xml /path/to/pdb_file.pdb -gen_run_file t
+v50_en -pdb2xml /path/to/pdb_file.pdb -gen_run_file t
 
 # Specify DNA model
-v50 -pdb2xml /path/to/pdb_file.pdb -dna_model 1  # 1=3SPN, 2=2BeadMittal
+v50_en -pdb2xml /path/to/pdb_file.pdb -dna_model 1  # 1=3SPN, 2=2BeadMittal
 ```
 
 ---
@@ -99,7 +99,7 @@ Note: Before any data processing, coordinates need to be extracted first.
    For example, if the system contains 40 A molecules of length 256, 20 B molecules of length 512, and 30 C molecules of length 729,
    the system must be named "40A-256+20B-512+30C-729" (this manual will use the `40A-256+20B-512+30C-729` folder as an example).
 2. Place the XML files obtained from molecular dynamics simulation in the provided directory or in the xml folder under that directory.
-3. Extract coordinates: `v50 -p 40A-256+20B-512+30C-729 -xyz`
+3. Extract coordinates: `v50_en -p 40A-256+20B-512+30C-729 -xyz`
 4. #### Optional Parameters
 
 | Parameter | Description | Default Value |
@@ -108,16 +108,18 @@ Note: Before any data processing, coordinates need to be extracted first.
 | `-remove_condensate_pbc` | Whether to remove PBC and move the largest condensate to the center of the box | None |
 
 Usage examples:
-```
-v50 -p 40A-256+20B-512+30C-729 -xyz -remove_enm
-v50 -p 40A-256+20B-512+30C-729 -xyz -remove_condensate_pbc
+```bash
+v50_en -p 40A-256+20B-512+30C-729 -xyz -remove_enm
+v50_en -p 40A-256+20B-512+30C-729 -xyz -remove_condensate_pbc
 ```
 
 
 ### 2. Calculate Contact Map
 Note: When calculating intermolecular Contact Map, intra-molecular interactions have been excluded.
 
-    v50 -p 40A-256+20B-512+30C-729 -cm
+```bash
+v50_en -p 40A-256+20B-512+30C-729 -cm
+```
 
 **Parameter Description:**
 
@@ -127,8 +129,8 @@ Note: When calculating intermolecular Contact Map, intra-molecular interactions 
 | `-r_cut` | Set $r_{cut}$ for contact map calculation | 4.0 |
 
 Usage example:
-```
-v50 -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
+```bash
+v50_en -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
 ```
 
 ### 3. Calculate Rg, RMSD, RMSF
@@ -143,10 +145,10 @@ v50 -p 40A-256+20B-512+30C-729 -cm -r_cut 4.0
 | `-ref` | Reference structure file path for RMSD and RMSF calculation | `None` |
 
 Usage examples:
-```
-v50 -p 40A-256+20B-512+30C-729 -rg
-v50 -p 40A-256+20B-512+30C-729 -rmsd -ref reference_file.xml
-v50 -p 40A-256+20B-512+30C-729 -rmsf -ref reference_file.xml
+```bash
+v50_en -p 40A-256+20B-512+30C-729 -rg
+v50_en -p 40A-256+20B-512+30C-729 -rmsd -ref reference_file.xml
+v50_en -p 40A-256+20B-512+30C-729 -rmsf -ref reference_file.xml
 ```
 
 During runtime, you will be asked which molecule to calculate, and it will calculate the one provided by ref
@@ -161,8 +163,8 @@ Note: Please remove condensate PBC before using this function.
 | `-mass_density` | Whether to calculate mass density distribution | None |
 
 Usage example:
-```
-v50 -mass_density
+```bash
+v50_en -mass_density
 ```
 
 ## Other Analyses
@@ -182,23 +184,23 @@ The sequence analysis module provides two analysis functions: NCPR (Net Charge P
 **Usage Methods:**
 
 1. Directly pass sequence string:
-```
-v50 -seq_analysis -seq "MKVDELVQGLLKQISAEELKKARNEIARQHLEKTHQDLKKDILTYLTDRQIKQLEDAFQKLLAEKTEENKLAQAVENSLGQLEEKLKEA"
+```bash
+v50_en -seq_analysis -seq "MKVDELVQGLLKQISAEELKKARNEIARQHLEKTHQDLKKDILTYLTDRQIKQLEDAFQKLLAEKTEENKLAQAVENSLGQLEEKLKEA"
 ```
 
 2. Pass sequence through file path:
-```
-v50 -seq_analysis -seq pro_sequence.txt
+```bash
+v50_en -seq_analysis -seq pro_sequence.txt
 ```
 
 3. Specify sliding window size (default 15):
-```
-v50 -seq_analysis -seq pro_sequence.txt -seq_window 20
+```bash
+v50_en -seq_analysis -seq pro_sequence.txt -seq_window 20
 ```
 
 4. Specify output file path:
-```
-v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
+```bash
+v50_en -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 ```
 
 **Parameter Description:**
@@ -253,12 +255,12 @@ v50 -seq_analysis -seq pro_sequence.txt -seq_output pro_analysis.png
 
 ```bash
 # Generate XML file and add elastic network
-v50 -pdb2xml /path/to/protein.pdb
+v50_en -pdb2xml /path/to/protein.pdb
 
 # During runtime, select:
 # 1. Protein model: HPS
 # 2. Whether to set elastic network: y
-# 3. Domain range: 1-100,101-200
+# 3. Domain range: 101-200
 # 4. Whether to generate run file: y
 ```
 
@@ -266,7 +268,7 @@ v50 -pdb2xml /path/to/protein.pdb
 
 ```bash
 # Analyze sequence file
-v50 -seq_analysis t -seq protein_sequence.txt -seq_window 20
+v50_en -seq_analysis t -seq protein_sequence.txt -seq_window 20
 
 # During runtime, select:
 # 1. NCPR analysis
@@ -279,13 +281,13 @@ v50 -seq_analysis t -seq protein_sequence.txt -seq_window 20
 
 ```bash
 # Extract coordinates
-v50 -p 40A-256+20B-512 -xyz t -remove_condensate_pbc t
+v50_en -p 40A-256+20B-512 -xyz t -remove_condensate_pbc t
 
 # Calculate contact map
-v50 -p 40A-256+20B-512 -cm t -r_cut 4.5
+v50_en -p 40A-256+20B-512 -cm t -r_cut 4.5
 
 # Calculate Rg
-v50 -p 40A-256+20B-512 -rg t
+v50_en -p 40A-256+20B-512 -rg t
 ```
 
 ## Acknowledgments
