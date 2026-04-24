@@ -28,8 +28,9 @@ plt.rcParams["xtick.top"] = True
 plt.rcParams["ytick.right"] = True
 plt.rcParams["axes.formatter.use_mathtext"] = True
 
+print(os.path.dirname(__file__))
 # 加载消息文件
-with open('massage.json', 'r') as f:
+with open(os.path.join(os.path.dirname(__file__), 'massage.json'), 'r', encoding='utf-8') as f:
     messages = json.load(f)['main_massage']
 
 
