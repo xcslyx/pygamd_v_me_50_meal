@@ -11,24 +11,24 @@ def update_version(new_version):
     """更新版本号"""
     # 更新pyproject.toml
     pyproject_path = os.path.join(os.path.dirname(__file__), 'pyproject.toml')
-    with open(pyproject_path, 'r') as f:
+    with open(pyproject_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
     # 替换版本号
     new_content = re.sub(r'version = "[0-9]+\.[0-9]+\.[0-9]+"', f'version = "{new_version}"', content)
     
-    with open(pyproject_path, 'w') as f:
+    with open(pyproject_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
     
     # 更新__init__.py
     init_path = os.path.join(os.path.dirname(__file__), 'pygamd_v_me_50_meal', '__init__.py')
-    with open(init_path, 'r') as f:
+    with open(init_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
     # 替换版本号
     new_content = re.sub(r'__version__ = "[0-9]+\.[0-9]+\.[0-9]+"', f'__version__ = "{new_version}"', content)
     
-    with open(init_path, 'w') as f:
+    with open(init_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
     
     print(f"版本号已更新为: {new_version}")
