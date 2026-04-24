@@ -1,0 +1,57 @@
+{
+    "main_massage": 
+    {
+        "zh": {
+            "checking_updates": ">>> 检查更新中...",
+            "running_package": ">>> 运行 pygamd_v_me_50_meal 包...",
+            "start_seq_analysis": "开始序列分析...",
+            "error_no_seq": "错误: 请提供序列文件路径或序列字符串 -seq",
+            "select_analysis_type": "请选择序列分析类型：",
+            "seq_analysis": "1. NCPR (Net Charge Per Residue) 分析\n2. 芳香性分析\n3. 疏水性分析",
+            "enter_option": "请输入选项编号 (1-3): ",
+            "error_invalid_option": "错误: 无效的选项，请重新运行并输入正确的选项编号。",
+            "ncpr_analysis_done": "NCPR 分析完成，结果保存至: {output_path}",
+            "ncpr_values_shape": "NCPR values shape: {shape}",
+            "aromatic_analysis_done": "芳香性分析完成，结果保存至: {output_path}",
+            "aromatic_values_shape": "Aromaticity values shape: {shape}",
+            "hydrophobicity_analysis_done": "疏水性分析完成，结果保存至: {output_path}",
+            "hydrophobicity_values_shape": "Hydrophobicity values shape: {shape}",
+            "please_provide_path": "Please provide the path to the system directory",
+            "start_calculating_cm": "开始计算接触图文件...",
+            "start_calculating_em": "开始计算 energy matrix 文件...",
+            "your_molecule_types": "你的分子类型有: \n{data}",
+            "enter_node_mol_idx": "请输入网络聚类的节点分子类型编号 (例如 1): ",
+            "enter_edge_mol_idx": "请输入网络聚类的边分子类型编号 (例如 2): ",
+            "start_calculating_nc": "开始计算网络聚类..."
+        },
+        "en": {
+            "checking_updates": ">>> Checking for updates...",
+            "running_package": ">>> Running pygamd_v_me_50_meal package...",
+            "start_seq_analysis": "Starting sequence analysis...",
+            "error_no_seq": "Error: Please provide sequence file path or sequence string with -seq",
+            "select_analysis_type": "Please select sequence analysis type:",
+            "seq_analysis": "1. NCPR (Net Charge Per Residue) analysis,\n2. Aromaticity analysis\n3. Hydrophobicity analysis",
+            "enter_option": "Please enter option number (1-3): ",
+            "error_invalid_option": "Error: Invalid option, please run again and enter the correct option number.",
+            "ncpr_analysis_done": "NCPR analysis completed, results saved to: {output_path}",
+            "ncpr_values_shape": "NCPR values shape: {shape}",
+            "aromatic_analysis_done": "Aromaticity analysis completed, results saved to: {output_path}",
+            "aromatic_values_shape": "Aromaticity values shape: {shape}",
+            "hydrophobicity_analysis_done": "Hydrophobicity analysis completed, results saved to: {output_path}",
+            "hydrophobicity_values_shape": "Hydrophobicity values shape: {shape}",
+            "please_provide_path": "Please provide the path to the system directory.",
+            "start_calculating_cm": "Starting to calculate contact map files...",
+            "start_calculating_em": "Starting to calculate energy matrix files...",
+            "your_molecule_types": "Your molecule types are: \n{data}",
+            "enter_node_mol_idx": "Please enter the node molecule type number for network clustering (e.g., 1): ",
+            "enter_edge_mol_idx": "Please enter the edge molecule type number for network clustering (e.g., 2): ",
+            "start_calculating_nc": "Starting network clustering calculation..."
+        }
+    },
+    "mass_density_massage": 
+    {
+        "zh": {
+            "mass_density": "质量密度分析"
+        }
+    }
+}

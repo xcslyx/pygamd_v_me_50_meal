@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 
 import numpy as np
@@ -15,9 +16,15 @@ from sklearn.decomposition import PCA
 
 from pygamd_v_me_50_meal.Functions import Functions
 
+# 加载消息文件
+with open('massage.json', 'r') as f:
+    messages = json.load(f)['mass_density_massage']
+
+
 # 计算径向质量数密度分布的类
 class MassDensityDistributionCalculator:
-    def __init__(self, path, data):
+    def __init__(self, path, data, lang="zh"):
+        self.lang = lang
         self.path = path
         self.data = data
 
@@ -26,7 +33,7 @@ class MassDensityDistributionCalculator:
 
         self.init_xml_path = os.path.join(self.path, "xml/")
 
-        remove_pbc_choice = input("是否需要使用移除 PBC后的文件？(y/n) Do you want to use the file without condensate PBC? (y/n)")
+        remove_pbc_choice = input(msg['remove_pbc'])
         if remove_pbc_choice == 'y':
             self.chain_path = os.path.join(self.path, "chain_xyz_remove_pbc_condensate/")
         else:
@@ -43,7 +50,7 @@ class MassDensityDistributionCalculator:
                 os.makedirs(self.free_chain_save_path, exist_ok=True)
                 print(f"✅ Created {self.free_chain_save_path} directory")
             else:
-                self.cover_free_chain_save_path_choice = input(f"已存在 {self.free_chain_save_path} 目录，是否覆盖？(y/n)")
+                self.cover_free_chain_save_path_choice = input(msg['cover_free_chain_save_path'])
                 if self.cover_free_chain_save_path_choice == 'y':
                     shutil.rmtree(self.free_chain_save_path)
                     os.makedirs(self.free_chain_save_path, exist_ok=True)
@@ -57,10 +64,8 @@ class MassDensityDistributionCalculator:
 
         self.cal_mass_density_distribution_list = []
         if not self.cal_mass_density_distribution_list:
-            print(f"您的分子类型有：\n{self.data.molecules}")
-            print("Please input the number of molecules you want to calculate the mass density distribution for, separated by commas.")
-            self.cal_mass_density_distribution_list = input("请输入您想要计算质量密度分布时需要包括的分子，以逗号分隔，如“1,2”。\n"
-                                                            "如需计算全部分子，请输入 all 或直接回车：").split(',')
+            print(f"{msg['molecules']}:\n{self.data.molecules}")
+            self.cal_mass_density_distribution_list = input(msg['calculate_molecules']).split(',')
         if "all" in self.cal_mass_density_distribution_list or self.cal_mass_density_distribution_list == [""]:
             self.cal_mass_density_distribution_list = list(self.mol_class_dict.keys())
         else:
@@ -76,14 +81,12 @@ class MassDensityDistributionCalculator:
 
         self.domain = None
         self.new_name = None
-        print("If you want to calculate the mass density distribution of a specific domain, please input the domain start and end residue index (from 1), separated by -, like 159-522. Otherwise, please directly press Enter. Note: only single-molecule calculation is supported.")
-        domain = input("若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，否则请直接回车。"
-                        "注：只支持选择单个分子计算。请输入：")
+        domain = input(msg['calculate_domain'])
         if domain:
             domain = list(map(int, domain.split('-')))
             self.domain = domain
             print(f"Domain to calculate: {domain}")
-            self.new_name = input("是否给此结构域命名？请输入名称，否则直接回车：Do you want to name this domain? Please input the name, or press Enter directly:")
+            self.new_name = input(msg['name_domain'])
             if self.new_name is not None:
                 self.mass_density_save_path = os.path.join(self.mass_density_path, f"{self.new_name}/")
             else:
@@ -103,7 +106,7 @@ class MassDensityDistributionCalculator:
 
         if not self.balance_cut:
             self.balance_cut = input(
-                "请输入需要截取的平衡后的文件索引，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
+                msg['balance_cut'])
         if not self.balance_cut:
             self.files = sorted(os.listdir(self.chain_path))
         else:
@@ -665,7 +668,17 @@ class MassDensityDistributionCalculator:
         self.draw_mass_density_distribution()
 
 
-    def draw_mass_density_distribution(self):
+    def draw_mass_density_distribution(self, do_fit=True):
+        """
+        绘制质量密度分布图。
+        :param do_fit: 是否执行双曲正切(tanh)界面拟合
+        """
+        # 核心拟合模型 (内部辅助函数)
+        def density_profile_param_direct(r, rho_in, rho_out_raw, R, logxi):
+            xi = np.exp(logxi)
+            rho_out = rho_out_raw
+            # 双曲正切过渡模型
+            return rho_in + (rho_out - rho_in) / 2.0 * (1.0 + np.tanh((r - R) / xi))
         for cal_mol in self.cal_mass_density_distribution_list:
             cur_density_dict = []
             mol_name = self.new_name if self.new_name else cal_mol
@@ -688,6 +701,74 @@ class MassDensityDistributionCalculator:
                         r, d = line.strip().split()
                         r, d = float(r), float(d)
                         cur_density_dict.append([r, d])
+                
+            # 转换为 numpy 数组方便切片计算
+            data_arr = np.array(cur_density_dict)
+            r_data = data_arr[:, 0]
+            rho_data = data_arr[:, 1]
+
+            fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
+            
+            # 1. 绘制原始数据
+            ax.plot(r_data, rho_data, label=f"{mol_name} (Raw)", lw=2, alpha=0.8)
+
+            # 2. 拟合逻辑
+            if do_fit:
+                try:
+                    # 取 r >= 0 的正半轴进行拟合（避免负半轴影响质量加权半径和曲面拟合）
+                    pos_mask = r_data >= 0
+                    r_pos = r_data[pos_mask]
+                    rho_pos = rho_data[pos_mask]
+
+                    if len(r_pos) > 5:  # 确保有足够的数据点
+                        # ---- 计算初始猜测值 (Initial Guesses) ----
+                        rho_in_guess = np.max(rho_pos)
+                        rho_out_guess = max(np.min(rho_pos) + 1e-1, 0.0) # 避免负值边界
+                        
+                        # 使用质量加权平均半径估算界面位置 R
+                        dz = np.diff(r_pos)[0] if len(r_pos) > 1 else 1.0
+                        M = np.sum(rho_pos * dz)
+                        R_mass = np.sum(r_pos * rho_pos * dz) / M if M != 0 else np.mean(r_pos)
+                        
+                        R0 = R_mass
+                        xi0 = 3.0  # 参考原始脚本设定的表面厚度初始值
+                        
+                        p0 = [rho_in_guess, rho_out_guess, R0, np.log(xi0)]
+                        
+                        # ---- 设置边界 (Bounds) ----
+                        # [rho_in_min, rho_out_min, R_min, logxi_min]
+                        lower = [1e-3, 0.0, np.min(r_pos) - 10, np.log(1e-3)]
+                        # [rho_in_max, rho_out_max, R_max, logxi_max]
+                        upper = [np.max(rho_pos) * 2, np.max(rho_pos), np.max(r_pos) + 10, np.log(100)]
+                        
+                        # ---- 执行拟合 ----
+                        popt, _ = curve_fit(
+                            density_profile_param_direct, 
+                            r_pos, rho_pos, 
+                            p0=p0, bounds=(lower, upper), maxfev=20000
+                        )
+                        
+                        # ---- 绘制拟合曲线 ----
+                        # 生成更平滑的 X 轴数据（覆盖原始全部区间）
+                        r_fit_plot = np.linspace(np.min(r_data), np.max(r_data), max(len(r_data)*2, 500))
+                        
+                        # 使用 np.abs(r_fit_plot) 自动处理负半轴的对称性
+                        # 这样左半边(r<0)的图像就是右半边(r>0)的镜像，无需手动逆序拼接
+                        rho_fit_plot = density_profile_param_direct(np.abs(r_fit_plot), *popt)
+
+                        ax.plot(r_fit_plot, rho_fit_plot, label=f"{mol_name} (Fit)", lw=2, color='red', linestyle='--')
+                        
+                        # ---- 打印拟合报告 (可选) ----
+                        rho_in, rho_out, R_fit, logxi = popt
+                        xi_fit = np.exp(logxi)
+                        print(f"--- 拟合结果: {mol_name} ---")
+                        print(f"rho_in  = {rho_in:.4g} mg/mL")
+                        print(f"rho_out = {rho_out:.4g} mg/mL")
+                        print(f"R       = {R_fit:.4g} nm")
+                        print(f"xi      = {xi_fit:.4g} nm\n")
+                        
+                except Exception as e:
+                    print(f"警告：拟合 {mol_name} 失败。错误信息: {e}")
 
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
             ax.plot(np.array(cur_density_dict)[:, 0], np.array(cur_density_dict)[:, 1], label=f"{mol_name}")
@@ -696,4 +777,4 @@ class MassDensityDistributionCalculator:
             ax.set_title(f'Mass density distribution of {mol_name}')
             ax.legend()
 
-            plt.savefig(save_name)
+            fig.savefig(save_name)

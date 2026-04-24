@@ -1,0 +1,33 @@
+{
+    "molecules": {
+        "zh": "您的分子类型有：",
+        "en": "Your molecules are:"
+    },
+    "mass_density_massage": 
+    {
+        "remove_pbc": {
+            "zh": "是否需要使用移除 PBC后的文件? (y/n) Do you want to use the file without condensate PBC? (y/n)",
+            "en": "Do you want to use the file without condensate PBC? (y/n)"
+        },
+        "cover_free_chain_save_path": {
+            "zh": "是否需要覆盖已存在的自由链保存路径? (y/n) Do you want to cover the existing free chain save path? (y/n)",
+            "en": "Do you want to cover the existing free chain save path? (y/n)"
+        },
+        "calculate_molecules": {
+            "zh": "请输入您想要计算质量密度分布时需要包括的分子, 以逗号分隔, 如 \"1,2\"。\n如需计算全部分子, 请输入 all 或直接回车：",
+            "en": "Please input the molecules you want to calculate the mass density distribution for, separated by commas. If you want to calculate for all molecules, please input all or press enter."
+        },
+        "calculate_domain": {
+            "zh": "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522, 否则请直接回车。注: 只支持选择单个分子计算。请输入：",
+            "en": "If you only want to calculate the mass density distribution for a specific domain, please input the start and end residue numbers of the domain, separated by a hyphen (-), e.g., 159-522. Otherwise, please press enter.\nNote: Only one molecule can be selected for calculation."
+        },
+        "name_domain": {
+            "zh": "是否给此结构域命名？请输入名称，否则直接回车：",
+            "en": "Do you want to name this domain? Please input the name, or press Enter directly."
+        },
+        "balance_cut": {
+            "zh": "请输入需要截取的平衡后的文件索引，格式为‘开始,结束’, 例如: 1000,2000, 直接回车则不截取: ",
+            "en": "Please input the balance cut index, in the format of 'start,end', e.g., 1000,2000. Press enter directly to not cut."
+        }        
+    }
+}
