@@ -16,8 +16,15 @@ dependencies = ["numpy", "pandas", "matplotlib",
                 "scikit-learn", "MDAnalysis",
                 "pygamd"]
 
+[tool.setuptools]
+# 自动发现包
+packages = { find = {} }
+# 包含所有受版本控制或 package-data 指定的非 py 文件
+include-package-data = true
+
 [tool.setuptools.package-data]
-"pygamd_v_me_50_meal" = ["*.json"]
+# "*" 表示匹配所有子包，"*.json" 匹配所有 json 文件
+"*" = ["*.json"]
 
 [project.urls]
 Homepage = "https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git"

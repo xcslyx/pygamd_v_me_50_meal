@@ -17,7 +17,7 @@ from sklearn.decomposition import PCA
 from pygamd_v_me_50_meal.Functions import Functions
 
 # 加载消息文件
-with open('massage.json', 'r') as f:
+with open(os.path.join(os.path.dirname(__file__), 'massage.json'), 'r', encoding='utf-8') as f:
     messages = json.load(f)['mass_density_massage']
 
 
