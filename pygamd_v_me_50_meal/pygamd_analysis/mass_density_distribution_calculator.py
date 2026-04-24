@@ -1,5 +1,6 @@
 import os
 import json
+import math
 import shutil
 
 import numpy as np
@@ -12,14 +13,17 @@ import xml.etree.ElementTree as ET
 from MDAnalysis.lib.util import amino_acid_codes
 from tqdm import tqdm
 from multiprocessing import Pool
+from scipy.optimize import curve_fit
 from sklearn.decomposition import PCA
+from scipy.constants import R as R_gas
+
 
 from pygamd_v_me_50_meal.Functions import Functions
 
 # 加载消息文件
 with open(os.path.join(os.path.dirname(__file__), 'massage.json'), 'r', encoding='utf-8') as f:
-    massage = json.load(f)
-    msg = massage['mass_density_massage']
+    massages = json.load(f)
+    msg = massages['mass_density_massage']
 
 
 # 计算径向质量数密度分布的类
@@ -767,6 +771,10 @@ class MassDensityDistributionCalculator:
                         print(f"rho_out = {rho_out:.4g} mg/mL")
                         print(f"R       = {R_fit:.4g} nm")
                         print(f"xi      = {xi_fit:.4g} nm\n")
+                        # Compute the free energy change △G if needed
+                        delta_G = R_gas * 300 * math.log(rho_out / rho_in, math.e) * 1e-3  # kJ/mol
+                        print(f"△G: {delta_G:.4g} kJ/mol\n")
+                        
                         
                 except Exception as e:
                     print(f"警告：拟合 {mol_name} 失败。错误信息: {e}")
