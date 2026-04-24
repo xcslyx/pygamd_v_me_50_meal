@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygamd_v_me_50_meal"
-version = "0.5.6"
+version = "0.5.7"
 description = "MD analysis toolkit for cGAS-DNA simulations"
 authors = [
     { name = "Yuxi Leng", email = "1203969713@qq.com" }
@@ -15,6 +15,9 @@ dependencies = ["numpy", "pandas", "matplotlib",
                 "torch", "tqdm", "scipy",
                 "scikit-learn", "MDAnalysis",
                 "pygamd"]
+
+[tool.setuptools.package-data]
+"pygamd_v_me_50_meal" = ["*.json"]
 
 [project.urls]
 Homepage = "https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git"
