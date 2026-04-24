@@ -18,7 +18,8 @@ from pygamd_v_me_50_meal.Functions import Functions
 
 # 加载消息文件
 with open(os.path.join(os.path.dirname(__file__), 'massage.json'), 'r', encoding='utf-8') as f:
-    messages = json.load(f)['mass_density_massage']
+    massage = json.load(f)
+    msg = massage['mass_density_massage']
 
 
 # 计算径向质量数密度分布的类
@@ -33,7 +34,7 @@ class MassDensityDistributionCalculator:
 
         self.init_xml_path = os.path.join(self.path, "xml/")
 
-        remove_pbc_choice = input(msg['remove_pbc'])
+        remove_pbc_choice = input(msg['remove_pbc'][self.lang])
         if remove_pbc_choice == 'y':
             self.chain_path = os.path.join(self.path, "chain_xyz_remove_pbc_condensate/")
         else:
@@ -64,8 +65,8 @@ class MassDensityDistributionCalculator:
 
         self.cal_mass_density_distribution_list = []
         if not self.cal_mass_density_distribution_list:
-            print(f"{msg['molecules']}:\n{self.data.molecules}")
-            self.cal_mass_density_distribution_list = input(msg['calculate_molecules']).split(',')
+            print(f"{massage['molecules'][self.lang]}:\n{self.data.molecules}")
+            self.cal_mass_density_distribution_list = input(msg['calculate_molecules'][self.lang]).split(',')
         if "all" in self.cal_mass_density_distribution_list or self.cal_mass_density_distribution_list == [""]:
             self.cal_mass_density_distribution_list = list(self.mol_class_dict.keys())
         else:
