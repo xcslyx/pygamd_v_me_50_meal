@@ -58,7 +58,7 @@ def run_main(lang):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v0.0.14')
+    parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v{p50.__version__}')
 
     parser.add_argument('-p', '--path', metavar="/path/to/system",
                         type=str, default=None, help='体系目录路径.' if lang == 'zh' else 'System directory path.')

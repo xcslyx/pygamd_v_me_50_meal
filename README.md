@@ -9,6 +9,8 @@
 可直接使用 `pip` 安装：
 ```bash
 pip install git+https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git
+# 或
+pip install git+https://github.com/xcslyx/pygamd_v_me_50_meal.git
 ```
 
 或者
