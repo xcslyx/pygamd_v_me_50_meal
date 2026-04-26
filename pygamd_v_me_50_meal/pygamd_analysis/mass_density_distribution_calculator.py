@@ -715,7 +715,7 @@ class MassDensityDistributionCalculator:
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
             
             # 1. 绘制原始数据
-            ax.plot(r_data, rho_data, label=f"{mol_name} (Raw)", lw=2, alpha=0.8)
+            ax.scatter(r_data, rho_data, label=f"{mol_name} (Raw)", alpha=0.8)
 
             # 2. 拟合逻辑
             if do_fit:
@@ -779,8 +779,6 @@ class MassDensityDistributionCalculator:
                 except Exception as e:
                     print(f"警告：拟合 {mol_name} 失败。错误信息: {e}")
 
-            fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
-            ax.plot(np.array(cur_density_dict)[:, 0], np.array(cur_density_dict)[:, 1], label=f"{mol_name}")
             ax.set_xlabel('radius (nm)')
             ax.set_ylabel(r"$\rho$ (mg/mL)")
             ax.set_title(f'Mass density distribution of {mol_name}')
