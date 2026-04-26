@@ -710,6 +710,7 @@ class MassDensityDistributionCalculator:
             # 转换为 numpy 数组方便切片计算
             data_arr = np.array(cur_density_dict)
             r_data = data_arr[:, 0]
+            r_data -= np.median(r_data)
             rho_data = data_arr[:, 1]
 
             fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
