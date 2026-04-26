@@ -3,7 +3,7 @@
         "zh": "您的分子类型有：",
         "en": "Your molecules are:"
     },
-    "mass_density_massage": 
+    "mass_density_message": 
     {
         "remove_pbc": {
             "zh": "是否需要使用移除 PBC后的文件? (y/n) Do you want to use the file without condensate PBC? (y/n)",

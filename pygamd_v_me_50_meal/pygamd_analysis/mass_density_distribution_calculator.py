@@ -21,9 +21,9 @@ from scipy.constants import R as R_gas
 from pygamd_v_me_50_meal.Functions import Functions
 
 # 加载消息文件
-with open(os.path.join(os.path.dirname(__file__), 'massage.json'), 'r', encoding='utf-8') as f:
-    massages = json.load(f)
-    msg = massages['mass_density_massage']
+with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding='utf-8') as f:
+    messages = json.load(f)
+    msg = messages['mass_density_message']
 
 
 # 计算径向质量数密度分布的类
@@ -69,7 +69,7 @@ class MassDensityDistributionCalculator:
 
         self.cal_mass_density_distribution_list = []
         if not self.cal_mass_density_distribution_list:
-            print(f"{massage['molecules'][self.lang]}:\n{self.data.molecules}")
+            print(f"{messages['molecules'][self.lang]}:\n{self.data.molecules}")
             self.cal_mass_density_distribution_list = input(msg['calculate_molecules'][self.lang]).split(',')
         if "all" in self.cal_mass_density_distribution_list or self.cal_mass_density_distribution_list == [""]:
             self.cal_mass_density_distribution_list = list(self.mol_class_dict.keys())
