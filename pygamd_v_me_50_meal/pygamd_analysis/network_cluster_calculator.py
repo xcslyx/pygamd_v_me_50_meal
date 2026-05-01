@@ -35,7 +35,7 @@ class NetworkClusterCalculator:
 
         for i, node_coord in enumerate(node_coords):
             for j, edge_coord in enumerate(edge_coords):
-                dist = np.linalg.norm(np.array(node_coord) - np.array(edge_coord))
+                dist = np.linalg.norm(np.mean(node_coord, axis=0) - np.mean(edge_coord, axis=0))
                 if dist < self.distance_threshold:
                     G.add_edge(f"{self.node_mol_type}_{i}", f"{self.edge_mol_type}_{j}", weight=dist)
 
@@ -89,7 +89,7 @@ class NetworkClusterCalculator:
         return best_k
 
     def calculate_parallel(self):
-        file_list = [f for f in os.listdir(self.chain_path) if f.endswith('.npy') or f.endswith('.txt')]
+        file_list = [f for f in os.listdir(self.chain_path) if f.endswith('.npy') or f.endswith('.txt') or f.endswith('.xml')]
 
         results = {}
         for name in tqdm(file_list, desc="Building networks"):
