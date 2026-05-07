@@ -11,6 +11,8 @@ from multiprocessing import Pool
 
 import pygamd_v_me_50_meal.utils as utils
 from pygamd_v_me_50_meal.Functions import Functions
+from pygamd_v_me_50_meal.file_processor.xml_data_extractor import XMLDataExtractor
+
 
 from .sequence_extractor import GetSequence
 
@@ -60,8 +62,7 @@ class CoordinatesProcessor:
                 break
         if not init_xml_file:
             raise ValueError("Cannot find a valid initial xml file.")
-        init_root = ET.parse(init_xml_file).getroot()
-        self.box_size: list[float] = [float(init_root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
+        self.box_size: list[float] = XMLDataExtractor(init_xml_file).get_box_size()
 
         self.unwrap_xml_flag: bool = True
 

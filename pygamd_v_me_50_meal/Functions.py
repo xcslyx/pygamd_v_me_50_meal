@@ -134,8 +134,8 @@ class Functions:
         判断链是否跨越了盒子的周期边界
         :param positions: 粒子坐标 (N, 3) numpy 数组
         :param box_length: 模拟盒子尺寸
-        :param threshold: 跳跃阈值（单位：盒子长度比例），默认0.5（即跳过一半盒子视为跨盒）
-        :return: True 表示链是跨盒的，False 表示连续
+        :param threshold: 跳跃阈值 (单位: 盒子长度比例), 默认0.5 (即跳过一半盒子视为跨盒)
+        :return: True 表示链是跨盒的, False 表示连续
         """
         positions = np.array(positions)
         box_length = np.array(box_length)
