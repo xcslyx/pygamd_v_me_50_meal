@@ -44,9 +44,12 @@ class Data:
                     self.mol_class_list = list(self.mol_class_dict.keys())
                     self.molecules = "\n".join([f"{i+1}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
 
+                self.particle_num = 0
                 print("The following molecular information was extracted:")
                 for mol in self.mol_class_dict:
                     print(f"Molecule: {mol}, number: {self.mol_class_dict[mol][0]}, length: {self.mol_class_dict[mol][1]}")
+                    self.particle_num += self.mol_class_dict[mol][0] * self.mol_class_dict[mol][1]
+                print(f"Total particle number: {self.particle_num}")
             else:
                 raise ValueError("Path name is not valid.")
 
