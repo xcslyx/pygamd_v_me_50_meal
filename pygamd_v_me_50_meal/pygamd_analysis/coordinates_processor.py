@@ -103,7 +103,9 @@ class CoordinatesProcessor:
         # 读取 position 数据
         position_elem = root.find('.//position')
         position_num = int(position_elem.attrib['num'])
-        
+        if position_num != self.data.particle_num:
+            raise ValueError(f"Position number ({position_num}) does not match particle number ({self.data.particle_num}).")
+
         position_elem_text = position_elem.text
         # print(position_elem_text)
         while "\n\n" in position_elem_text:
