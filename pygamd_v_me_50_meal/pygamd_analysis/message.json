@@ -6,7 +6,7 @@
     "mass_density_message": 
     {
         "remove_pbc": {
-            "zh": "是否需要使用移除 PBC后的文件? (y/n) Do you want to use the file without condensate PBC? (y/n)",
+            "zh": "是否需要使用移除 PBC后的文件? (y/n)",
             "en": "Do you want to use the file without condensate PBC? (y/n)"
         },
         "cover_free_chain_save_path": {
@@ -28,6 +28,31 @@
         "balance_cut": {
             "zh": "请输入需要截取的平衡后的文件索引，格式为‘开始,结束’, 例如: 1000,2000, 直接回车则不截取: ",
             "en": "Please input the balance cut index, in the format of 'start,end', e.g., 1000,2000. Press enter directly to not cut."
-        }        
+        },
+        "calculate_mass_density_distribution_type": {
+            "zh": "可计算的质量密度分布类型有: sphere (球状凝聚体), axis (有取向的棒状凝聚体), slab (平板模拟)\n请输入需要计算的质量密度分布类型, 直接回车则计算 sphere 类型:",
+            "en": "Class of mass density distribution that can be calculated: sphere (sphere condensate) / axis (有取向的棒状凝聚体) / slab (slab model)\nPlease input the type of mass density distribution that you want to calculate, or press Enter directly to calculate sphere type: ",
+            "invalid": {
+                "zh": "请输入 sphere, axis, 或 slab 类型, 或直接回车计算 sphere 类型",
+                "en": "Invalid input. Please input sphere, axis, or slab. Press Enter directly to calculate sphere type."
+            }
+        },
+        "bin_size": {
+            "zh": "计算质量密度分布时使用的 bin 大小为",
+            "en": "The bin size of the mass density distribution is"
+        }
+    },
+    "data_message":
+    {
+        "UnkonwnMoleculeType":
+        {
+            "zh": "未知的分子类型: ",
+            "en": "Unkonwn molecule type: "
+        },
+        "InputLength":
+        {
+            "zh": "请输入该分子的长度：",
+            "en": "Please input the length of this molecule: "
+        }
     }
 }

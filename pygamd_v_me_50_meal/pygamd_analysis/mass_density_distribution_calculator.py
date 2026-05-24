@@ -55,7 +55,7 @@ class MassDensityDistributionCalculator:
                 os.makedirs(self.free_chain_save_path, exist_ok=True)
                 print(f"✅ Created {self.free_chain_save_path} directory")
             else:
-                self.cover_free_chain_save_path_choice = input(msg['cover_free_chain_save_path'])
+                self.cover_free_chain_save_path_choice = input(msg['cover_free_chain_save_path'][self.lang])
                 if self.cover_free_chain_save_path_choice == 'y':
                     shutil.rmtree(self.free_chain_save_path)
                     os.makedirs(self.free_chain_save_path, exist_ok=True)
@@ -86,12 +86,12 @@ class MassDensityDistributionCalculator:
 
         self.domain = None
         self.new_name = None
-        domain = input(msg['calculate_domain'])
+        domain = input(msg['calculate_domain'][self.lang])
         if domain:
             domain = list(map(int, domain.split('-')))
             self.domain = domain
             print(f"Domain to calculate: {domain}")
-            self.new_name = input(msg['name_domain'])
+            self.new_name = input(msg['name_domain'][self.lang])
             if self.new_name is not None:
                 self.mass_density_save_path = os.path.join(self.mass_density_path, f"{self.new_name}/")
             else:
@@ -111,7 +111,7 @@ class MassDensityDistributionCalculator:
 
         if not self.balance_cut:
             self.balance_cut = input(
-                msg['balance_cut'])
+                msg['balance_cut'][self.lang])
         if not self.balance_cut:
             self.files = sorted(os.listdir(self.chain_path))
         else:
@@ -119,8 +119,7 @@ class MassDensityDistributionCalculator:
             self.files = sorted(os.listdir(self.chain_path))[start: end + 1]
 
         while True:
-            print("Class of mass density distribution that can be calculated: sphere (sphere condensate) / axis (有取向的棒状凝聚体) / slab (slab model)")
-            self.mass_density_choice = input("Please input the type of mass density distribution that you want to calculate, or press Enter directly to calculate sphere type: \n请输入需要计算的质量密度分布类型，直接回车则计算 sphere 类型: ")
+            self.mass_density_choice = input(msg['calculate_mass_density_distribution_type'][self.lang])
             if not self.mass_density_choice or self.mass_density_choice == "sphere":
                 self.mass_density_class = "sphere"
                 break
@@ -131,7 +130,7 @@ class MassDensityDistributionCalculator:
                 self.mass_density_class = "slab"
                 break
             else:
-                print("Invalid input! Please input sphere/axis/slab.")
+                print(msg['calculate_mass_density_distribution_type']['invalid'][self.lang])
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
@@ -145,7 +144,7 @@ class MassDensityDistributionCalculator:
             self.r_max = self.box_size[2]
         else:
             self.r_max = self.box_size[2] / 2
-        print(f"计算质量密度分布时使用的 bin 大小为 {self.dr} nm")
+        print(f"{messages['bin_size'][self.lang]} {self.dr} nm")
         # print(f"计算质量密度分布的边界为 {self.r_max} nm")
 
         # 初始化壳层数量

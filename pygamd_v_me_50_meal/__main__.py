@@ -249,7 +249,7 @@ def run_main(lang):
         exit()
 
     from pygamd_v_me_50_meal.data import Data
-    data = Data(path)
+    data = Data(path, lang=lang)
 
     if file_args.get_seq:
         from pygamd_v_me_50_meal.pygamd_analysis.sequence_extractor import GetSequence
