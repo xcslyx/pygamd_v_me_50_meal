@@ -41,18 +41,5 @@
             "zh": "计算质量密度分布时使用的 bin 大小为",
             "en": "The bin size of the mass density distribution is"
         }
-    },
-    "data_message":
-    {
-        "UnkonwnMoleculeType":
-        {
-            "zh": "未知的分子类型: ",
-            "en": "Unkonwn molecule type: "
-        },
-        "InputLength":
-        {
-            "zh": "请输入该分子的长度：",
-            "en": "Please input the length of this molecule: "
-        }
     }
 }

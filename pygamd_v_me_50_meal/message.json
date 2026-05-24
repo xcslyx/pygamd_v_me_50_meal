@@ -48,10 +48,18 @@
             "start_calculating_nc": "Starting network clustering calculation..."
         }
     },
-    "mass_density_massage": 
+    "data_message":
     {
-        "zh": {
-            "mass_density": "质量密度分析"
+        "UnkonwnMoleculeType":
+        {
+            "zh": "未知的分子类型: ",
+            "en": "Unkonwn molecule type: "
+        },
+        "InputLength":
+        {
+            "zh": "请输入该分子的长度：",
+            "en": "Please input the length of this molecule: "
         }
     }
+
 }
