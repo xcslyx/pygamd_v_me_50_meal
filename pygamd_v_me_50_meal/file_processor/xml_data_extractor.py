@@ -10,4 +10,5 @@ class XMLDataExtractor:
 
     def get_box_size(self):
         box_size: list[float] = [float(self.root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
+        print(f"Your box size: a = {box_size[0]}, b = {box_size[1]}, c = {box_size[2]}.")
         return box_size
