@@ -33,6 +33,13 @@ with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding
     messages = json.load(f)['main_massage']
 
 
+def update_software_name_zh():
+    print("从版本 v0.6.0 开始，软件命令已更新为 vssk50。")
+
+def update_software_name_en():
+    print("The command of the software has been updated to vssk50_en since version v0.6.0.")
+
+
 def main():
     print(f"New version notification {p50.__version__}.")
     print("Now you can use command v50_en to run the package, which is in English.")
@@ -258,7 +265,7 @@ def run_main(lang):
 
     if file_args.xyz:
         from pygamd_v_me_50_meal.pygamd_analysis.coordinates_processor import CoordinatesProcessor
-        CoordinatesProcessor(path, data, file_args.remove_ions_zhy).cal_xyz(remove_condensate_pbc=file_args.remove_condensate_pbc)
+        CoordinatesProcessor(path, data, file_args.remove_ions_zhy, lang=lang).cal_xyz(remove_condensate_pbc=file_args.remove_condensate_pbc)
 
     if file_args.cm:
         from pygamd_v_me_50_meal.pygamd_analysis.contact_map_calculator import ContactMapCalculator

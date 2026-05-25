@@ -17,12 +17,18 @@ from pygamd_v_me_50_meal.file_processor.xml_data_extractor import XMLDataExtract
 from .sequence_extractor import GetSequence
 
 
+# 加载消息文件
+with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding='utf-8') as f:
+    messages = json.load(f)
+    msg = messages['coordinates_processor_message']
+
 # 处理坐标文件
 class CoordinatesProcessor:
     def __init__(self, path: str, data, remove_ions_zhy: bool=False,
-                 remove_enm=None):
+                 remove_enm=None, lang: str="zh"):
         self.path = path
         self.data = data
+        self.lang = lang
 
         self.length_dict = self.data.length_dict
 
@@ -49,7 +55,7 @@ class CoordinatesProcessor:
         if remove_enm:
             self.remove_enm_bonds_request = "y"
         elif remove_enm is None:
-            self.remove_enm_bonds_request = input("是否需要移除弹性键？(y/n) Do you want to remove elastic bonds? (y/n)")
+            self.remove_enm_bonds_request = input(msg['remove_enm_bonds_request'][self.lang])
         else:
             self.remove_enm_bonds_request = "n"
 
@@ -93,7 +99,7 @@ class CoordinatesProcessor:
 
     def abstract_coordinates_normal(self, xml_file):
         if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml")):
-            print(f"{xml_file} is not a valid xml file.")
+            print(f"{xml_file} {msg['not_valid_file'][self.lang]}")
             return
 
         positions, unwrapped_positions = {}, {}
@@ -352,8 +358,6 @@ class CoordinatesProcessor:
             tree.write(os.path.join(self.remove_pbc_condensate_remove_ions_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
         else:
             tree.write(os.path.join(self.remove_pbc_condensate_xml_path, new_xml_file), encoding='utf-8', xml_declaration=True)
-
-
 
 
     def remove_pbc_condensate_parallel(self, ):

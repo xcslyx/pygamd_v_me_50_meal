@@ -36,8 +36,6 @@ class MassDensityDistributionCalculator:
         self.mol_class_dict = self.data.mol_class_dict
         self.length_dict = self.data.length_dict
 
-        self.init_xml_path = os.path.join(self.path, "xml/")
-
         remove_pbc_choice = input(msg['remove_pbc'][self.lang])
         if remove_pbc_choice == 'y':
             self.chain_path = os.path.join(self.path, "chain_xyz_remove_pbc_condensate/")
@@ -134,9 +132,14 @@ class MassDensityDistributionCalculator:
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
-        init_xml_file = os.path.join(self.path, "xml", self.xml_files[0])
-        init_root = ET.parse(init_xml_file).getroot()
-        self.box_size = [float(init_root.find('.//box').attrib[i]) for i in ['lx', 'ly', 'lz']]
+        init_xml_file = ""
+        for i in range(len(self.xml_files)):
+            if utils.check_xml_start_tag(self.xml_files[i]) and self.xml_files[i].endswith("0.xml"):
+                init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
+                break
+        if not init_xml_file:
+            raise ValueError("Cannot find a valid initial xml file.")
+        self.box_size: list[float] = XMLDataExtractor(init_xml_file).get_box_size()
 
         self.dr = 2.5  # 计算质量密度分布时使用的 bin 大小
 
