@@ -187,7 +187,7 @@ class ContactMapCalculator:
             files = os.listdir(self.chain_path)
         else:
             start, end = list(map(int, self.balance_cut.split('-')))
-            files = os.listdir(self.chain_path)[start: end+1]
+            files = sorted(os.listdir(self.chain_path))[start: end+1]
 
 
         for cm_class in self.cm_class_list:
