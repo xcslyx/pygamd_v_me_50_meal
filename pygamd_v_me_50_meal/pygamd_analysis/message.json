@@ -32,7 +32,6 @@
         "balance_cut": {
             "zh": "请输入需要截取的平衡后的文件索引，格式为‘开始,结束’, 例如: 1000,2000, 直接回车则不截取: ",
             "en": "Please input the balance cut index, in the format of 'start,end', e.g., 1000,2000. Press enter directly to not cut."
-<<<<<<< Updated upstream
         },
         "calculate_mass_density_distribution_type": {
             "zh": "可计算的质量密度分布类型有: sphere (球状凝聚体), axis (有取向的棒状凝聚体), slab (平板模拟)\n请输入需要计算的质量密度分布类型, 直接回车则计算 sphere 类型:",
@@ -45,9 +44,7 @@
         "bin_size": {
             "zh": "计算质量密度分布时使用的 bin 大小为",
             "en": "The bin size of the mass density distribution is"
-        }
-=======
-        }        
+        }       
     },
     "coordinates_processor_message": {
         "remove_enm_bonds_request": {
@@ -55,6 +52,5 @@
             "en": "Do you want to remove elastic bonds? (y/n)"
         }
 
->>>>>>> Stashed changes
     }
 }
