@@ -17,6 +17,7 @@ from scipy.optimize import curve_fit
 from sklearn.decomposition import PCA
 from scipy.constants import R as R_gas
 
+import pygamd_v_me_50_meal.utils as utils
 
 from pygamd_v_me_50_meal.Functions import Functions
 
