@@ -20,6 +20,7 @@ from scipy.constants import R as R_gas
 import pygamd_v_me_50_meal.utils as utils
 
 from pygamd_v_me_50_meal.Functions import Functions
+from pygamd_v_me_50_meal.file_processor.xml_data_extractor import XMLDataExtractor
 
 # 加载消息文件
 with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding='utf-8') as f:
