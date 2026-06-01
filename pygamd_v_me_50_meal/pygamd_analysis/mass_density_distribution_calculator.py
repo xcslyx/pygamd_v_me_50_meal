@@ -149,7 +149,7 @@ class MassDensityDistributionCalculator:
             self.r_max = self.box_size[2]
         else:
             self.r_max = self.box_size[2] / 2
-        print(f"{messages['bin_size'][self.lang]} {self.dr} nm")
+        print(f"{msg['bin_size'][self.lang]} {self.dr} nm")
         # print(f"计算质量密度分布的边界为 {self.r_max} nm")
 
         # 初始化壳层数量
