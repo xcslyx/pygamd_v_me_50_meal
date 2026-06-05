@@ -163,6 +163,10 @@ def run_main(lang):
     parser.add_argument('-nc_threshold', metavar="distance_threshold",
                         type=float, default=10.0, help="网络构建的距离阈值，默认 10.0 Å。" if lang == 'zh' else "Distance threshold for network construction, default 10.0 Å.")
 
+    parser.add_argument('-gromacs_pdb', metavar="path/to/pdb_file",
+                        type=str, default=None, help="pdb 文件路径，用于 GROMACS 模拟的结构。" if lang == 'zh' else "GROMACS pdb file path.")
+
+
     file_args = parser.parse_args()
 
     # 序列分析作为独立功能，不需要 -p 参数
@@ -228,6 +232,14 @@ def run_main(lang):
         else:
             print(msg['error_no_seq'])
             exit()
+
+    # 用 Gromacs 进行分子动力学模拟
+    if file_args.gromacs_pdb:
+        from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
+        gromacs_runner = GromacsMDRunner(file_args.gromacs_pdb)
+        gromacs_runner.build_simulation_box()
+        # gromacs_runner.run()
+        exit()
 
     # 其他分析功能需要 -p 参数
     # current_dir_path = os.getcwd()
