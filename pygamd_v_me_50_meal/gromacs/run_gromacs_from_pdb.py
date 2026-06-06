@@ -21,19 +21,26 @@ class GromacsMDRunner:
     def build_simulation_box(self, ):
         pdb_dir = os.path.join(os.path.dirname(self.pdb_file), self.pdb_file.split(".")[0])
         os.makedirs(pdb_dir, exist_ok=True)
+        subprocess.run(f"rm -f {pdb_dir}/*", shell=True)
 
-        subprocess.run(["cp", os.path.join(os.path.dirname(self.pdb_file), self.pdb_file), "protein.gro"])
+        subprocess.run(["cp", self.pdb_file, os.path.join(pdb_dir, "protein.pdb")])
         
         os.chdir(pdb_dir)
-        subprocess.run(f"rm -f {pdb_dir}/*", shell=True)
+        
         
 
-        shutil.copy(self.charmm36_ff_dir, '.')
+        shutil.copytree(self.charmm36_ff_dir, './charmm36.ff/', dirs_exist_ok=True)
 
         for mdp_file in self.mdp_files:
             shutil.copy(mdp_file, '.')
 
-        subprocess.run("printf 4\n6\n | gmx pdb2gmx -f protein.gro -o protein.gro -water tip3p -ff charmm36 -ter -ignh", shell=True)
+        pdb2gmx = [
+                    "gmx", "pdb2gmx",
+                    "-f", "protein.pdb", "-o", "protein.gro",
+                    "-water", "tip3p",
+                    "-ff", "charmm36",
+                    "-ter", "-ignh"]
+        subprocess.run(pdb2gmx, input="4\n6\n", text=True, check=True)
         subprocess.run(["gmx", "editconf", "-f", "protein.gro", "-o newbox.gro -c -bt cubic -d 1.2"])
         subprocess.run(["gmx", "solvate", "-cp newbox.gro -cs spc216.gro -p topol.top -o solv.gro"])
         subprocess.run(["gmx", "grompp", " -f ions.mdp -c solv.gro -p topol.top -o ions.tpr"])
