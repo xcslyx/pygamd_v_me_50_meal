@@ -41,8 +41,11 @@ def update_software_name_en():
 
 
 def main():
-    print(f"New version notification {p50.__version__}.")
-    print("Now you can use command v50_en to run the package, which is in English.")
+    try:
+        print(f"New version notification {p50.__version__}.")
+        print("Now you can use command v50_en to run the package, which is in English.")
+    except Exception as e:
+        ...
     run_main('zh')
 
 def main_en():
@@ -65,7 +68,10 @@ def run_main(lang):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v{p50.__version__}')
+    try:
+        parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v{p50.__version__}')
+    except Exception as e:
+        ...
 
     parser.add_argument('-p', '--path', metavar="/path/to/system",
                         type=str, default=None, help='体系目录路径.' if lang == 'zh' else 'System directory path.')
