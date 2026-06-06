@@ -35,19 +35,42 @@ class GromacsMDRunner:
             shutil.copy(mdp_file, '.')
 
         pdb2gmx = [
-                    "gmx", "pdb2gmx",
-                    "-f", "protein.pdb", "-o", "protein.gro",
-                    "-water", "tip3p",
-                    "-ff", "charmm36",
-                    "-ter", "-ignh"]
-        subprocess.run(pdb2gmx, input="4\n6\n", text=True, check=True)
-        subprocess.run(["gmx", "editconf", "-f", "protein.gro", "-o newbox.gro -c -bt cubic -d 1.2"])
-        subprocess.run(["gmx", "solvate", "-cp newbox.gro -cs spc216.gro -p topol.top -o solv.gro"])
-        subprocess.run(["gmx", "grompp", " -f ions.mdp -c solv.gro -p topol.top -o ions.tpr"])
-        
-        subprocess.run(["echo", "SOL | gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname SOD -nname CLA -conc 0.15 -neutral"])
-        
-        subprocess.run(["gmx make_ndx -f solv_ions.gro -o index.ndx"])
+            "gmx", "pdb2gmx",
+            "-f", "protein.pdb", "-o", "protein.gro",
+            "-water", "tip3p", "-ff", "charmm36",
+            "-ter", "-ignh"
+            ]
+        subprocess.run(pdb2gmx, input="0\n1\n", text=True, check=True)
+        edit_conf = [
+            "gmx", "editconf",
+            "-f", "protein.gro", "-o", "newbox.gro",
+            "-c", "-bt", "cubic",
+            "-d", "1.2"]
+        subprocess.run(edit_conf)
+        solvate = [
+            "gmx", "solvate",
+            "-cp", "newbox.gro",
+            "-cs", "spc216.gro",
+            "-p", "topol.top",
+            "-o", "solv.gro"
+            ]
+        subprocess.run(solvate)
+        grompp = [
+            "gmx", "grompp",
+            "-f", "ions.mdp", " -c", "solv.gro", " -p", "topol.top", " -o", "ions.tpr"]
+        subprocess.run(grompp)
+        genion = [
+            "gmx", "genion",
+            "-s", "ions.tpr", "-o", "solv_ions.gro",
+            "-p", "topol.top",
+            "-pname", "SOD", "-nname", "CLA",
+            "-conc", "0.15", "-neutral"]
+        subprocess.run(genion, input="SOL\n", text=True, check=True)
+        make_ndx = [
+            "gmx", "make_ndx",
+            "-f", "solv_ions.gro",
+            "-o", "index.ndx"]
+        subprocess.run(make_ndx)
 
 
     def run(self):
