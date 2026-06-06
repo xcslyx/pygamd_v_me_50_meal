@@ -238,7 +238,7 @@ def run_main(lang):
         from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
         gromacs_runner = GromacsMDRunner(file_args.gromacs_pdb)
         gromacs_runner.build_simulation_box()
-        # gromacs_runner.run()
+        gromacs_runner.run_simulation()
         exit()
 
     # 其他分析功能需要 -p 参数
