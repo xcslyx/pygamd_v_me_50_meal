@@ -37,7 +37,7 @@ def update_software_name_zh():
     print("从版本 v0.6.0 开始，软件命令已更新为 vssk50。")
 
 def update_software_name_en():
-    print("The command of the software has been updated to vssk50_en since version v0.6.0.")
+    print("The command of the software has been updated to \"vssk50_en\" since version v0.6.0.")
 
 
 def main():
@@ -46,6 +46,10 @@ def main():
         print("Now you can use command v50_en to run the package, which is in English.")
     except Exception as e:
         ...
+    
+    username = os.getlogin()
+    if username == "shisk":
+        print("Hello, shisk!")
     run_main('zh')
 
 def main_en():
@@ -172,6 +176,8 @@ def run_main(lang):
     parser.add_argument('-gromacs_pdb', metavar="path/to/pdb_file",
                         type=str, default=None, help="pdb 文件路径，用于 GROMACS 模拟的结构。" if lang == 'zh' else "GROMACS pdb file path.")
 
+    parser.add_argument('-gromacs_t', metavar="temperature",
+                        type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
 
     file_args = parser.parse_args()
 
@@ -244,7 +250,7 @@ def run_main(lang):
         from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
         gromacs_runner = GromacsMDRunner(file_args.gromacs_pdb)
         gromacs_runner.build_simulation_box()
-        gromacs_runner.run_simulation()
+        gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
         exit()
 
     # 其他分析功能需要 -p 参数

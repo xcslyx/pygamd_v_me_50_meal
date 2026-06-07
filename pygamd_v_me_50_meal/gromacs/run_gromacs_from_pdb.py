@@ -55,6 +55,15 @@ class GromacsMDRunner:
         return next((key for key, value in molecule_dict.items()), None)
 
 
+    @staticmethod
+    def change_content_by_line(file, line_idx, new_content):
+        with open(file, 'r') as f:
+            lines = f.readlines()
+        lines[line_idx] = new_content + '\n'
+        with open(file, 'w') as f:
+            f.writelines(lines)
+
+
     def build_simulation_box(self, ):
         os.makedirs(self.pdb_dir, exist_ok=True)
         subprocess.run(f"rm -f {self.pdb_dir}/*", shell=True)
@@ -91,25 +100,33 @@ class GromacsMDRunner:
         subprocess.run(genion, input="SOL\n", text=True, check=True)
         
         make_ndx = ["gmx", "make_ndx", "-f", "solv_ions.gro", "-o", "index.ndx"]
-        subprocess.run(make_ndx, input="q\n", text=True, check=True)
+        if self.molecule_type == "protein":
+            make_ndx_input = "q\n"
+        # elif self.molecule_type == "rna":
+        #     make_ndx_input = "4\n"
+        subprocess.run(make_ndx, input=make_ndx_input, text=True, check=True)
 
 
     def run_simulation(self):
-        # os.chdir(self.pdb_dir)
-
         grompp_minim = ["gmx", "grompp", "-f", "minim.mdp", "-c", "solv_ions.gro",
             "-p", "topol.top", "-o", "em.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_minim)
-        
-        mdrun_minim = ["gmx", "mdrun", "-v", "-deffnm", "em", "-nt", "16", "-ntmpi", "1"]
+        mdrun_minim = ["gmx", "mdrun", "-v", "-deffnm", "em", "-nt", "16", "-ntmpi", "16"]
         subprocess.run(mdrun_minim)
         
+        # protein_tc_grps = "Protein Non-Protein"
+        rna_tc_grps = "RNA !RNA"
+        
+        if self.molecule_type == "rna":
+            self.change_content_by_line("nvt.mdp", 31-1, f"tc-grps                 = {rna_tc_grps}")
         grompp_nvt = ["gmx", "grompp", "-f", "nvt.mdp", "-c", "em.gro", "-r", "em.gro",
             "-p", "topol.top", "-o", "nvt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_nvt)
         mdrun_nvt = ["gmx", "mdrun", "-v", "-deffnm", "nvt", "-gpu_id", "3"]
         subprocess.run(mdrun_nvt)
         
+        if self.molecule_type == "rna":
+            self.change_content_by_line("npt.mdp", 31-1, f"tc-grps                 = {rna_tc_grps}")
         grompp_npt = ["gmx", "grompp", "-f", "npt.mdp", "-c", "nvt.gro", "-r", "nvt.gro",
             "-t", "nvt.cpt", "-p", "topol.top", "-o", "npt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_npt)
