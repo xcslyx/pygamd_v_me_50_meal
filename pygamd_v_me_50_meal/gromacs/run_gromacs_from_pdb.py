@@ -10,6 +10,7 @@ from Bio.PDB import PDBParser
 class GromacsMDRunner:
     def __init__(self, pdb_file, mdps_dir=None):
         self.pdb_file = pdb_file
+        self.molecule_type = self.analyze_molecule_type(self.pdb_file)
         self.pdb_dir = os.path.join(os.path.dirname(self.pdb_file), self.pdb_file.split(".")[0])
         if mdps_dir is None:
             mdps_dir = os.path.join(os.path.dirname(__file__), 'all_atom_mdp')
@@ -67,10 +68,9 @@ class GromacsMDRunner:
 
         pdb2gmx = ["gmx", "pdb2gmx", "-f", "protein.pdb", "-o", "protein.gro",
             "-water", "tip3p", "-ff", "charmm36", "-ter", "-ignh"]
-        molecule_type = self.analyze_molecule_type(self.pdb_file)
-        if molecule_type == "protein":
+        if self.molecule_type == "protein":
             pdb2gmx_input = "2\n1\n"
-        elif molecule_type == "rna":
+        elif self.molecule_type == "rna":
             pdb2gmx_input = "4\n6\n"
         subprocess.run(pdb2gmx, input=pdb2gmx_input, text=True, check=True)
         
