@@ -107,7 +107,7 @@ class GromacsMDRunner:
         subprocess.run(make_ndx, input=make_ndx_input, text=True, check=True)
 
 
-    def run_simulation(self):
+    def run_simulation(self, temperature=300.0):
         grompp_minim = ["gmx", "grompp", "-f", "minim.mdp", "-c", "solv_ions.gro",
             "-p", "topol.top", "-o", "em.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_minim)
@@ -119,6 +119,8 @@ class GromacsMDRunner:
         
         if self.molecule_type == "rna":
             self.change_content_by_line("nvt.mdp", 31-1, f"tc-grps                 = {rna_tc_grps}")
+        if temperature != 300.0:
+            self.change_content_by_line("nvt.mdp", 33-1, f"ref_t                   = {temperature}     {temperature}")
         grompp_nvt = ["gmx", "grompp", "-f", "nvt.mdp", "-c", "em.gro", "-r", "em.gro",
             "-p", "topol.top", "-o", "nvt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_nvt)
@@ -127,6 +129,8 @@ class GromacsMDRunner:
         
         if self.molecule_type == "rna":
             self.change_content_by_line("npt.mdp", 31-1, f"tc-grps                 = {rna_tc_grps}")
+        if temperature != 300.0:
+            self.change_content_by_line("npt.mdp", 33-1, f"ref_t                   = {temperature}     {temperature}")
         grompp_npt = ["gmx", "grompp", "-f", "npt.mdp", "-c", "nvt.gro", "-r", "nvt.gro",
             "-t", "nvt.cpt", "-p", "topol.top", "-o", "npt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         subprocess.run(grompp_npt)
