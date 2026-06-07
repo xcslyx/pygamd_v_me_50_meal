@@ -3,6 +3,7 @@ import sys
 import glob
 import shutil
 import subprocess
+from tkinter import W
 
 from Bio.PDB import PDBParser
 
@@ -85,19 +86,23 @@ class GromacsMDRunner:
         
         edit_conf = ["gmx", "editconf", "-f", "protein.gro", "-o", "newbox.gro",
             "-c", "-bt", "cubic", "-d", "1.2"]
-        subprocess.run(edit_conf)
+        with open("edit_conf.log", "w") as log_file:
+            subprocess.run(edit_conf, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
         solvate = ["gmx", "solvate", "-cp", "newbox.gro", "-cs", "spc216.gro",
             "-p", "topol.top", "-o", "solv.gro"]
-        subprocess.run(solvate)
+        with open("solvate.log", "w") as log_file:
+            subprocess.run(solvate, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
         grompp = ["gmx", "grompp", "-f", "ions.mdp",
             "-c", "solv.gro", "-p", "topol.top", "-o", "ions.tpr"]
-        subprocess.run(grompp)
+        with open("grompp.log", "w") as log_file:
+            subprocess.run(grompp, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
         genion = ["gmx", "genion", "-s", "ions.tpr", "-o", "solv_ions.gro", "-p", "topol.top",
             "-pname", "SOD", "-nname", "CLA", "-conc", "0.15", "-neutral"]
-        subprocess.run(genion, input="SOL\n", text=True, check=True)
+        with open("genion.log", "w") as log_file:
+            subprocess.run(genion, stdout=log_file, input="SOL\n", text=True, check=True)
         
         make_ndx = ["gmx", "make_ndx", "-f", "solv_ions.gro", "-o", "index.ndx"]
         if self.molecule_type == "protein":
@@ -110,7 +115,8 @@ class GromacsMDRunner:
     def run_simulation(self, temperature=300.0):
         grompp_minim = ["gmx", "grompp", "-f", "minim.mdp", "-c", "solv_ions.gro",
             "-p", "topol.top", "-o", "em.tpr", "-maxwarn", "1", "-n", "index.ndx"]
-        subprocess.run(grompp_minim)
+        with open("grompp_minim.log", "w") as log_file:
+            subprocess.run(grompp_minim, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         mdrun_minim = ["gmx", "mdrun", "-v", "-deffnm", "em", "-nt", "16", "-ntmpi", "16"]
         subprocess.run(mdrun_minim)
         
@@ -123,7 +129,8 @@ class GromacsMDRunner:
             self.change_content_by_line("nvt.mdp", 33-1, f"ref_t                   = {temperature}     {temperature}")
         grompp_nvt = ["gmx", "grompp", "-f", "nvt.mdp", "-c", "em.gro", "-r", "em.gro",
             "-p", "topol.top", "-o", "nvt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
-        subprocess.run(grompp_nvt)
+        with open("grompp_nvt.log", "w") as log_file:
+            subprocess.run(grompp_nvt, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         mdrun_nvt = ["gmx", "mdrun", "-v", "-deffnm", "nvt", "-gpu_id", "3"]
         subprocess.run(mdrun_nvt)
         
@@ -133,13 +140,15 @@ class GromacsMDRunner:
             self.change_content_by_line("npt.mdp", 33-1, f"ref_t                   = {temperature}     {temperature}")
         grompp_npt = ["gmx", "grompp", "-f", "npt.mdp", "-c", "nvt.gro", "-r", "nvt.gro",
             "-t", "nvt.cpt", "-p", "topol.top", "-o", "npt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
-        subprocess.run(grompp_npt)
+        with open("grompp_npt.log", "w") as log_file:
+            subprocess.run(grompp_npt, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         mdrun_npt = ["gmx", "mdrun", "-v", "-deffnm", "npt", "-gpu_id", "3"]
         subprocess.run(mdrun_npt)
         
         grompp_md = ["gmx", "grompp", "-f", "mdrun.mdp", "-c", "npt.gro", "-t", "npt.cpt",
             "-p", "topol.top", "-o", "md.tpr", "-maxwarn", "1", "-n", "index.ndx"]
-        subprocess.run(grompp_md)
+        with open("grompp_md.log", "w") as log_file:
+            subprocess.run(grompp_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         # mdrun_md = ["gmx", "mdrun", "-v", "-deffnm", "md", "-nt", "3"]
         # subprocess.run(mdrun_md)
 
