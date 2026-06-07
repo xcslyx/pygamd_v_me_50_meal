@@ -14,7 +14,7 @@ requires-python = ">=3.11"
 dependencies = ["numpy", "pandas", "matplotlib",
                 "torch", "tqdm", "scipy",
                 "scikit-learn", "MDAnalysis",
-                "pygamd"]
+                "pygamd", "biopython"]
 
 [tool.setuptools]
 # 自动发现包
