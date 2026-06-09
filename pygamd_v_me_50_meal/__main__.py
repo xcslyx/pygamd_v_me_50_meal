@@ -50,6 +50,10 @@ def main():
     username = os.getlogin()
     if username == "shisk":
         print("Hello, shisk!")
+    if username == "zhy":
+        print("Hello, zhy!")
+        print("但是不给你用，看看你什么时候能发现")
+        exit()
     run_main('zh')
 
 def main_en():
