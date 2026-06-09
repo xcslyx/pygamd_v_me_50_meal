@@ -3,8 +3,8 @@ import sys
 import glob
 import shutil
 import subprocess
-from tkinter import W
 
+from time import sleep
 from Bio.PDB import PDBParser
 
 
@@ -12,6 +12,8 @@ class GromacsMDRunner:
     def __init__(self, pdb_file, mdps_dir=None):
         self.pdb_file = pdb_file
         self.molecule_type = self.analyze_molecule_type(self.pdb_file)
+        print("分子类型:", self.molecule_type)
+        
         self.pdb_dir = os.path.join(os.path.dirname(self.pdb_file), self.pdb_file.split(".")[0])
         if mdps_dir is None:
             mdps_dir = os.path.join(os.path.dirname(__file__), 'all_atom_mdp')
@@ -37,13 +39,13 @@ class GromacsMDRunner:
         
         parser = PDBParser(QUIET=True)
         structure = parser.get_structure('molecule', pdb_file)
-
+        
         # 遍历结构中的所有残基
         molecule_dict = {"protein": False, "rna": False, "dna": False}
         for residue in structure.get_residues():
             # 获取残基名称并去除可能存在的空格
             res_name = residue.get_resname().strip().upper()
-            
+            print(res_name)
             if res_name in protein_residues:
                 molecule_dict["protein"] = True
                 break
@@ -52,8 +54,8 @@ class GromacsMDRunner:
                 break
             elif res_name in dna_residues:
                 molecule_dict["dna"] = True
-
-        return next((key for key, value in molecule_dict.items()), None)
+                break
+        return next((key for key, value in molecule_dict.items() if value), None)
 
 
     @staticmethod
@@ -66,6 +68,9 @@ class GromacsMDRunner:
 
 
     def build_simulation_box(self, ):
+        print("开始构建模拟盒子...")
+        sleep(1)
+
         os.makedirs(self.pdb_dir, exist_ok=True)
         subprocess.run(f"rm -f {self.pdb_dir}/*", shell=True)
 
@@ -94,10 +99,10 @@ class GromacsMDRunner:
         with open("solvate.log", "w") as log_file:
             subprocess.run(solvate, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
-        grompp = ["gmx", "grompp", "-f", "ions.mdp",
+        grompp_ion = ["gmx", "grompp", "-f", "ions.mdp",
             "-c", "solv.gro", "-p", "topol.top", "-o", "ions.tpr"]
-        with open("grompp.log", "w") as log_file:
-            subprocess.run(grompp, stdout=log_file, stderr=subprocess.STDOUT, check=True)
+        with open("grompp_ion.log", "w") as log_file:
+            subprocess.run(grompp_ion, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
         genion = ["gmx", "genion", "-s", "ions.tpr", "-o", "solv_ions.gro", "-p", "topol.top",
             "-pname", "SOD", "-nname", "CLA", "-conc", "0.15", "-neutral"]
@@ -107,8 +112,8 @@ class GromacsMDRunner:
         make_ndx = ["gmx", "make_ndx", "-f", "solv_ions.gro", "-o", "index.ndx"]
         if self.molecule_type == "protein":
             make_ndx_input = "q\n"
-        # elif self.molecule_type == "rna":
-        #     make_ndx_input = "4\n"
+        elif self.molecule_type == "rna":
+            make_ndx_input = "!1\nq\n"
         subprocess.run(make_ndx, input=make_ndx_input, text=True, check=True)
 
 
