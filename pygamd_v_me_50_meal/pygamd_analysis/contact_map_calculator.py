@@ -183,11 +183,11 @@ class ContactMapCalculator:
             print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000-2000, or directly press Enter to skip:")
             self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为 'START-END', 例如：1000-2000，直接回车则不截取：")
 
-        if not self.balance_cut:
-            files = os.listdir(self.chain_path)
-        else:
+        
+        files = sorted(os.listdir(self.chain_path))
+        if self.balance_cut:
             start, end = list(map(int, self.balance_cut.split('-')))
-            files = sorted(os.listdir(self.chain_path))[start: end+1]
+            files = files[start: end+1]
 
 
         for cm_class in self.cm_class_list:
@@ -221,7 +221,12 @@ class ContactMapCalculator:
             for line in f.readlines():
                 float_line = list(map(float, line.strip().split(" ")))
                 data_matrix.append(float_line)
-        return np.array(data_matrix)
+            
+            cur_contact_map = np.array(data_matrix)
+            contact_number = np.sum(cur_contact_map)
+            with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_cn.log')), 'w') as save_file:
+                save_file.write(f"{contact_number}\n")
+        return cur_contact_map
 
 
     def average_contact_map(self):
@@ -231,7 +236,7 @@ class ContactMapCalculator:
             if not os.path.exists(self.cur_cm_path):
                 print(f"未找到 {self.cur_cm_path} 文件夹，请先进行计算。")
                 return
-            cm_files = os.listdir(self.cur_cm_path)
+            cm_files = sorted(os.listdir(self.cur_cm_path))
 
             # 使用多进程读取和处理 CM 文件
             with Pool(processes=4) as pool:
@@ -248,8 +253,9 @@ class ContactMapCalculator:
                 cm_mat += dataMat
 
             cn_list = np.zeros(len(results))
-            for i, dataMat in enumerate(results):
-                cn_list[i] = np.sum(dataMat)
+            cm_files = sorted(cm_files)
+            for i in range(len(results)):
+                cn_list[i] = np.sum(results[i])
 
             # 保存 cn_list
             with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_cn_list.log"),
