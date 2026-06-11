@@ -252,9 +252,11 @@ class ContactMapCalculator:
                 cm_mat += dataMat
 
             cn_list = np.zeros(len(results))
-            cm_files = sorted(cm_files)
-            for i in range(len(results)):
-                cn_list[i] = np.sum(results[i])
+            for cm_idx, cm_file in enumerate(cm_files):
+                cn_file = cm_file.replace('.xml', '_cn.log')
+                with open(os.path.join(self.cur_cm_path, cn_file), 'r') as f:
+                    cn = float(f.readline().strip())
+                    cn_list[cm_idx] = cn
 
             # 保存 cn_list
             with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_cn_list.log"),
