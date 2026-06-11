@@ -247,8 +247,7 @@ class ContactMapCalculator:
                                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                                     ncols=100))
 
-            # 计算 cm_mat 的维度
-            cm_mat = np.zeros_like(results[0])  # 假设所有的结果有相同的形状
+            cm_mat = np.zeros_like(results[0])
             for dataMat in results:
                 cm_mat += dataMat
 
