@@ -7,6 +7,10 @@
         "zh": "不是一个有效的 XML 文件",
         "en": "is not a valid xml file"
     },
+    "no_valid_file": {
+        "zh": "没有有效的 XML 文件",
+        "en": "No valid XML file found"
+    },
     "mass_density_message": 
     {
         "remove_pbc": {
@@ -50,7 +54,26 @@
         "remove_enm_bonds_request": {
             "zh": "是否需要移除弹性键？(y/n)",
             "en": "Do you want to remove elastic bonds? (y/n)"
+        },
+        "start_coordinate_extraction": {
+            "zh": "开始提取坐标...",
+            "en": "Starting coordinate extraction..."
+        },
+        "start_sequence_extraction": {
+            "zh": "开始提取序列信息...",
+            "en": "Starting sequence information extraction..."
+        },
+        "sequence_output": {
+            "zh": "序列信息已保存至文件",
+            "en": "Sequence information has been saved to file"
+        },
+        "remove_enm_bonds_ing": {
+            "zh": "正在移除弹性键...",
+            "en": "Removing elastic bonds..."
+        },
+        "remove_pbc_extraction_xyz": {
+            "zh": "正在移除 PBC 并提取坐标...",
+            "en": "Removing PBC and extracting coordinates..."
         }
-
     }
 }

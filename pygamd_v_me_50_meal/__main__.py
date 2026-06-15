@@ -34,7 +34,7 @@ with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding
 
 
 def update_software_name_zh():
-    print("从版本 v0.6.0 开始，软件命令已更新为 vssk50。")
+    print("从版本 v0.6.0 开始，软件命令已更新为 \"vssk50\"。")
 
 def update_software_name_en():
     print("The command of the software has been updated to \"vssk50_en\" since version v0.6.0.")
@@ -50,7 +50,7 @@ def main():
     username = os.getlogin()
     if username == "shisk":
         print("Hello, shisk!")
-    if username == "zhy":
+    elif username == "zhy":
         print("Hello, zhy!")
         print("但是不给你用，看看你什么时候能发现")
         exit()
@@ -69,6 +69,9 @@ def run_main(lang):
     except Exception as e:
         print(e)
     print(msg['running_package'])
+
+    print("喜大普奔！现在你可以在 https://www.kdocs.cn/l/ckcZQed8Jrz0 提交您的更新需求。")
+    print("请在提交时，详细描述您的需求，包括功能描述、使用场景、预期结果等。")
 
     parser = argparse.ArgumentParser(
         # prog=f'{os.path.basename(__file__)} v0.0.20 增强版',
@@ -180,8 +183,14 @@ def run_main(lang):
     parser.add_argument('-gromacs_pdb', metavar="path/to/pdb_file",
                         type=str, default=None, help="pdb 文件路径，用于 GROMACS 模拟的结构。" if lang == 'zh' else "GROMACS pdb file path.")
 
-    parser.add_argument('-gromacs_t', metavar="temperature",
-                        type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
+    parser.add_argument('gromacs_pdb_dir', metavar="path/to/gromacs_pdb_dir",
+                        type=str, default=None, help="GROMACS pdb 文件所在目录。" if lang == 'zh' else "GROMACS pdb file directory.")
+    
+    if file_args.gromacs_pdb or file_args.gromacs_pdb_dir:
+        parser.add_argument('-t', metavar="temperature",
+                            type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
+    
+    
 
     file_args = parser.parse_args()
 
@@ -256,12 +265,21 @@ def run_main(lang):
         gromacs_runner.build_simulation_box()
         gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
         exit()
+    elif file_args.gromacs_pdb_dir:
+        from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb_dir import GromacsMDRunner
+        for pdb_file in os.listdir(file_args.gromacs_pdb_dir):
+            if pdb_file.endswith('.pdb'):
+                pdb_path = os.path.join(file_args.gromacs_pdb_dir, pdb_file)
+                gromacs_runner = GromacsMDRunner(pdb_path)
+                gromacs_runner.build_simulation_box()
+                gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
+        exit()
+
+
 
     # 其他分析功能需要 -p 参数
     # current_dir_path = os.getcwd()
-    path = str(file_args.path)
-
-    if path is None:
+    if file_args.path is None:
         if file_args.get_seq is not None:
             path = str(os.path.dirname(file_args.get_seq))
         elif file_args.pdb2xml is not None:
@@ -270,7 +288,8 @@ def run_main(lang):
                 path = os.getcwd()
         else:
             raise ValueError(msg['please_provide_path'])
-
+    else:
+        path = str(file_args.path)
     # path = os.path.join(current_dir_path, path)
 
     ref = file_args.ref

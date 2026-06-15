@@ -31,7 +31,7 @@ class SpanningRatioCalculator:
                 init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
                 break
         if not init_xml_file:
-            raise ValueError("Cannot find a valid initial xml file.")
+            raise ValueError(messages['no_valid_file'][self.lang])
         self.box_size: list[float] = XMLDataExtractor(init_xml_file).get_box_size()
 
         self.cutoff = 3.5

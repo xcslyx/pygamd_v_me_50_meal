@@ -68,7 +68,7 @@ class CoordinatesProcessor:
                 init_xml_file = os.path.join(self.path, "xml", self.xml_files[i])
                 break
         if not init_xml_file:
-            raise ValueError("Cannot find a valid initial xml file.")
+            raise ValueError(messages['no_valid_file'][self.lang])
         self.box_size: list[float] = XMLDataExtractor(init_xml_file).get_box_size()
 
         self.unwrap_xml_flag: bool = True
@@ -100,7 +100,7 @@ class CoordinatesProcessor:
 
     def abstract_coordinates_normal(self, xml_file):
         if not (utils.check_xml_start_tag(xml_file) and xml_file.endswith("0.xml")):
-            print(f"{xml_file} {msg['not_valid_file'][self.lang]}")
+            print(f"{xml_file} {messages['not_valid_file'][self.lang]}")
             return
 
         positions, unwrapped_positions = {}, {}
@@ -232,13 +232,13 @@ class CoordinatesProcessor:
 
 
     def cal_xyz(self, remove_condensate_pbc=False):
-        print("Starting coordinate extraction...")
+        print(msg['start_coordinate_extraction'][self.lang])
         init_files = sorted([i for i in os.listdir(self.init_xml_path) if i.endswith("0.xml") and utils.check_xml_start_tag(i)])
-        print("Staring to extract sequence information...")
+        print(msg['start_sequence_extraction'][self.lang])
         seq_output = f"{self.data.system_name}_sequence.txt"
         GetSequence(self.init_xml_path, sorted(init_files)[0], self.data, output_path=self.path,
                     output=seq_output).xml2sequence()
-        print(f"Sequence information has been saved to {seq_output}.")
+        print(f"{msg['sequence_output'][self.lang]}: {seq_output}.")
 
         if self.remove_enm_bonds_request == "y":
             utils.backup_folder(self.path, 'xml', 'xml_init')
@@ -246,14 +246,15 @@ class CoordinatesProcessor:
             with Pool(processes=4) as pool:
                 list(tqdm(pool.imap(self.remove_enm_bonds_from_xml, init_files),
                           total=len(init_files),
-                          desc="Remove elastic bonds", colour="cyan", ncols=100))
+                          desc=msg['remove_enm_bonds_ing'][self.lang], colour="cyan",
+                          ncols=100))
 
 
         for _dir in ["xml_unwrapping", "chain_xyz", "chain_xyz_unwrapping"]:
             utils.create_folder(_dir, self.path, overwrite=True)
 
         with Pool(processes=4) as pool:
-            print("Staring to remove PBC and extract coordinates...")
+            print(msg['remove_pbc_extraction_xyz'][self.lang])
             # 使用 tqdm 包装你的可迭代对象
             list(tqdm(pool.imap(self.abstract_coordinates_normal, init_files),
                       total=len(init_files),

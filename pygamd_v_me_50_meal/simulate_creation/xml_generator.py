@@ -36,6 +36,7 @@ class XMLGenerator:
                     path = os.getcwd()
                 print(f"系统目录路径未提供，已设置为 {path}")
                 filename = os.path.basename(filename)
+
                 assert os.path.exists(os.path.join(path, filename)), "需要转换的 PDB 文件不存在！"
             else:
                 raise ValueError("需要转换的 PDB 文件不存在！ Please provide a valid PDB file!")
