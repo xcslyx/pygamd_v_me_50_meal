@@ -25,6 +25,11 @@ include-package-data = true
 [tool.setuptools.package-data]
 # "*" 表示匹配所有子包，"*.json" 匹配所有 json 文件
 "*" = ["*.json"]
+"pygamd_v_me_50_meal" = [
+    "gromacs/all_atom_mdp/*",
+    "gromacs/charmm36.ff/*",
+    "gromacs/charmm36.ff/*"
+]
 
 [project.urls]
 Homepage = "https://gitee.com/lyxlyxlyxxx/pygamd_v_me_50_meal.git"
