@@ -183,7 +183,7 @@ def run_main(lang):
     parser.add_argument('-gromacs_pdb', metavar="path/to/pdb_file",
                         type=str, default=None, help="pdb 文件路径，用于 GROMACS 模拟的结构。" if lang == 'zh' else "GROMACS pdb file path.")
 
-    parser.add_argument('gromacs_pdb_dir', metavar="path/to/gromacs_pdb_dir",
+    parser.add_argument('-gromacs_pdb_dir', metavar="path/to/gromacs_pdb_dir",
                         type=str, default=None, help="GROMACS pdb 文件所在目录。" if lang == 'zh' else "GROMACS pdb file directory.")
     
     # if file_args.gromacs_pdb or file_args.gromacs_pdb_dir:
@@ -264,7 +264,7 @@ def run_main(lang):
         gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
         exit()
     elif file_args.gromacs_pdb_dir:
-        from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb_dir import GromacsMDRunner
+        from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
         for pdb_file in os.listdir(file_args.gromacs_pdb_dir):
             if pdb_file.endswith('.pdb'):
                 pdb_path = os.path.join(file_args.gromacs_pdb_dir, pdb_file)
