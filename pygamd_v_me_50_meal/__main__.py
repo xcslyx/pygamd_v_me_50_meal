@@ -187,8 +187,14 @@ def run_main(lang):
                         type=str, default=None, help="GROMACS pdb 文件所在目录。" if lang == 'zh' else "GROMACS pdb file directory.")
     
     # if file_args.gromacs_pdb or file_args.gromacs_pdb_dir:
-    parser.add_argument('-t', metavar="temperature",
+    parser.add_argument('-gromacs_t', metavar="temperature",
                         type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
+    
+    parser.add_argument('-gromacs_gpu', metavar="gpu_id",
+                        type=str, default="0", help="GROMACS 模拟的 GPU ID, 默认 0。" if lang == 'zh' else "GROMACS GPU ID for simulation.")
+
+    parser.add_argument('-gromacs_steps', metavar="steps",
+                        type=int, default=50000000, help="GROMACS 模拟的步数, 默认 50000000, 即 100 ns。" if lang == 'zh' else "GROMACS simulation steps, default 50000000.")
     
     file_args = parser.parse_args()
 
@@ -261,16 +267,22 @@ def run_main(lang):
         from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
         gromacs_runner = GromacsMDRunner(file_args.gromacs_pdb)
         gromacs_runner.build_simulation_box()
-        gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
+        gromacs_runner.run_simulation(temperature=file_args.gromacs_t,
+                                    gpu_id=file_args.gromacs_gpu,
+                                    mdrun_steps=file_args.gromacs_steps)
         exit()
     elif file_args.gromacs_pdb_dir:
         from pygamd_v_me_50_meal.gromacs.run_gromacs_from_pdb import GromacsMDRunner
+        pwd = os.getcwd()
         for pdb_file in os.listdir(file_args.gromacs_pdb_dir):
             if pdb_file.endswith('.pdb'):
                 pdb_path = os.path.join(file_args.gromacs_pdb_dir, pdb_file)
                 gromacs_runner = GromacsMDRunner(pdb_path)
                 gromacs_runner.build_simulation_box()
-                gromacs_runner.run_simulation(temperature=file_args.gromacs_t)
+                gromacs_runner.run_simulation(temperature=file_args.gromacs_t,
+                                            gpu_id=file_args.gromacs_gpu,
+                                            mdrun_steps=file_args.gromacs_steps)
+            os.chdir(pwd)
         exit()
 
 

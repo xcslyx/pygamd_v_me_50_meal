@@ -117,7 +117,7 @@ class GromacsMDRunner:
         subprocess.run(make_ndx, input=make_ndx_input, text=True, check=True)
 
 
-    def run_simulation(self, temperature=300.0):
+    def run_simulation(self, temperature=300.0, gpu_id="0", mdrun_steps=150000000):
         grompp_minim = ["gmx", "grompp", "-f", "minim.mdp", "-c", "solv_ions.gro",
             "-p", "topol.top", "-o", "em.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_minim.log", "w") as log_file:
@@ -136,7 +136,7 @@ class GromacsMDRunner:
             "-p", "topol.top", "-o", "nvt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_nvt.log", "w") as log_file:
             subprocess.run(grompp_nvt, stdout=log_file, stderr=subprocess.STDOUT, check=True)
-        mdrun_nvt = ["gmx", "mdrun", "-v", "-deffnm", "nvt", "-gpu_id", "3"]
+        mdrun_nvt = ["gmx", "mdrun", "-v", "-deffnm", "nvt", "-gpu_id", gpu_id]
         subprocess.run(mdrun_nvt)
         
         if self.molecule_type == "rna":
@@ -147,15 +147,21 @@ class GromacsMDRunner:
             "-t", "nvt.cpt", "-p", "topol.top", "-o", "npt.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_npt.log", "w") as log_file:
             subprocess.run(grompp_npt, stdout=log_file, stderr=subprocess.STDOUT, check=True)
-        mdrun_npt = ["gmx", "mdrun", "-v", "-deffnm", "npt", "-gpu_id", "3"]
+        mdrun_npt = ["gmx", "mdrun", "-v", "-deffnm", "npt", "-gpu_id", gpu_id]
         subprocess.run(mdrun_npt)
         
         grompp_md = ["gmx", "grompp", "-f", "mdrun.mdp", "-c", "npt.gro", "-t", "npt.cpt",
             "-p", "topol.top", "-o", "md.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_md.log", "w") as log_file:
             subprocess.run(grompp_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
-        # mdrun_md = ["gmx", "mdrun", "-v", "-deffnm", "md", "-nt", "3"]
-        # subprocess.run(mdrun_md)
+        
+        mdrun_md = ["gmx", "mdrun", "-v", "-deffnm", "md", "-nt", "16", "-ntmpi", "16", "-gpu_id", gpu_id]
+        simulation_time = f"{mdrun_steps * 0.002 * 1e-3} ns"
+        self.change_content_by_line("mdrun.mdp", 3-1,
+        f"nsteps                  = {mdrun_steps} ; {simulation_time}")
+        print(f"开始进行 {mdrun_steps} 步的 MD 模拟, 共 {simulation_time}...")
+        with open("mdrun.log", "w") as log_file:
+            subprocess.run(mdrun_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
 
 
 
