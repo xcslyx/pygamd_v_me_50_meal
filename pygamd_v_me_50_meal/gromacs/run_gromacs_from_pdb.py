@@ -45,7 +45,7 @@ class GromacsMDRunner:
         for residue in structure.get_residues():
             # 获取残基名称并去除可能存在的空格
             res_name = residue.get_resname().strip().upper()
-            print(res_name)
+            # print(res_name)
             if res_name in protein_residues:
                 molecule_dict["protein"] = True
                 break
@@ -81,13 +81,16 @@ class GromacsMDRunner:
         for mdp_file in self.mdp_files:
             shutil.copy(mdp_file, '.')
 
-        pdb2gmx = ["gmx", "pdb2gmx", "-f", "protein.pdb", "-o", "protein.gro",
-            "-water", "tip3p", "-ff", "charmm36", "-ter", "-ignh"]
+        
         if self.molecule_type == "protein":
-            pdb2gmx_input = "2\n1\n"
+            pdb2gmx = ["gmx", "pdb2gmx", "-f", "protein.pdb", "-o", "protein.gro",
+            "-water", "tip3p", "-ff", "charmm36", "-ignh"]
+            subprocess.run(pdb2gmx, check=True)
         elif self.molecule_type == "rna":
+            pdb2gmx = ["gmx", "pdb2gmx", "-f", "protein.pdb", "-o", "protein.gro",
+            "-water", "tip3p", "-ff", "charmm36", "-ter", "-ignh"]
             pdb2gmx_input = "4\n6\n"
-        subprocess.run(pdb2gmx, input=pdb2gmx_input, text=True, check=True)
+            subprocess.run(pdb2gmx, input=pdb2gmx_input, text=True, check=True)
         
         edit_conf = ["gmx", "editconf", "-f", "protein.gro", "-o", "newbox.gro",
             "-c", "-bt", "cubic", "-d", "1.2"]
@@ -117,7 +120,7 @@ class GromacsMDRunner:
         subprocess.run(make_ndx, input=make_ndx_input, text=True, check=True)
 
 
-    def run_simulation(self, temperature=300.0, gpu_id="0", mdrun_steps=150000000):
+    def run_simulation(self, temperature=300.0, gpu_id="0", mdrun_steps=50000000):
         grompp_minim = ["gmx", "grompp", "-f", "minim.mdp", "-c", "solv_ions.gro",
             "-p", "topol.top", "-o", "em.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_minim.log", "w") as log_file:
@@ -150,15 +153,14 @@ class GromacsMDRunner:
         mdrun_npt = ["gmx", "mdrun", "-v", "-deffnm", "npt", "-gpu_id", gpu_id]
         subprocess.run(mdrun_npt)
         
+        simulation_time = f"{mdrun_steps * 0.002 * 1e-3} ns"
+        self.change_content_by_line("mdrun.mdp", 3-1, f"nsteps                  = {mdrun_steps} ; {simulation_time}")
         grompp_md = ["gmx", "grompp", "-f", "mdrun.mdp", "-c", "npt.gro", "-t", "npt.cpt",
             "-p", "topol.top", "-o", "md.tpr", "-maxwarn", "1", "-n", "index.ndx"]
         with open("grompp_md.log", "w") as log_file:
             subprocess.run(grompp_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
         
         mdrun_md = ["gmx", "mdrun", "-v", "-deffnm", "md", "-nt", "16", "-ntmpi", "16", "-gpu_id", gpu_id]
-        simulation_time = f"{mdrun_steps * 0.002 * 1e-3} ns"
-        self.change_content_by_line("mdrun.mdp", 3-1,
-        f"nsteps                  = {mdrun_steps} ; {simulation_time}")
         print(f"开始进行 {mdrun_steps} 步的 MD 模拟, 共 {simulation_time}...")
         with open("mdrun.log", "w") as log_file:
             subprocess.run(mdrun_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
