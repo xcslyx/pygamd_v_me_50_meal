@@ -186,12 +186,10 @@ def run_main(lang):
     parser.add_argument('gromacs_pdb_dir', metavar="path/to/gromacs_pdb_dir",
                         type=str, default=None, help="GROMACS pdb 文件所在目录。" if lang == 'zh' else "GROMACS pdb file directory.")
     
-    if file_args.gromacs_pdb or file_args.gromacs_pdb_dir:
-        parser.add_argument('-t', metavar="temperature",
-                            type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
+    # if file_args.gromacs_pdb or file_args.gromacs_pdb_dir:
+    parser.add_argument('-t', metavar="temperature",
+                        type=float, default=300.0, help="模拟的温度，默认 300.0 K。" if lang == 'zh' else "Temperature for GROMACS simulation.")
     
-    
-
     file_args = parser.parse_args()
 
     # 序列分析作为独立功能，不需要 -p 参数
