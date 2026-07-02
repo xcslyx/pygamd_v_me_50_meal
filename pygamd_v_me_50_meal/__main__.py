@@ -48,11 +48,9 @@ def main():
         ...
     
     username = os.getlogin()
-    if username == "shisk":
-        print("Hello, shisk!")
-    elif username == "zhy":
-        print("Hello, zhy!")
-        print("但是不给你用，看看你什么时候能发现")
+    print(f"Hello, {username}!")
+    if username == "zhy":
+        print(f"但是不给你用，尽管你已经发现了，奖励你更新之后再改一遍。")
         exit()
     run_main('zh')
 

@@ -142,7 +142,7 @@ class XMLGenerator:
                     if atoms:
                         molecules.append(atoms)
                     atoms = []
-                    continue
+                    # continue
         
         self.mol_num = len(molecules)
         if self.mol_num == 0:
@@ -218,7 +218,7 @@ class XMLGenerator:
                 res = atom[5]
             
             # 保存 log 文件
-            log_file = os.path.join(self.path, f"log/mol{i}_log.xml")
+            log_file = os.path.join(self.path, f"log/mol{i:0>2d}_log.xml")
             with open(log_file, 'w') as f:
                 f.write(f"<?xml version='1.0' encoding='utf-8'?>\n<molecule num_atoms='{k}'>")
                 f.write(f"\n<{seq_elem.tag}>" + seq_elem.text + f"</{seq_elem.tag}>\n")
@@ -234,7 +234,7 @@ class XMLGenerator:
                         self.rigid_domain_list = input("请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。\n").split(',')
                         # self.add_rigid_body = False
 
-                self.pro_log2xml(file=f"mol{i}_log.xml")
+                self.pro_log2xml(file=f"mol{i:0>2d}_log.xml")
 
                 if self.add_rigid_body:
                     if not self.add_domain_flag:
@@ -247,7 +247,7 @@ class XMLGenerator:
                     if self.add_domain_flag:
                         for domain_idx in range(len(self.rigid_domain_list)):
                             domain = list(map(int, self.rigid_domain_list[domain_idx].split('-')))
-                            self.pro_add_domain(f"mol{i}_log.xml", domain[0], domain[1])
+                            self.pro_add_domain(f"mol{i:0>2d}_log.xml", domain[0], domain[1])
                         self.add_domain_flag = False
                         self.add_rigid_body = False
                 else:
@@ -260,9 +260,9 @@ class XMLGenerator:
                         for domain_idx in range(len(self.enm_domain_list)):
                             domain = list(map(int, self.enm_domain_list[domain_idx].split('-')))
                             if domain_idx == 0:
-                                self.add_enm_bond(f"mol{i}_log.xml", domain[0], domain[1])
+                                self.add_enm_bond(f"mol{i:0>2d}_log.xml", domain[0], domain[1])
                             else:
-                                self.add_enm_bond(f"mol{i}_log_enm.xml", domain[0], domain[1])
+                                self.add_enm_bond(f"mol{i:0>2d}_log_enm.xml", domain[0], domain[1])
                         self.add_enm_bond_flag = False
 
                         if not self.add_domain_flag:
@@ -273,18 +273,18 @@ class XMLGenerator:
                         if self.add_domain_flag:
                             for domain_idx in range(len(self.enm_domain_list)):
                                 domain = list(map(int, self.enm_domain_list[domain_idx].split('-')))
-                                self.pro_add_domain(f"mol{i}_log_enm.xml", domain[0], domain[1])
+                                self.pro_add_domain(f"mol{i:0>2d}_log_enm.xml", domain[0], domain[1])
                             self.add_domain_flag = False
 
             elif self.mol_class[i] == "dna":
                 if self.dna_model == "3SPN":
-                    self.dna_log2xml_3SPN(file=f"mol{i}_log.xml")
+                    self.dna_log2xml_3SPN(file=f"mol{i:0>2d}_log.xml")
                 elif self.dna_model == "2BeadMittal":
-                    self.dna_log2xml_2BeadMittal(file=f"mol{i}_log.xml")
+                    self.dna_log2xml_2BeadMittal(file=f"mol{i:0>2d}_log.xml")
 
             elif self.mol_class[i] == "rna":
                 if self.rna_model == "3SPN":
-                    self.rna_log2xml_3SPN(file=f"mol{i}_log.xml")
+                    self.rna_log2xml_3SPN(file=f"mol{i:0>2d}_log.xml")
 
         # 清理 log 目录
         if os.path.exists(self.log_dir):

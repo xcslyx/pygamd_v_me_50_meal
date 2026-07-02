@@ -72,6 +72,7 @@ class GromacsMDRunner:
         sleep(1)
 
         os.makedirs(self.pdb_dir, exist_ok=True)
+        print(f"√ 创建目录: {self.pdb_dir}")
         subprocess.run(f"rm -f {self.pdb_dir}/*", shell=True)
 
         subprocess.run(["cp", self.pdb_file, os.path.join(self.pdb_dir, "protein.pdb")])
@@ -162,8 +163,8 @@ class GromacsMDRunner:
         
         mdrun_md = ["gmx", "mdrun", "-v", "-deffnm", "md", "-nt", "16", "-ntmpi", "16", "-gpu_id", gpu_id]
         print(f"开始进行 {mdrun_steps} 步的 MD 模拟, 共 {simulation_time}...")
-        with open("mdrun.log", "w") as log_file:
-            subprocess.run(mdrun_md, stdout=log_file, stderr=subprocess.STDOUT, check=True)
+        
+        subprocess.run(mdrun_md, check=True)
 
 
 
