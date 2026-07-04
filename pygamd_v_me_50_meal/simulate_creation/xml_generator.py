@@ -476,7 +476,7 @@ class XMLGenerator:
             line = line.split()
             sequence_position[int(line[-2]) - 1].append(line)
 
-        new_sequence_position = []
+        new_seq_pos = []
         for new_seq in sequence_position:
             m, x, y, z = 0, 0, 0, 0
             for i in new_seq[1:]:
@@ -487,10 +487,10 @@ class XMLGenerator:
             x /= m
             y /= m
             z /= m
-            new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
+            new_seq_pos.append([new_seq[0], x / 10, y / 10, z / 10, m])
 
         with open(os.path.join(self.xml_dir, file.replace(".log", ".xml")), 'w') as f:
-            n_atoms = len(new_sequence_position)
+            n_atoms = len(new_seq_pos)
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<galamost_xml version="1.3">\n')
             f.write(f'<configuration time_step="0" dimensions="3" natoms="{n_atoms}" >\n')
@@ -498,7 +498,7 @@ class XMLGenerator:
 
             # set position
             f.write(f'<position num="{n_atoms}">\n')
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{atom[1]:17.10f}{atom[2]:17.10f}{atom[3]:17.10f}\n")
                 self.x_max = max(self.x_max, atom[1])
                 self.y_max = max(self.y_max, atom[2])
@@ -513,13 +513,13 @@ class XMLGenerator:
 
             # set mass
             f.write('<mass num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{:<17.10f}\n".format(atom[4]))
             f.write("</mass>\n")
 
             # set particle type
             f.write('<type num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{}\n".format(self.pro_res_map[atom[0]][0]))
             f.write("</type>\n")
 
@@ -535,7 +535,7 @@ class XMLGenerator:
             q_unit = math.sqrt(k / epsilon_r)
 
             f.write('<charge num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 if self.pro_res_map[atom[0]][0] == 'R' or self.pro_res_map[atom[0]][0] == 'K':
                     if self.protein_model == "HPS":
                         f.write("{:<17.10f}\n".format(q_unit))
@@ -606,7 +606,7 @@ class XMLGenerator:
                 else:
                     new_sequence[-1].append(i)
 
-        new_sequence_position = []
+        new_seq_pos = []
         for new_seq in new_sequence[1:]:
             # print(len(new_seq), new_seq)
             # print(new_seq)
@@ -620,19 +620,19 @@ class XMLGenerator:
                 x /= m
                 y /= m
                 z /= m
-                new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
+                new_seq_pos.append([new_seq[0], x / 10, y / 10, z / 10, m])
             except ZeroDivisionError:
                 # new_sequence.remove(new_seq)
                 continue
 
         with open(os.path.join(self.xml_dir, file.replace(".log", ".xml")), 'w') as f:
-            n_atoms = len(new_sequence_position)
+            n_atoms = len(new_seq_pos)
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<galamost_xml version="1.3">\n')
             f.write(f'<configuration time_step="0" dimensions="3" natoms="{n_atoms}">\n')
             f.write(f'<box lx="{self.box_size}" ly="{self.box_size}" lz="{self.box_size}"/>\n')
             f.write('<position num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{atom[1]:17.10f}{atom[2]:17.10f}{atom[3]:17.10f}\n")
                 self.x_max = max(self.x_max, atom[1])
                 self.y_max = max(self.y_max, atom[2])
@@ -647,14 +647,14 @@ class XMLGenerator:
             # set particle type
             particles_map = {"DA": "Ab", "DT": "Tb", "DG": "Gb", "DC": "Cb", "Ph": "Ph", "Su": "Su"}
             f.write('<type num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{}\n".format(particles_map[atom[0]]))
             f.write("</type>\n")
 
             # set mass
             mass_dict_particle = {"Ph": 94.97, "Su": 83.11, "DA": 134.1, "DT": 125.1, "DC": 110.1, "DG": 150.1}
             f.write('<mass num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{:<17.10f}\n".format(mass_dict_particle[atom[0]]))
             f.write("</mass>\n")
 
@@ -664,7 +664,7 @@ class XMLGenerator:
             q_unit = math.sqrt(k / epsilon_r)
 
             f.write('<charge num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'Ph' else f.write(f"{0.:<17.10f}\n")
             f.write('</charge>\n')
 
@@ -684,7 +684,7 @@ class XMLGenerator:
             f.write('<bond num="{}">\n'.format(n_atoms - 1))
             for i in range(0, n_atoms, 3):
                 # print(i)
-                f.write(f"S-{particles_map[new_sequence_position[i + 1][0]]} {i} {i + 1}\n")
+                f.write(f"S-{particles_map[new_seq_pos[i + 1][0]]} {i} {i + 1}\n")
                 if i + 1 != n_atoms - 1:
                     f.write("S5-P {} {}\n".format(i, i + 2))
                     f.write("S3-P {} {}\n".format(i + 2, i + 3))
@@ -695,9 +695,9 @@ class XMLGenerator:
             for i in range(0, n_atoms, 3):
                 # print(i)
                 if i + 1 != n_atoms - 1:
-                    f.write(f"P-5S-{particles_map[new_sequence_position[i + 1][0]]} {i + 1} {i} {i + 2}\n")
+                    f.write(f"P-5S-{particles_map[new_seq_pos[i + 1][0]]} {i + 1} {i} {i + 2}\n")
                     f.write(f"S5-P-3S {i} {i + 2} {i + 3}\n")
-                    f.write(f"P-3S-{particles_map[new_sequence_position[i + 4][0]]} {i+2} {i+3} {i+4}\n")
+                    f.write(f"P-3S-{particles_map[new_seq_pos[i + 4][0]]} {i+2} {i+3} {i+4}\n")
                 if i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
                     f.write(f"P-5S3-P {i+2} {i+3} {i+5}\n")
             f.write("</angle>\n")
@@ -706,10 +706,10 @@ class XMLGenerator:
             f.write("<dihedral num=\"{}\">\n".format((4 * n_atoms - 14) // 3))
             for i in range(0, n_atoms, 3):
                 if i + 1 != n_atoms - 1:
-                    f.write(f"{particles_map[new_sequence_position[i + 1][0]]}-S3-P-5S {i+1} {i} {i+2} {i+3}\n")
-                    f.write(f"S3-P-5S-{particles_map[new_sequence_position[i + 4][0]]} {i} {i+2} {i+3} {i+4}\n")
+                    f.write(f"{particles_map[new_seq_pos[i + 1][0]]}-S3-P-5S {i+1} {i} {i+2} {i+3}\n")
+                    f.write(f"S3-P-5S-{particles_map[new_seq_pos[i + 4][0]]} {i} {i+2} {i+3} {i+4}\n")
                 if i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
-                    f.write(f"P-5S3-P-{particles_map[new_sequence_position[i + 4][0]]} {i} {i + 2} {i + 3} {i + 5}\n")
+                    f.write(f"P-5S3-P-{particles_map[new_seq_pos[i + 4][0]]} {i} {i + 2} {i + 3} {i + 5}\n")
                     f.write(f"P-5S3-P-5S {i + 2} {i + 3} {i + 5} {i + 6}\n")
                 if i + 1 != n_atoms - 7 and i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
                     f.write(f"S3-P-5S3-P {i} {i + 2} {i + 3} {i + 5}\n")
@@ -746,7 +746,7 @@ class XMLGenerator:
                 else:
                     new_sequence[2 * seq_idx + 1].append(i)
             # print(new_sequence)
-        new_sequence_position = []
+        new_seq_pos = []
 
         for new_seq in new_sequence:
             m, x, y, z = 0, 0, 0, 0
@@ -758,18 +758,18 @@ class XMLGenerator:
             x /= m
             y /= m
             z /= m
-            new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
-            # print(new_sequence_position)
+            new_seq_pos.append([new_seq[0], x / 10, y / 10, z / 10, m])
+            # print(new_seq_pos)
 
         with open(os.path.join(self.xml_dir, file.replace(".log", ".xml")), 'w') as f:
-            n_atoms = len(new_sequence_position)
+            n_atoms = len(new_seq_pos)
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<galamost_xml version="1.3">\n')
             f.write(f'<configuration time_step="0" dimensions="3" natoms="{n_atoms}">\n')
             f.write(f'<box lx="{self.box_size}" ly="{self.box_size}" lz="{self.box_size}"/>\n')
 
             f.write('<position num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{atom[1]:17.10f}{atom[2]:17.10f}{atom[3]:17.10f}\n")
                 self.x_max = max(self.x_max, atom[1])
                 self.y_max = max(self.y_max, atom[2])
@@ -785,21 +785,21 @@ class XMLGenerator:
             mass_dict_particle = {"Backbone": 178.08, "DA": 134.1, "DT": 125.1, "DC": 110.1, "DG": 150.1}
 
             f.write('<mass num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{mass_dict_particle[atom[0]]:<17.10f}\n")
             f.write("</mass>\n")
 
             # set particle type
             particles_map = {"DA": "Ab", "DT": "Tb", "DG": "Gb", "DC": "Cb", "Backbone": "PhSu"}
             f.write(f'<type num="{n_atoms}">\n')
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{particles_map[atom[0]]}\n")
             f.write("</type>\n")
 
             # set bond
             f.write('<bond num="{}">\n'.format(n_atoms - 1))
             for i in range(0, n_atoms, 2):
-                f.write(f"PhSu-{particles_map[new_sequence_position[i+1][0]]} {i} {i+1}\n")
+                f.write(f"PhSu-{particles_map[new_seq_pos[i+1][0]]} {i} {i+1}\n")
                 if i + 2 < n_atoms:
                     f.write(f"PhSu-PhSu {i} {i+2}\n")
             f.write("</bond>\n")
@@ -817,7 +817,7 @@ class XMLGenerator:
             q_unit = math.sqrt(k / epsilon_r)
 
             f.write('<charge num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'Backbone' else f.write(f"{0.:<17.10f}\n")
             f.write('</charge>\n')
 
@@ -839,35 +839,35 @@ class XMLGenerator:
         positions_elem = root.find('position')
         positions = positions_elem.text.split('\n')
 
-        sequence_position = []
+        seq_pos = []
         for i in sequence:
-            sequence_position.append([i])
+            seq_pos.append([i])
         for line in positions[1:-1]:
             line = line.split()
-            sequence_position[int(line[-2]) - 1].append(line)
-        # print(sequence_position)
-        new_sequence = []
-        for seq in sequence_position:
+            seq_pos[int(line[-2]) - 1].append(line)
+        # print(seq_pos)
+        new_seq = []
+        for seq in seq_pos:
             # print(seq)
-            new_sequence.append(["Ph"])
-            new_sequence.append(["Su"])
-            new_sequence.append([seq[0]])
+            new_seq.append(["Ph"])
+            new_seq.append(["Su"])
+            new_seq.append([seq[0]])
             for i in seq[1:]:
                 if "P" in i[0]:
-                    new_sequence[-3].append(i)
+                    new_seq[-3].append(i)
                 elif "'" in i[0]:
-                    new_sequence[-2].append(i)
+                    new_seq[-2].append(i)
                 else:
-                    new_sequence[-1].append(i)
+                    new_seq[-1].append(i)
 
-        # print(new_sequence)
+        # print(new_seq)
 
-        new_sequence_position = []
-        for new_seq in new_sequence[1:]:
-            # print(len(new_seq), new_seq)
-            # print(new_seq)
+        new_seq_pos = []
+        for seq in new_seq:
+            # print(len(seq), seq)
+            # print(seq)
             m, x, y, z = 0, 0, 0, 0
-            for i in new_seq[1:]:
+            for i in seq[1:]:
                 m += self.mass_dict_atom[i[0][0]]
                 x += float(i[1]) * self.mass_dict_atom[i[0][0]]
                 y += float(i[2]) * self.mass_dict_atom[i[0][0]]
@@ -875,16 +875,16 @@ class XMLGenerator:
             x /= m
             y /= m
             z /= m
-            new_sequence_position.append([new_seq[0], x / 10, y / 10, z / 10, m])
+            new_seq_pos.append([seq[0], x / 10, y / 10, z / 10, m])
 
         with open(os.path.join(self.xml_dir, file.replace(".log", ".xml")), 'w') as f:
-            n_atoms = len(new_sequence_position)
+            n_atoms = len(new_seq_pos)
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
             f.write('<galamost_xml version="1.3">\n')
             f.write(f'<configuration time_step="0" dimensions="3" natoms="{n_atoms}">\n')
             f.write(f'<box lx="{self.box_size}" ly="{self.box_size}" lz="{self.box_size}"/>\n')
             f.write('<position num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{atom[1]:17.10f}{atom[2]:17.10f}{atom[3]:17.10f}\n")
                 self.x_max = max(self.x_max, atom[1])
                 self.y_max = max(self.y_max, atom[2])
@@ -900,7 +900,7 @@ class XMLGenerator:
             particles_map = {"Ph": "Ph", "Su": "Su",
                              "A": "Arb", "U": "Urb", "G": "Grb", "C": "Crb", }
             f.write('<type num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{}\n".format(particles_map[atom[0]]))
             f.write("</type>\n")
 
@@ -908,17 +908,16 @@ class XMLGenerator:
             mass_dict_particle = {"Ph": 94.97, "Su": 83.11,
                                   "A": 134.1, "U": 125.1, "C": 110.1, "G": 150.1}
             f.write('<mass num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write("{:<17.10f}\n".format(mass_dict_particle[atom[0]]))
             f.write("</mass>\n")
 
             # set charge
-            epsilon_r = 74.19
             k = 138.935  # 1 / (4 * pi * epsilon_0)
-            q_unit = math.sqrt(k / epsilon_r)
+            q_unit = math.sqrt(k / 74.19)
 
             f.write('<charge num="{}">\n'.format(n_atoms))
-            for atom in new_sequence_position:
+            for atom in new_seq_pos:
                 f.write(f"{-q_unit:<17.10f}\n") if atom[0] == 'Ph' else f.write(f"{0.:<17.10f}\n")
             f.write('</charge>\n')
 
@@ -932,35 +931,31 @@ class XMLGenerator:
             f.write('<bond num="{}">\n'.format(n_atoms - 1))
             for i in range(0, n_atoms, 3):
                 # print(i)
-                f.write(f"S-{particles_map[new_sequence_position[i + 1][0]]} {i} {i + 1}\n")
-                if i + 1 != n_atoms - 1:
-                    f.write("S5-P {} {}\n".format(i, i + 2))
-                    f.write("S3-P {} {}\n".format(i + 2, i + 3))
+                f.write(f"S5-P {i} {i + 1}\n")
+                f.write(f"S-{particles_map[new_seq_pos[i + 2][0]]} {i + 1} {i + 2}\n")
+                if i != n_atoms - 3:
+                    f.write("S3-P {} {}\n".format(i + 1, i + 3))
             f.write("</bond>\n")
 
             # set angle
             f.write('<angle num="{}">\n'.format((4 * n_atoms - 11) // 3))
             for i in range(0, n_atoms, 3):
-                # print(i)
-                if i + 1 != n_atoms - 1:
-                    f.write(f"P-5S-{particles_map[new_sequence_position[i + 1][0]]} {i + 1} {i} {i + 2}\n")
-                    f.write(f"S5-P-3S {i} {i + 2} {i + 3}\n")
-                    f.write(f"P-3S-{particles_map[new_sequence_position[i + 4][0]]} {i + 2} {i + 3} {i + 4}\n")
-                if i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
-                    f.write(f"P-5S3-P {i + 2} {i + 3} {i + 5}\n")
+                f.write(f"P-5S-{particles_map[new_seq_pos[i + 2][0]]} {i + 1} {i} {i + 2}\n")
+                if i != n_atoms - 3:
+                    f.write(f"S5-P-3S {i + 1} {i + 3} {i + 4}\n")
+                    f.write(f"P-3S-{particles_map[new_seq_pos[i + 2][0]]} {i + 3} {i + 1} {i + 2}\n")
+                    f.write(f"P-5S3-P {i} {i + 1} {i + 3}\n")
             f.write("</angle>\n")
 
             # set dihedral
             f.write("<dihedral num=\"{}\">\n".format((4 * n_atoms - 14) // 3))
             for i in range(0, n_atoms, 3):
-                if i + 1 != n_atoms - 1:
-                    f.write(f"{particles_map[new_sequence_position[i + 1][0]]}-S3-P-5S {i + 1} {i} {i + 2} {i + 3}\n")
-                    f.write(f"S3-P-5S-{particles_map[new_sequence_position[i + 4][0]]} {i} {i + 2} {i + 3} {i + 4}\n")
-                if i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
-                    f.write(f"P-5S3-P-{particles_map[new_sequence_position[i + 4][0]]} {i} {i + 2} {i + 3} {i + 5}\n")
-                    f.write(f"P-5S3-P-5S {i + 2} {i + 3} {i + 5} {i + 6}\n")
-                if i + 1 != n_atoms - 7 and i + 1 != n_atoms - 4 and i + 1 != n_atoms - 1:
-                    f.write(f"S3-P-5S3-P {i} {i + 2} {i + 3} {i + 5}\n")
+                if i != n_atoms - 3:
+                    f.write(f"P-5S3-P-5S {i} {i + 1} {i + 3} {i + 4}\n")
+                    f.write(f"S3-P-5S-{particles_map[new_seq_pos[i + 5][0]]} {i + 1} {i + 3} {i + 4} {i + 5}\n")
+                    f.write(f"{particles_map[new_seq_pos[i + 2][0]]}-S3-P-5S {i + 2} {i + 1} {i + 3} {i + 4}\n")   
+                if i != n_atoms - 6 and i != n_atoms - 3:
+                    f.write(f"S3-P-5S3-P {i + 1} {i + 3} {i + 4} {i + 6}\n")
             f.write("</dihedral>\n")
 
             f.write("</configuration>\n</galamost_xml>\n")
