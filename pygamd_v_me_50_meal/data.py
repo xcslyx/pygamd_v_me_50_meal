@@ -34,31 +34,34 @@ class Data:
             path_list = self.path.split("/")
             self.system_name = path_list[-1] if path_list[-1] != "" else path_list[-2]
 
-            matches = re.findall(r'(\d+)([a-zA-Z\d]+)(?:-(\d+))?', self.system_name)
-            if matches:
-                start = 0
-                for num, type_, length in matches:
-                    self.mol_class_dict[type_] = [int(num)]
-                    if not length:
-                        if type_ not in self.length_dict:
-                            self.length_dict[type_] = int(input(f"{msg['UnkonwnMoleculeType'][lang]}{type_}, {msg['InputLength'][lang]}: "))
-                    else:
-                        self.length_dict[type_] = int(length)
-                    self.mol_class_dict[type_].append(self.length_dict[type_])
-                    self.mol_class_dict[type_].append([start, start + int(num) * self.length_dict[type_]])
-                    start += int(num) * self.length_dict[type_]
+            system_name_list = self.system_name.split("+")
+            start = 0
+            for name in system_name_list:
+                name = name.split("_")[0]
+                match = re.findall(r'(\d+)([a-zA-Z\d]+)(?:-(\d+))?', name)
+                if match:
+                    for num, type_, length in match:
+                        self.mol_class_dict[type_] = [int(num)]
+                        if not length:
+                            if type_ not in self.length_dict:
+                                self.length_dict[type_] = int(input(f"{msg['UnkonwnMoleculeType'][lang]}{type_}, {msg['InputLength'][lang]}: "))
+                        else:
+                            self.length_dict[type_] = int(length)
+                        self.mol_class_dict[type_].append(self.length_dict[type_])
+                        self.mol_class_dict[type_].append([start, start + int(num) * self.length_dict[type_]])
+                        start += int(num) * self.length_dict[type_]
 
-                    self.mol_class_list = list(self.mol_class_dict.keys())
-                    self.molecules = "\n".join([f"{i+1}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
+                        self.mol_class_list = list(self.mol_class_dict.keys())
+                        self.molecules = "\n".join([f"{i+1}: {name}" for i, name in enumerate(self.mol_class_dict.keys())])
 
-                self.particle_num = 0
-                print("The following molecular information was extracted:")
-                for mol in self.mol_class_dict:
-                    print(f"Molecule: {mol}, number: {self.mol_class_dict[mol][0]}, length: {self.mol_class_dict[mol][1]}")
-                    self.particle_num += self.mol_class_dict[mol][0] * self.mol_class_dict[mol][1]
-                print(f"Total number of particles: {self.particle_num}")
-            else:
-                raise ValueError("Path name is not valid.")
+                    self.particle_num = 0
+                    print("The following molecular information was extracted:")
+                    for mol in self.mol_class_dict:
+                        print(f"Molecule: {mol}, number: {self.mol_class_dict[mol][0]}, length: {self.mol_class_dict[mol][1]}")
+                        self.particle_num += self.mol_class_dict[mol][0] * self.mol_class_dict[mol][1]
+                    print(f"Total number of particles: {self.particle_num}")
+                else:
+                    raise ValueError("Path name is not valid.")
 
 
 
