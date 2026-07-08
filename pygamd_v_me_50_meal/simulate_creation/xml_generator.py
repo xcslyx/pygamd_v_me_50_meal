@@ -940,7 +940,7 @@ class XMLGenerator:
             # set angle
             f.write('<angle num="{}">\n'.format((4 * n_atoms - 11) // 3))
             for i in range(0, n_atoms, 3):
-                f.write(f"P-5S-{particles_map[new_seq_pos[i + 2][0]]} {i + 1} {i} {i + 2}\n")
+                f.write(f"P-5S-{particles_map[new_seq_pos[i + 2][0]]} {i} {i + 1} {i + 2}\n")
                 if i != n_atoms - 3:
                     f.write(f"S5-P-3S {i + 1} {i + 3} {i + 4}\n")
                     f.write(f"P-3S-{particles_map[new_seq_pos[i + 2][0]]} {i + 3} {i + 1} {i + 2}\n")

@@ -283,8 +283,6 @@ def run_main(lang):
             os.chdir(pwd)
         exit()
 
-
-
     # 其他分析功能需要 -p 参数
     # current_dir_path = os.getcwd()
     if file_args.path is None:
