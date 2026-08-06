@@ -13,6 +13,7 @@ from scipy.ndimage import gaussian_filter
 from matplotlib.ticker import ScalarFormatter, MaxNLocator
 
 from pygamd_v_me_50_meal.Functions import Functions
+from test.test import contact_mask
 
 # 定义一个类用于计算和绘制 contact map
 class ContactMapCalculator:
@@ -71,6 +72,8 @@ class ContactMapCalculator:
 
     def calculate_contact_map(self, name):
         x_mat: list = eval(open(self.chain_path + name, 'r').read())
+        cm_class_0, cm_class_1 = self.cm_class
+
         if self.domain is not None:
             cm_matrix = torch.zeros((self.domain[1] - self.domain[0] + 1, self.domain[1] - self.domain[0] + 1),
                                     device=self.device)
@@ -81,55 +84,68 @@ class ContactMapCalculator:
             cm_matrix = torch.zeros(length, length,
                                     device=self.device)
         else:
-            cm_matrix = torch.zeros(
-                (self.mol_class_dict[self.cm_class[0]][1], self.mol_class_dict[self.cm_class[1]][1]),
+            cm_matrix = torch.zeros((self.mol_class_dict[cm_class_0][1], self.mol_class_dict[cm_class_1][1]),
                                     device=self.device)
 
-        for ii in range(len(x_mat[self.cm_class[0]])):
+        contact_matrix = torch.zeros((self.mol_class_dict[cm_class_0][0], self.mol_class_dict[cm_class_1][0]),
+                                    device=self.device)
+
+        for ii in range(len(x_mat[cm_class_0])):
             range_j = (
-                range(len(x_mat[self.cm_class[1]]))
+                range(len(x_mat[cm_class_1]))
             ) if (
-                    (self.cm_class[0] != self.cm_class[1]) or (len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1)
+                    (cm_class_0 != cm_class_1) or (len(x_mat[cm_class_0]) == len(x_mat[cm_class_1]) == 1)
             ) else (
-                range(ii+1, len(x_mat[self.cm_class[1]]))
+                range(ii+1, len(x_mat[cm_class_1]))
             )
 
             for jj in range_j:
                 if self.domain is not None:
-                    x_a = torch.tensor(x_mat[self.cm_class[0]][ii][self.domain[0] - 1:self.domain[1]],
+                    x_a = torch.tensor(x_mat[cm_class_0][ii][self.domain[0] - 1:self.domain[1]],
                                        device=self.device)
-                    x_b = torch.tensor(x_mat[self.cm_class[1]][jj][self.domain[0] - 1:self.domain[1]],
+                    x_b = torch.tensor(x_mat[cm_class_1][jj][self.domain[0] - 1:self.domain[1]],
                                        device=self.device)
                 elif self.domains is not None:
                     x_a_list = []
                     x_b_list = []
                     for domain in self.domains:
-                        x_a_list.extend(x_mat[self.cm_class[0]][ii][domain[0] - 1:domain[1]])
-                        x_b_list.extend(x_mat[self.cm_class[1]][jj][domain[0] - 1:domain[1]])
+                        x_a_list.extend(x_mat[cm_class_0][ii][domain[0] - 1:domain[1]])
+                        x_b_list.extend(x_mat[cm_class_1][jj][domain[0] - 1:domain[1]])
                     x_a = torch.tensor(x_a_list, device=self.device)
                     x_b = torch.tensor(x_b_list, device=self.device)
                 else:
-                    x_a = torch.tensor(x_mat[self.cm_class[0]][ii], device=self.device)
-                    x_b = torch.tensor(x_mat[self.cm_class[1]][jj], device=self.device)
+                    x_a = torch.tensor(x_mat[cm_class_0][ii], device=self.device)
+                    x_b = torch.tensor(x_mat[cm_class_1][jj], device=self.device)
                 # 计算欧氏距离
                 d = Functions.euclidean_distances(x_a, x_b)
                 c = d < self.avg_sigma_mat  # 创建布尔数组
 
-                if self.cm_class[0] != self.cm_class[1]:
+                # 若有接触，contact_matrix[ii][jj] = 1，否则为 0
+                contact_matrix[ii][jj] = 1 if np.any(c) else 0
+
+                if cm_class_0 != cm_class_1:
                     cm_matrix += c
                 else:
                     cm_matrix += c
-                    if not len(x_mat[self.cm_class[0]]) == len(x_mat[self.cm_class[1]]) == 1:
+                    if not len(x_mat[cm_class_0]) == len(x_mat[cm_class_1]) == 1:
                         cm_matrix += c.transpose(0, 1)
 
                     # cm_matrix += c.transpose(0, 1) + c
 
         cm_matrix = cm_matrix.cpu().numpy()
+        contact_matrix = contact_matrix.cpu().numpy()
         # 保存 contact map
         with open(os.path.join(self.cur_cm_path, name), 'w') as m:
-            for i in range(len(cm_matrix)):
-                for j in range(len(cm_matrix[0])):
+            for i in range(len(cm_matrix.shape[0])):
+                for j in range(len(cm_matrix.shape[1])):
                     m.write(str(cm_matrix[i][j]))
+                    m.write(' ')
+                m.write('\n')
+        
+        with open(os.path.join(self.cur_cm_path, name.replace(".xml", "_contact.log")),  'w') as m:
+            for i in range(len(contact_matrix.shape[0])):
+                for j in range(len(contact_matrix.shape[1])):
+                    m.write(str(contact_matrix[i][j]))
                     m.write(' ')
                 m.write('\n')
         return True
@@ -221,22 +237,29 @@ class ContactMapCalculator:
             for line in f.readlines():
                 float_line = list(map(float, line.strip().split(" ")))
                 data_matrix.append(float_line)
-            
             cur_contact_map = np.array(data_matrix)
+        
+        with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_contact.log')), 'r') as f:
+            contact_matrix = []
+            for line in f.readlines():
+                float_line = list(map(float, line.strip().split(" ")))
+                contact_matrix.append(float_line)
+            cur_contact_matrix = np.array(contact_matrix)
+
+            # 计算接触数
             contact_number = np.sum(cur_contact_map)
             with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_cn.log')), 'w') as save_file:
                 save_file.write(f"{contact_number}\n")
-        return cur_contact_map
+        return cur_contact_map, cur_contact_matrix
 
 
-    def average_contact_map(self):
+    def average_contact_map(self, get_cotact_mol: bool = False):
         for cm_class in self.cm_class_list:
             self.cm_class = [self.data.mol_class_list[cm_class[0]], self.data.mol_class_list[cm_class[1]]]
-            self.cur_cm_path = os.path.join(self.cm_path, f"{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}")
             if not os.path.exists(self.cur_cm_path):
                 print(f"未找到 {self.cur_cm_path} 文件夹，请先进行计算。")
                 return
-            cm_files = sorted(os.listdir(self.cur_cm_path))
+            cm_files = sorted([f for f in os.listdir(self.cur_cm_path) if f.endswith('.xml')])
 
             # 使用多进程读取和处理 CM 文件
             with Pool(processes=4) as pool:
@@ -247,36 +270,42 @@ class ContactMapCalculator:
                                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                                     ncols=100))
 
-            cm_mat = np.zeros_like(results[0])
+            file_prefix = f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}"
+
+            cm_mat = np.zeros_like(results[0][0])
+            contact_mat = np.zeros_like(results[0][1])
             for dataMat in results:
-                cm_mat += dataMat
+                cm_mat += dataMat[0]
+                contact_mat += dataMat[1]
 
-            cn_list = np.zeros(len(results))
-            for cm_idx, cm_file in enumerate(cm_files):
-                cn_file = cm_file.replace('.xml', '_cn.log')
-                with open(os.path.join(self.cur_cm_path, cn_file), 'r') as f:
-                    cn = float(f.readline().strip())
-                    cn_list[cm_idx] = cn
-
-            # 保存 cn_list
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_cn_list.log"),
-                      'w') as save_file:
-                for i in range(len(cn_list)):
-                    save_file.write(f"{i+1} {cn_list[i]}\n")
-
-            avg_cm_mat = (cm_mat / len(cm_files))
-
+            avg_cm_mat = cm_mat / len(cm_files)
+            avg_contact_mat = contact_mat / len(cm_files)
             # 保存平均后的 contact map
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_avg_matrix.log"),
-                          'w') as save_file:
+            with open(os.path.join(self.cm_path, f"{file_prefix}_avg_matrix.log"), 'w') as save_file:
                     for i in avg_cm_mat:
                         save_file.write(" ".join(map(str, i)) + '\n')
 
-            with open(os.path.join(self.cm_path, f"draw_cm_{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}_avg.log"),
-                      'w') as save_file:
+            with open(os.path.join(self.cm_path, f"{file_prefix}_avg.log"), 'w') as save_file:
                 for i in range(len(avg_cm_mat)):
                     for j in range(len(avg_cm_mat[i])):
                         save_file.write(f"{i + 1} {j + 1} {avg_cm_mat[i][j]}\n")
+            
+            with open(os.path.join(self.cm_path, f"{file_prefix}_avg_contact_matrix.log"), 'w') as save_file:
+                    for i in avg_contact_mat:
+                        save_file.write(" ".join(map(str, i)) + '\n')
+
+            with open(os.path.join(self.cm_path, f"{file_prefix}_avg_contact.log"), 'w') as save_file:
+                for i in range(len(avg_contact_mat)):
+                    for j in range(len(avg_contact_mat[i])):
+                        save_file.write(f"{i + 1} {j + 1} {avg_contact_mat[i][j]}\n")
+
+            # 保存 cn_list
+            with open(os.path.join(self.cm_path, f"{file_prefix}_cn_list.log"), 'w') as cn_save_file:
+                for cm_idx, cm_file in enumerate(cm_files):
+                    cn_file = cm_file.replace('.xml', '_cn.log')
+                    with open(os.path.join(self.cur_cm_path, cn_file), 'r') as f:
+                        cn = float(f.readline().strip())
+                        cn_save_file.write(f"{cm_idx+1} {cn}\n")
 
 
     def draw_contact_map(self):

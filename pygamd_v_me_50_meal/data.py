@@ -41,6 +41,7 @@ class Data:
                 match = re.findall(r'(\d+)([a-zA-Z\d]+)(?:-(\d+))?', name)
                 if match:
                     for num, type_, length in match:
+                        # mol_class_dict 格式为 {分子类型: [分子个数, 分子长度, [起始索引, 终止索引]}
                         self.mol_class_dict[type_] = [int(num)]
                         if not length:
                             if type_ not in self.length_dict:
