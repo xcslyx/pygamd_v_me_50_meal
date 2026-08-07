@@ -13,7 +13,6 @@ from scipy.ndimage import gaussian_filter
 from matplotlib.ticker import ScalarFormatter, MaxNLocator
 
 from pygamd_v_me_50_meal.Functions import Functions
-from test.test import contact_mask
 
 # 定义一个类用于计算和绘制 contact map
 class ContactMapCalculator:
@@ -121,7 +120,7 @@ class ContactMapCalculator:
                 c = d < self.avg_sigma_mat  # 创建布尔数组
 
                 # 若有接触，contact_matrix[ii][jj] = 1，否则为 0
-                contact_matrix[ii][jj] = 1 if np.any(c) else 0
+                contact_matrix[ii][jj] = 1 if c.any().item() else 0
 
                 if cm_class_0 != cm_class_1:
                     cm_matrix += c
