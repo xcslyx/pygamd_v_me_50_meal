@@ -90,13 +90,10 @@ class ContactMapCalculator:
                                     device=self.device)
 
         for ii in range(len(x_mat[cm_class_0])):
-            range_j = (
-                range(len(x_mat[cm_class_1]))
-            ) if (
-                    (cm_class_0 != cm_class_1) or (len(x_mat[cm_class_0]) == len(x_mat[cm_class_1]) == 1)
-            ) else (
-                range(ii+1, len(x_mat[cm_class_1]))
-            )
+            if cm_class_0 != cm_class_1 or (len(x_mat[cm_class_0]) == len(x_mat[cm_class_1]) == 1):
+                range_j = range(len(x_mat[cm_class_1]))
+            else:
+                range_j = range(ii+1, len(x_mat[cm_class_1]))
 
             for jj in range_j:
                 if self.domain is not None:
@@ -135,15 +132,15 @@ class ContactMapCalculator:
         contact_matrix = contact_matrix.cpu().numpy()
         # 保存 contact map
         with open(os.path.join(self.cur_cm_path, name), 'w') as m:
-            for i in range(len(cm_matrix.shape[0])):
-                for j in range(len(cm_matrix.shape[1])):
+            for i in range(cm_matrix.shape[0]):
+                for j in range(cm_matrix.shape[1]):
                     m.write(str(cm_matrix[i][j]))
                     m.write(' ')
                 m.write('\n')
         
         with open(os.path.join(self.cur_cm_path, name.replace(".xml", "_contact.log")),  'w') as m:
-            for i in range(len(contact_matrix.shape[0])):
-                for j in range(len(contact_matrix.shape[1])):
+            for i in range(contact_matrix.shape[0]):
+                for j in range(contact_matrix.shape[1]):
                     m.write(str(contact_matrix[i][j]))
                     m.write(' ')
                 m.write('\n')
@@ -237,24 +234,26 @@ class ContactMapCalculator:
                 float_line = list(map(float, line.strip().split(" ")))
                 data_matrix.append(float_line)
             cur_contact_map = np.array(data_matrix)
-        
+
+        # 计算接触数
+        contact_number = np.sum(cur_contact_map)
+        with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_cn.log')), 'w') as save_file:
+            save_file.write(f"{contact_number}\n")
+
         with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_contact.log')), 'r') as f:
             contact_matrix = []
             for line in f.readlines():
                 float_line = list(map(float, line.strip().split(" ")))
                 contact_matrix.append(float_line)
             cur_contact_matrix = np.array(contact_matrix)
-
-            # 计算接触数
-            contact_number = np.sum(cur_contact_map)
-            with open(os.path.join(self.cur_cm_path, cm_file.replace('.xml', '_cn.log')), 'w') as save_file:
-                save_file.write(f"{contact_number}\n")
+        
         return cur_contact_map, cur_contact_matrix
 
 
     def average_contact_map(self, get_cotact_mol: bool = False):
         for cm_class in self.cm_class_list:
             self.cm_class = [self.data.mol_class_list[cm_class[0]], self.data.mol_class_list[cm_class[1]]]
+            self.cur_cm_path = os.path.join(self.cm_path, f"{self.cm_class[0]}_{self.cm_class[1]}_r_cut_{self.r_cut:.2f}")
             if not os.path.exists(self.cur_cm_path):
                 print(f"未找到 {self.cur_cm_path} 文件夹，请先进行计算。")
                 return
