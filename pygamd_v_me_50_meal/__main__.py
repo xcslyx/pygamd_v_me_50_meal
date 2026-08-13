@@ -138,7 +138,8 @@ def run_main(lang):
 
     parser.add_argument('-rg', action='store_true', help="是否计算 Rg." if lang == 'zh' else "Whether to calculate Rg.")
 
-    parser.add_argument('-rg_mass', action='store_true', help="是否计算 Rg 考虑质量。" if lang == 'zh' else "Whether to calculate Rg considering mass.")
+    parser.add_argument('-rg_mass', metavar="rg_mass",
+                        type=str2value, default="True", help="是否计算 Rg 考虑质量。" if lang == 'zh' else "Whether to calculate Rg considering mass.")
 
     parser.add_argument('-rmsd', action='store_true', help="是否计算 RMSD." if lang == 'zh' else "Whether to calculate RMSD.")
 
