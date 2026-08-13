@@ -138,6 +138,8 @@ def run_main(lang):
 
     parser.add_argument('-rg', action='store_true', help="是否计算 Rg." if lang == 'zh' else "Whether to calculate Rg.")
 
+    parser.add_argument('-rg_mass', action='store_true', help="是否计算 Rg 考虑质量。" if lang == 'zh' else "Whether to calculate Rg considering mass.")
+
     parser.add_argument('-rmsd', action='store_true', help="是否计算 RMSD." if lang == 'zh' else "Whether to calculate RMSD.")
 
     parser.add_argument('-rmsf', action='store_true', help="是否计算 RMSF." if lang == 'zh' else "Whether to calculate RMSF.")
@@ -342,7 +344,7 @@ def run_main(lang):
 
     if file_args.rg:
         from pygamd_v_me_50_meal.pygamd_analysis.rg_calculator import RgCalculator
-        RgCalculator(path, data).calculate()
+        RgCalculator(path, data, calculate_mass=file_args.rg_mass)
     if file_args.rmsd:
         from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
         RMSDCalculator(path, data, ref).calculate()
