@@ -55,3 +55,7 @@ def backup_folder(backup_path, init_folder_name, backup_folder_name):
             shutil.rmtree(os.path.join(backup_path, backup_folder_name))
             shutil.copytree(os.path.join(backup_path, init_folder_name), os.path.join(backup_path, backup_folder_name))
             print("备份完成。")
+
+
+if __name__ == "__main__":
+    pass
