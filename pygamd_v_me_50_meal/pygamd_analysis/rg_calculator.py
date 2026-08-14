@@ -12,7 +12,7 @@ from pygamd_v_me_50_meal.data import Data
 
 # 定义一个类，用于计算 Rg, RMSD, RMSF。
 class RgCalculator:
-    def __init__(self, path, data: Data):
+    def __init__(self, path, data: Data, calculate_mass: bool = True):
         """
         用于计算 Rg, RMSD, RMSF。
         """
@@ -24,14 +24,29 @@ class RgCalculator:
         self.save_path = os.path.join(self.path, "draw_log/")
         os.makedirs(self.save_path, exist_ok=True)
 
-        self.balance_cut = ""
+        self.balance_cut = input("请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
 
-        self.cal_class = {}
-        self.cal_class_rg = []
+        print(f"您当前的分子类型有：\n{self.data.molecules}")
+        self.cal_class_rg = list(map(lambda x: int(x) - 1, input(f"请输入想要计算 Rg 的分子序号, 以 ',' 分隔：").split(',')))
+        self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
+        print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
+
         self.rg_results = {}
         self.cur_chain_class = ""
         self.init_pos = []
-        self.domain = []
+        
+        domain = input("若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。\n"
+            "否则请直接回车：")
+        if domain:
+            domain = list(map(int, domain.split('-')))
+            self.domain = domain
+            print(f"即将计算结构域：{domain}")
+        else:
+            self.domain = None
+
+        self.calculate_mass = calculate_mass
+
+        self.calculate()
 
     def cal_rg(self, chain_xyz):
         chain_xyz = np.array(chain_xyz)
@@ -43,14 +58,17 @@ class RgCalculator:
             else:
                 domain_sequence = eval(f.read())[self.cur_chain_class][:]
 
-        mass_list = list(map(float, [i[1] for i in domain_sequence]))
-        # print(mass_list)
         if len(domain_sequence) != len(chain_xyz):
             exit(f"Error! Length of domain_sequence ({len(domain_sequence)}) is not equal to that of chain_xyz ({len(chain_xyz)}).!")
         aa_num = len(domain_sequence)
+
+        if self.calculate_mass:
+            mass_list = list(map(float, [i[1] for i in domain_sequence]))
+        else:
+            mass_list = [1.0] * aa_num
+        
         mass = sum(mass_list)
         mass_core = [sum([chain_xyz[i][j] * mass_list[i] for i in range(aa_num)]) / mass for j in range(3)]
-        # print(mass_core)
         r_g = 0
         for i in range(aa_num):
             r_g += sum(sum([(chain_xyz[i][j] - mass_core[j]) ** 2 * mass_list[i]]) for j in range(3))
@@ -77,30 +95,12 @@ class RgCalculator:
 
     def calculate(self):
         if not self.balance_cut:
-            self.balance_cut = input(
-                "请输入需要截取的平衡后的文件索引，索引从 1 开始，格式为‘开始,结束’，例如：1000,2000，直接回车则不截取：")
-        if not self.balance_cut:
             chain_files = os.listdir(self.chain_path)
         else:
             start, end = list(map(int, self.balance_cut.split(',')))
             chain_files = os.listdir(self.chain_path)[start - 1: end]
 
         self.cur_chain_class = None
-        print(f"您当前的分子类型有：\n{self.data.molecules}")
-        self.cal_class_rg = list(map(lambda x: int(x) - 1, input(f"请输入想要计算 Rg 的分子序号, 以 ',' 分隔：").split(',')))
-        self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
-        print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
-        self.rg_results = {}
-
-        domain = input(
-            "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。\n"
-            "否则请直接回车：")
-        if domain:
-            domain = list(map(int, domain.split('-')))
-            self.domain = domain
-            print(f"即将计算结构域：{domain}")
-        else:
-            self.domain = None
 
         # 使用 tqdm 包装可迭代对象以显示进度条
         list(tqdm(map(self.process_chain_file, sorted(chain_files)),
