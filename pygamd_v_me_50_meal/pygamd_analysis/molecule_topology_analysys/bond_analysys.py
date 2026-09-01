@@ -11,7 +11,7 @@ class BondAnalysys:
     def __init__(self, path: str, data, lang: str="zh"):
         self.path, self.data, self.lang = path, data, lang
 
-        self.chain_path = os.path.join(self.path, "chain_xyz_unwrapping/")
+        self.xml_path = os.path.join(self.path, "xml_unwrapping/")
 
         self.sys_topol_path = os.path.join(self.path, "sys_topol/")
         os.makedirs(self.sys_topol_path, exist_ok=True)
@@ -21,8 +21,8 @@ class BondAnalysys:
 
 
     def get_bond_length(self, file_name: str):
-        position_list: np.ndarray = XMLDataExtractor(self.chain_path + file_name).extract_position_data()
-        _, bond_dict = XMLDataExtractor(self.chain_path + file_name).extract_bond_data()
+        position_list: np.ndarray = XMLDataExtractor(self.xml_path + file_name).extract_position_data()
+        _, bond_dict = XMLDataExtractor(self.xml_path + file_name).extract_bond_data()
 
         bond_length_dict = {}
 
@@ -36,7 +36,7 @@ class BondAnalysys:
 
         
     def get_bond_length_parallel(self):
-        files = os.listdir(self.chain_path)
+        files = os.listdir(self.xml_path)
         
         with Pool(processes=4) as pool:
                 # 使用 tqdm 包装可迭代对象
