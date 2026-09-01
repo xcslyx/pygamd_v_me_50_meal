@@ -75,5 +75,15 @@
             "zh": "正在移除 PBC 并提取坐标...",
             "en": "Removing PBC and extracting coordinates..."
         }
+    },
+    "contact_map_calculator_message": {
+        "calculate_contact_map": {
+            "zh": "开始计算 Contact Map...",
+            "en": "Starting to calculate Contact Map..."
+        },
+        "domain_select": {
+            "zh": "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522。\n注: 仅限计算的分子类型相同的结构域，如0-0、1-1。如需计算不同分子类型的结构域，请另外计算。\n若有多个结构域，请以英文逗号分隔：",
+            "en": "If you only need to calculate the domain, please enter the starting residue number and the last residue number of the domain (starting from 1), separated by -, such as 159-522. \n Note: Only calculated domains with the same molecular type, such as 0-0 and 1-1.\n If there are multiple domains, please separate them with commas: "
+        }
     }
 }

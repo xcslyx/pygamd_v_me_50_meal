@@ -428,7 +428,7 @@ class XMLGenerator:
             for i in range(start - 1, end):
                 for j in range(i + 3, end):
                     distance = np.linalg.norm(np.array(positions[i]) - np.array(positions[j]))
-                    if distance <= 0.9:
+                    if 0.4 <= distance <= 0.9:
                         bond_cnt += 1
                         bond_type = f'C{i + 1}-C{j + 1}'
                         bond_elem.text += f"{bond_type} {i} {j}\n"

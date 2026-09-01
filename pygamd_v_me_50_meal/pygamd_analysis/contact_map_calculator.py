@@ -1,5 +1,6 @@
 import os
 import re
+import json
 
 import numpy as np
 import pandas as pd
@@ -9,23 +10,32 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from multiprocessing import Pool
-from scipy.ndimage import gaussian_filter
+# from scipy.ndimage import gaussian_filter
 from matplotlib.ticker import ScalarFormatter, MaxNLocator
 
 from pygamd_v_me_50_meal.Functions import Functions
+
+# 加载消息文件
+with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding='utf-8') as f:
+    messages = json.load(f)
+    msg = messages['contact_map_calculator_message']
 
 # 定义一个类用于计算和绘制 contact map
 class ContactMapCalculator:
     """
     用于计算和绘制 contact map 的类。
     """
-    def __init__(self, path, data, cm_choice, r_cut: float, draw_limit: bool=False):
+    def __init__(self, path, data, cm_choice, r_cut: float, draw_limit: bool=False, lang: str='zh'):
         """
         初始化 ContactMapCalculator 类
-        :param path:
+        :param path: 体系路径
+        :param data: 体系数据
+        :param cm_choice: contact map 类型选择
+        :param r_cut: 截止距离
+        :param draw_limit: 是否绘制 contact map 限制
+        :return:
         """
-        self.path = path
-        self.data = data
+        self.path, self.data, self.lang = path, data, lang
 
         self.mol_class_dict = self.data.mol_class_dict
         self.mol_class_list = self.data.mol_class_list
@@ -35,10 +45,20 @@ class ContactMapCalculator:
 
         self.chain_path = os.path.join(self.path, f"chain_xyz/")
 
+        if torch.cuda.is_available():
+            print("Using GPU to calculate Contact Map. Please specify the GPU number or press Enter to use the default 0-th GPU. If you want to use CPU, please input CPU:")
+            gpu_choice = input("即将使用 GPU 加速计算 Contact Map，请指定 GPU 编号，或直接回车使用默认 0 号 GPU。若想使用 CPU，请输入 CPU：")
+            if gpu_choice.strip().upper() == "CPU":
+                self.device = torch.device("cpu")
+            elif gpu_choice.strip():
+                self.device = torch.device(f"cuda:{gpu_choice}")
+            else:
+                self.device = torch.device("cuda:0")
+        else:
+            self.device = torch.device("cpu")
+        print(f"Using device：{self.device}")
         if mp.get_start_method(allow_none=True) is None:
             mp.set_start_method('spawn')
-
-        self.device = None
 
         self.cm_class = []
         self.cm_class_list = []
@@ -49,8 +69,17 @@ class ContactMapCalculator:
             self.cm_class_list = cm_choice[0].split(',')
             self.balance_cut = cm_choice[1]
 
-        self.domain = None
-        self.domains = None
+        domain = input(msg['domain_select'][self.lang])
+        if domain:
+            if ',' in domain:
+                domains = domain.split(',')
+                domains = list(map(lambda x: list(map(int, x.split('-'))), domains))
+                self.domains = domains
+                print(f"Domains to be calculated: {domains}")
+            else:
+                domain = list(map(int, domain.split('-')))
+                self.domain = domain
+                print(f"Domain to be calculated: {domain}")
 
         self.avg_sigma_mat = None
 
@@ -148,21 +177,6 @@ class ContactMapCalculator:
 
 
     def calculate_contact_map_parallel(self):
-        if torch.cuda.is_available():
-            print("Using GPU to calculate Contact Map. Please specify the GPU number or press Enter to use the default 0-th GPU. If you want to use CPU, please input CPU:")
-            gpu_choice = input("即将使用 GPU 加速计算 Contact Map，请指定 GPU 编号，或直接回车使用默认 0 号 GPU。若想使用 CPU，请输入 CPU：")
-            if gpu_choice.strip().upper() == "CPU":
-                self.device = torch.device("cpu")
-            elif gpu_choice.strip():
-                self.device = torch.device(f"cuda:{gpu_choice}")
-            else:
-                self.device = torch.device("cuda:0")
-        else:
-            self.device = torch.device("cpu")
-        print(f"Using device：{self.device}")
-        if mp.get_start_method(allow_none=True) is None:
-            mp.set_start_method('spawn')
-
         if not self.cm_class_list:
             print(f"\nYour molecule types are：\n{self.data.molecules}")
             print("Please enter the index of the two molecules you want to calculate the contact map for, for example: \"1-1,2-2,1-2\", or all or directly press Enter to calculate all combinations:")
@@ -173,29 +187,10 @@ class ContactMapCalculator:
         else:
             self.cm_class_list = list(map(lambda x: list(map(lambda y: int(y) - 1, x.split('-'))), self.cm_class_list))
 
-        print("If you only need to calculate the domain, please enter the starting residue number and the last residue number of the domain (starting from 1), separated by -, such as 159-522. \n "
-              "Note: Only calculated domains with the same molecular type, such as 0-0 and 1-1.\n "
-              "If there are multiple domains, please separate them with commas: ")
-        domain = input(
-            "若只需要计算结构域，请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522。\n"
-            "注：仅限计算的分子类型相同的结构域，如0-0、1-1。如需计算不同分子类型的结构域，请另外计算。\n"
-            "若有多个结构域，请以英文逗号分隔：")
-        if domain:
-            if ',' in domain:
-                domains = domain.split(',')
-                domains = list(map(lambda x: list(map(int, x.split('-'))), domains))
-                self.domains = domains
-                print(f"Domains to be calculated: {domains}")
-            else:
-                domain = list(map(int, domain.split('-')))
-                self.domain = domain
-                print(f"Domain to be calculated: {domain}")
-
         if not self.balance_cut:
             print("Please enter the index range of the balanced file, format as 'START,END', for example: 1000-2000, or directly press Enter to skip:")
             self.balance_cut = input("请输入需要截取的平衡后的文件索引，格式为 'START-END', 例如：1000-2000，直接回车则不截取：")
 
-        
         files = sorted(os.listdir(self.chain_path))
         if self.balance_cut:
             start, end = list(map(int, self.balance_cut.split('-')))

@@ -50,8 +50,8 @@ def main():
     username = os.getlogin()
     print(f"Hello, {username}!")
     if username == "zhy":
-        print(f"但是不给你用，尽管你已经发现了，奖励你更新之后再改一遍。")
-        exit()
+        print(f"欢迎赵乾夕惕赵洹影使用本软件！")
+        # exit()
     run_main('zh')
 
 def main_en():
@@ -170,7 +170,7 @@ def run_main(lang):
     parser.add_argument('-seq_output', metavar="output_file",
                         type=str, default=None, help="序列分析的输出文件路径。" if lang == 'zh' else "Output file path for sequence analysis.")
 
-    parser.add_argument('-nc', action='store_true', help="是否计算网络聚类。" if lang == 'zh' else "Whether to calculate network clustering.")
+    parser.add_argument('-nc', action='store_true', help="计算网络聚类。" if lang == 'zh' else "Calculate network clustering.")
 
     parser.add_argument('-nc_node', metavar="node_molecule_type",
                         type=str, default=None, help="网络聚类的节点分子类型，如 'cGAS'。" if lang == 'zh' else "Node molecule type for network clustering, e.g., 'cGAS'.")
@@ -196,6 +196,8 @@ def run_main(lang):
 
     parser.add_argument('-gromacs_steps', metavar="steps",
                         type=int, default=50000000, help="GROMACS 模拟的步数, 默认 50000000, 即 100 ns。" if lang == 'zh' else "GROMACS simulation steps, default 50000000.")
+    
+    parser.add_argument('-bond', action='store_true', help="统计键长。" if lang == 'zh' else "Calculate bond length.")
     
     file_args = parser.parse_args()
 
@@ -397,6 +399,10 @@ def run_main(lang):
                 from pygamd_v_me_50_meal.pygamd_analysis.rmsd_calculator import RMSDCalculator
                 RMSDCalculator(path, data, ref).draw_rmsd_distribution()
 
+
+    if file_args.bond:
+        from pygamd_v_me_50_meal.pygamd_analysis.molecule_topology_analysys.bond_analysys import BondAnalysys
+        BondAnalysys(path, data).get_bond_length_parallel()
 
 if __name__ == '__main__':
     main()

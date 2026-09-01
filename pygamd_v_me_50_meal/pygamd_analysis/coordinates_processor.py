@@ -25,11 +25,8 @@ with open(os.path.join(os.path.dirname(__file__), 'message.json'), 'r', encoding
 
 # 处理坐标文件
 class CoordinatesProcessor:
-    def __init__(self, path: str, data, remove_ions_zhy: bool=False,
-                 remove_enm=None, lang: str="zh"):
-        self.path = path
-        self.data = data
-        self.lang = lang
+    def __init__(self, path: str, data, remove_ions_zhy: bool=False, remove_enm=None, lang: str="zh"):
+        self.path, self.data, self.lang = path, data, lang
 
         self.length_dict = self.data.length_dict
 

@@ -1,0 +1,8 @@
+{
+    "bond_analysis": {
+        "remove_pbc": {
+            "zh": "是否需要使用移除 PBC 后的文件? (y/n)",
+            "en": "Do you want to use the file without condensate PBC? (y/n)"
+        }
+    }
+}
