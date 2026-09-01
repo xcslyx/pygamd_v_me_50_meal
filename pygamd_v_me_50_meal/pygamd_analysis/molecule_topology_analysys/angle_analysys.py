@@ -35,7 +35,6 @@ class AngleAnalysys:
         
         with open(os.path.join(self.angle_path, file_name), 'w') as f:
             f.write(str(angle_dict))
-
         
     def get_angle_degree_parallel(self):
         files = os.listdir(self.xml_path)
@@ -48,5 +47,16 @@ class AngleAnalysys:
                           colour='cyan',
                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                           ncols=100))
+        
+        angle_dict = {}
+        for file_name in os.listdir(self.angle_path):
+            with open(os.path.join(self.angle_path, file_name), 'r') as f:
+                for angle, values in eval(f.read()).items():
+                    if angle not in angle_dict:
+                        angle_dict[angle] = []
+                    angle_dict[angle].extend(values)
+        
+        with open(os.path.join(self.sys_topol_path, "angle_degree.txt"), 'w') as f:
+            f.write(str(angle_dict))
     
     

@@ -6,6 +6,10 @@ class XMLDataExtractor:
         self.xml_file_path = xml_file_path
         self.tree = ET.parse(self.xml_file_path)
         self.root = self.tree.getroot()
+
+        # 打印出所有元素的标签
+        for elem in self.root.iter():
+            print(elem.tag)
     
 
     def get_box_size(self):
@@ -38,4 +42,19 @@ class XMLDataExtractor:
                 angle_dict[angle[0]] = [angle[1]]
             angle_dict[angle[0]].append(angle[1])
         return angle_list, angle_dict
+    
+    def extract_dihedral_data(self) -> tuple:
+        try:
+            dihedral_elem = self.root.findall(f".//dihedral")[0]
+        except:
+            print(f"No dihedral data found in the xml file {self.xml_file_path}.")
+            return [], {}
+        
+        dihedral_list = [[line.split()[0], [line.split()[1], line.split()[2], line.split()[3], line.split()[4]]] for line in dihedral_elem.text.splitlines()[1:]]
+        dihedral_dict = {}
+        for dihedral in dihedral_list:
+            if dihedral[0] not in dihedral_dict:
+                dihedral_dict[dihedral[0]] = [dihedral[1]]
+            dihedral_dict[dihedral[0]].append(dihedral[1])
+        return dihedral_list, dihedral_dict
     

@@ -32,9 +32,11 @@ class BondAnalysys:
                 bond_length_dict[bond].append(np.linalg.norm(position_list[int(bond_pair[0])] - position_list[int(bond_pair[1])]))
         
         with open(os.path.join(self.bond_path, file_name), 'w') as f:
-            f.write(str(bond_length_dict))
-
+            f.write(str(bond_length_dict))    
         
+        with open(os.path.join(self.sys_topol_path, "bond_length.txt"), 'w') as f:
+            f.write(str(bond_length_dict))
+     
     def get_bond_length_parallel(self):
         files = os.listdir(self.xml_path)
         
@@ -46,5 +48,13 @@ class BondAnalysys:
                           colour='cyan',
                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                           ncols=100))
+        
+        bond_length_dict = {}
+        for file_name in os.listdir(self.bond_path):
+            with open(os.path.join(self.bond_path, file_name), 'r') as f:
+                for bond_name, values in eval(f.read()).items():
+                    if bond_name not in bond_length_dict:
+                        bond_length_dict[bond_name] = []
+                    bond_length_dict[bond_name].extend(values)
     
     

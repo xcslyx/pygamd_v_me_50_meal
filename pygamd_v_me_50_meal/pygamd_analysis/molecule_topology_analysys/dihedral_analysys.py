@@ -35,7 +35,6 @@ class DihedralAnalysys:
         
         with open(os.path.join(self.dihedral_path, file_name), 'w') as f:
             f.write(str(dihedral_dict))
-
         
     def get_dihedral_degree_parallel(self):
         files = os.listdir(self.xml_path)
@@ -48,5 +47,16 @@ class DihedralAnalysys:
                           colour='cyan',
                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                           ncols=100))
+        
+        dihedral_dict = {}
+        for file_name in os.listdir(self.dihedral_path):
+            with open(os.path.join(self.dihedral_path, file_name), 'r') as f:
+                for dihedral, values in eval(f.read()).items():
+                    if dihedral not in dihedral_dict:
+                        dihedral_dict[dihedral] = []
+                    dihedral_dict[dihedral].extend(values)
+        
+        with open(os.path.join(self.sys_topol_path, "dihedral_degree.txt"), 'w') as f:
+            f.write(str(dihedral_dict))
     
     
