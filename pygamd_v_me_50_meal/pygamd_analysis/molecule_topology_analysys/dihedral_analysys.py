@@ -30,8 +30,8 @@ class DihedralAnalysys:
 
         for dihedral in dihedral_dict:
             dihedral_dict[dihedral] = []
-            for dihedral in dihedral_dict[dihedral]:
-                dihedral_dict[dihedral].append(Functions.compute_dihedral(position_list[dihedral[0]], position_list[dihedral[1]], position_list[dihedral[2]], position_list[dihedral[3]]))
+            for dihedral_index in dihedral_dict[dihedral]:
+                dihedral_dict[dihedral].append(Functions.compute_dihedral(position_list[dihedral_index[0]], position_list[dihedral_index[1]], position_list[dihedral_index[2]], position_list[dihedral_index[3]]))
         
         with open(os.path.join(self.dihedral_path, file_name), 'w') as f:
             f.write(str(dihedral_dict))

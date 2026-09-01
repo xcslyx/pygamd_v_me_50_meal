@@ -411,7 +411,7 @@ def run_main(lang):
         AngleAnalysys(path, data, lang).get_angle_degree_parallel()
     if file_args.dihedral:
         from pygamd_v_me_50_meal.pygamd_analysis.molecule_topology_analysys.dihedral_analysys import DihedralAnalysys
-        DihedralAnalysys(path, data, lang).get_dihedral_angle_parallel()
+        DihedralAnalysys(path, data, lang).get_dihedral_degree_parallel()
 
 if __name__ == '__main__':
     main()

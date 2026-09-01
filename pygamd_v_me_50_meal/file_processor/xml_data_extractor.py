@@ -6,10 +6,6 @@ class XMLDataExtractor:
         self.xml_file_path = xml_file_path
         self.tree = ET.parse(self.xml_file_path)
         self.root = self.tree.getroot()
-
-        # 打印出所有元素的标签
-        for elem in self.root.iter():
-            print(elem.tag)
     
 
     def get_box_size(self):

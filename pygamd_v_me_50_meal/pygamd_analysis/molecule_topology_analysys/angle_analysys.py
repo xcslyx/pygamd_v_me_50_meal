@@ -30,8 +30,8 @@ class AngleAnalysys:
 
         for angle in angle_dict:
             angle_dict[angle] = []
-            for angle in angle_dict[angle]:
-                angle_dict[angle].append(Functions.compute_angle(position_list[angle[0]], position_list[angle[1]], position_list[angle[2]]))
+            for angle_index in angle_dict[angle]:
+                angle_dict[angle].append(Functions.compute_angle(position_list[angle_index[0]], position_list[angle_index[1]], position_list[angle_index[2]]))
         
         with open(os.path.join(self.angle_path, file_name), 'w') as f:
             f.write(str(angle_dict))
