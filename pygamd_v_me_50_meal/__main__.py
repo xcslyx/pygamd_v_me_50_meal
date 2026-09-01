@@ -198,6 +198,9 @@ def run_main(lang):
                         type=int, default=50000000, help="GROMACS 模拟的步数, 默认 50000000, 即 100 ns。" if lang == 'zh' else "GROMACS simulation steps, default 50000000.")
     
     parser.add_argument('-bond', action='store_true', help="统计键长。" if lang == 'zh' else "Calculate bond length.")
+    parser.add_argument('-angle', action='store_true', help="统计角度。" if lang == 'zh' else "Calculate angle degree.")
+    parser.add_argument("-dihedral", action='store_true', help="统计二面角。" if lang == 'zh' else "Calculate dihedral angle.")
+    
     
     file_args = parser.parse_args()
 
@@ -403,6 +406,12 @@ def run_main(lang):
     if file_args.bond:
         from pygamd_v_me_50_meal.pygamd_analysis.molecule_topology_analysys.bond_analysys import BondAnalysys
         BondAnalysys(path, data).get_bond_length_parallel()
+    if file_args.angle:
+        from pygamd_v_me_50_meal.pygamd_analysis.molecule_topology_analysys.angle_analysys import AngleAnalysys
+        AngleAnalysys(path, data, lang).get_angle_degree_parallel()
+    if file_args.dihedral:
+        from pygamd_v_me_50_meal.pygamd_analysis.molecule_topology_analysys.dihedral_analysys import DihedralAnalysys
+        DihedralAnalysys(path, data, lang).get_dihedral_angle_parallel()
 
 if __name__ == '__main__':
     main()

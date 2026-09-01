@@ -33,7 +33,6 @@ class Functions:
         else:
             tree.write(new_xml_file)
 
-
     @staticmethod
     def euclidean_distances(a, b):
         """
@@ -61,7 +60,6 @@ class Functions:
         # 计算欧氏距离
         ed = torch.sqrt(ed_sq)
         return ed
-
 
     @staticmethod
     def cal_sigma_mat(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
@@ -93,7 +91,6 @@ class Functions:
         lambda_mean_matrix = (seq_lambda_list_a[:, None] + seq_lambda_list_b[None, :]) / 2
         return lambda_mean_matrix
 
-
     @staticmethod
     def cal_charge_dict(sequence_a: list[str] | str, sequence_b: list[str] | str) -> np.ndarray:
         # 计算平均分子体积矩阵
@@ -101,7 +98,6 @@ class Functions:
         seq_charge_list_b = np.array([AMINO_ACID_CHARGE[i] if i in AMINO_ACID_CHARGE else 0 for i in sequence_b])
         charge_mean_matrix = (seq_charge_list_a[:, None] * seq_charge_list_b[None, :])
         return charge_mean_matrix
-
 
     @staticmethod
     def kabsch_align(p, q) -> tuple[np.ndarray, np.ndarray]:
@@ -126,7 +122,6 @@ class Functions:
         q_aligned = np.dot(q_centered, rotation_matrix)
 
         return p_centered, q_aligned
-
 
     @staticmethod
     def is_chain_wrapped(positions, box_length: list[float], threshold: float = 0.5):
@@ -404,3 +399,33 @@ class Functions:
                                  new_indexed_positions]
             new_indexed_positions = updated_positions
         return new_indexed_positions, max_group_core
+
+    @staticmethod
+    def compute_angle(a, b, c):
+        """计算角度 ABC (B为顶点)，返回单位：度"""
+        ba = a - b
+        bc = c - b
+        cos_theta = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        # 防止数值误差导致超出 [-1,1]
+        cos_theta = np.clip(cos_theta, -1.0, 1.0)
+        theta = np.arccos(cos_theta)
+        return np.degrees(theta)
+    
+    @staticmethod
+    def compute_dihedral(a, b, c, d):
+        """
+        计算有符号二面角 a-b-c-d。旋转轴为 b-c，返回范围为 [-180, 180] 度。
+        """
+        b0, b1, b2 = a - b, c - b, d - c
+
+        b1_norm = np.linalg.norm(b1)
+
+        b1_unit = b1 / b1_norm
+
+        v = b0 - np.dot(b0, b1_unit) * b1_unit
+        w = b2 - np.dot(b2, b1_unit) * b1_unit
+
+        x = np.dot(v, w)
+        y = np.dot(np.cross(b1_unit, v), w)
+
+        return np.degrees(np.arctan2(y, x))

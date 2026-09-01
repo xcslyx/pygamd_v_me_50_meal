@@ -28,4 +28,14 @@ class XMLDataExtractor:
                 bond_dict[bond[0]] = [bond[1]]
             bond_dict[bond[0]].append(bond[1])
         return bond_list, bond_dict
+
+    def extract_angle_data(self) -> tuple:
+        angle_elem = self.root.findall(f".//angle")[0]
+        angle_list = [[line.split()[0], [line.split()[1], line.split()[2], line.split()[3]]] for line in angle_elem.text.splitlines()[1:]]
+        angle_dict = {}
+        for angle in angle_list:
+            if angle[0] not in angle_dict:
+                angle_dict[angle[0]] = [angle[1]]
+            angle_dict[angle[0]].append(angle[1])
+        return angle_list, angle_dict
     
