@@ -29,7 +29,7 @@ class BondAnalysys:
         for bond in bond_dict:
             bond_length_dict[bond] = []
             for bond_pair in bond_dict[bond]:
-                bond_length_dict[bond].append(np.linalg.norm(position_list[int(bond_pair[0])] - position_list[int(bond_pair[1])]))
+                bond_length_dict[bond].append(np.linalg.norm(position_list[bond_pair[0]] - position_list[bond_pair[1]]))
         
         with open(os.path.join(self.bond_path, file_name), 'w') as f:
             f.write(str(bond_length_dict))    

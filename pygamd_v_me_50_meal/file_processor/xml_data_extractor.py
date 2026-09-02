@@ -21,7 +21,7 @@ class XMLDataExtractor:
     
     def extract_bond_data(self) -> tuple:
         bond_elem = self.root.findall(f".//bond")[0]
-        bond_list = [[line.split()[0], [line.split()[1], line.split()[2]]] for line in bond_elem.text.splitlines()[1:]]
+        bond_list = [[line.split()[0], list(map(int, line.split()[1:]))] for line in bond_elem.text.splitlines()[1:]]
         bond_dict = {}
         for bond in bond_list:
             if bond[0] not in bond_dict:
@@ -31,7 +31,7 @@ class XMLDataExtractor:
 
     def extract_angle_data(self) -> tuple:
         angle_elem = self.root.findall(f".//angle")[0]
-        angle_list = [[line.split()[0], [line.split()[1], line.split()[2], line.split()[3]]] for line in angle_elem.text.splitlines()[1:]]
+        angle_list = [[line.split()[0], list(map(int, line.split()[1:]))] for line in angle_elem.text.splitlines()[1:]]
         angle_dict = {}
         for angle in angle_list:
             if angle[0] not in angle_dict:
@@ -46,7 +46,7 @@ class XMLDataExtractor:
             print(f"No dihedral data found in the xml file {self.xml_file_path}.")
             return [], {}
         
-        dihedral_list = [[line.split()[0], [line.split()[1], line.split()[2], line.split()[3], line.split()[4]]] for line in dihedral_elem.text.splitlines()[1:]]
+        dihedral_list = [[line.split()[0], list(map(int, line.split()[1:]))] for line in dihedral_elem.text.splitlines()[1:]]
         dihedral_dict = {}
         for dihedral in dihedral_list:
             if dihedral[0] not in dihedral_dict:

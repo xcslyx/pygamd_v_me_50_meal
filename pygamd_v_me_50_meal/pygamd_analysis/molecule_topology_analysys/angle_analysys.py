@@ -26,9 +26,6 @@ class AngleAnalysys:
         position_list: np.ndarray = XMLDataExtractor(self.xml_path + file_name).extract_position_data()
         _, angle_dict = XMLDataExtractor(self.xml_path + file_name).extract_angle_data()
 
-        with open(os.path.join(self.sys_topol_path, "angle_dict.txt"), 'w') as f:
-            f.write(str(angle_dict))
-
         angle_degree_dict = {}
 
         for angle in angle_dict:
