@@ -409,7 +409,7 @@ class Functions:
         # 防止数值误差导致超出 [-1,1]
         cos_theta = np.clip(cos_theta, -1.0, 1.0)
         theta = np.arccos(cos_theta)
-        return np.degrees(theta)
+        return float(np.degrees(theta))
     
     @staticmethod
     def compute_dihedral(a, b, c, d):
@@ -428,4 +428,4 @@ class Functions:
         x = np.dot(v, w)
         y = np.dot(np.cross(b1_unit, v), w)
 
-        return np.degrees(np.arctan2(y, x))
+        return float(np.degrees(np.arctan2(y, x)))

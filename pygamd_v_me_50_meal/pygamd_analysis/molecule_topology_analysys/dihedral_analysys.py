@@ -34,7 +34,7 @@ class DihedralAnalysys:
                 dihedral_degree_dict[dihedral].append(Functions.compute_dihedral(position_list[dihedral_index[0]], position_list[dihedral_index[1]], position_list[dihedral_index[2]], position_list[dihedral_index[3]]))
         
         with open(os.path.join(self.dihedral_path, file_name), 'w') as f:
-            f.write(str(dihedral_dict))
+            f.write(str(dihedral_degree_dict))
         
     def get_dihedral_degree_parallel(self):
         files = os.listdir(self.xml_path)
