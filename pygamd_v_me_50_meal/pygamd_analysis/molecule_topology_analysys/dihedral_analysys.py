@@ -26,12 +26,12 @@ class DihedralAnalysys:
         position_list: np.ndarray = XMLDataExtractor(self.xml_path + file_name).extract_position_data()
         _, dihedral_dict = XMLDataExtractor(self.xml_path + file_name).extract_dihedral_data()
 
-        dihedral_dict = {}
+        dihedral_degree_dict = {}
 
         for dihedral in dihedral_dict:
-            dihedral_dict[dihedral] = []
+            dihedral_degree_dict[dihedral] = []
             for dihedral_index in dihedral_dict[dihedral]:
-                dihedral_dict[dihedral].append(Functions.compute_dihedral(position_list[dihedral_index[0]], position_list[dihedral_index[1]], position_list[dihedral_index[2]], position_list[dihedral_index[3]]))
+                dihedral_degree_dict[dihedral].append(Functions.compute_dihedral(position_list[dihedral_index[0]], position_list[dihedral_index[1]], position_list[dihedral_index[2]], position_list[dihedral_index[3]]))
         
         with open(os.path.join(self.dihedral_path, file_name), 'w') as f:
             f.write(str(dihedral_dict))
@@ -48,15 +48,15 @@ class DihedralAnalysys:
                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
                           ncols=100))
         
-        dihedral_dict = {}
+        merged_dihedral_degree_dict = {}
         for file_name in os.listdir(self.dihedral_path):
             with open(os.path.join(self.dihedral_path, file_name), 'r') as f:
                 for dihedral, values in eval(f.read()).items():
-                    if dihedral not in dihedral_dict:
-                        dihedral_dict[dihedral] = []
-                    dihedral_dict[dihedral].extend(values)
+                    if dihedral not in merged_dihedral_degree_dict:
+                        merged_dihedral_degree_dict[dihedral] = []
+                    merged_dihedral_degree_dict[dihedral].extend(values)
         
         with open(os.path.join(self.sys_topol_path, "dihedral_degree.txt"), 'w') as f:
-            f.write(str(dihedral_dict))
+            f.write(str(merged_dihedral_degree_dict))
     
     
