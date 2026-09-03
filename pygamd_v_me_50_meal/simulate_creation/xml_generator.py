@@ -10,7 +10,9 @@ import numpy as np
 
 
 class XMLGenerator:
-    def __init__(self, path: str | None, filename: str, box_size: str | float=100, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
+    def __init__(self, path: str | None, filename: str, box_size: str | float=100,
+                    add_enm_bond=None, add_rigid_body=None, add_domain=None,
+                    protein_model=None, dna_model=None, rna_model=None, gen_run_file=None):
         """
         初始化 XMLGenerator 类
         
@@ -20,8 +22,10 @@ class XMLGenerator:
             box_size: 盒子大小，默认 100
             add_enm_bond: 弹性网络结构域列表，格式如 "159-522,463-600"
             add_rigid_body: 刚体结构域列表，格式如 "159-522,463-600"
-            add_domain: 是否对结构域单独设置粒子类型
-            dna_model: DNA 模型，"1" 表示 3SPN, "2" 表示 2BeadMittal
+            add_domain: 是否对结构域单独设置粒子类型，默认 False
+            protein_model: 蛋白质模型, "HPS" 表示 HPS-Urry、CALVADOS 系列等, "Mpipi" 表示 Mpipi 模型，默认 None
+            dna_model: DNA 模型, 3SPN 表示三粒子模型, 2BeadMittal 表示二粒子模型，默认 None
+            rna_model: RNA 模型, 3SPN 表示三粒子模型, 2BeadMittal 表示二粒子模型，默认 None
             gen_run_file: 是否生成 PYGAMD 运行文件
         """
         # 验证文件格式
@@ -76,14 +80,9 @@ class XMLGenerator:
             self.add_domain_flag = False
 
         # 处理模型选择
-        self.protein_model = None
-        self.dna_model = None
-        self.rna_model = None
-        if dna_model:
-            if dna_model == "1":
-                self.dna_model = "3SPN"
-            elif dna_model == "2":
-                self.dna_model = "2BeadMittal"
+        self.protein_model = protein_model  
+        self.dna_model = dna_model
+        self.rna_model = rna_model
 
         self.output_file = filename.replace(".pdb", ".xml")
         self.output_tree = ET.ElementTree(ET.Element("galamost_xml", {"version": "1.0"}))
@@ -157,31 +156,10 @@ class XMLGenerator:
             seq_elem.text += molecules[i][-1][3] + '\n'
             if any(i in seq_elem.text.split('\n') for i in self.pro_res_map.keys()):
                 self.mol_class[i] = "pro"
-                if not self.protein_model:
-                    print("请选择蛋白质模型：\n1. HPS 模型（HPS-Urry、CALVADOS系列等）\n2. Mpipi 模型")
-                    dna_model_choice = input("请输入选择：")
-                    if dna_model_choice == "1":
-                        self.protein_model = "HPS"
-                    elif dna_model_choice == "2":
-                        self.protein_model = "Mpipi"
             elif any(i in seq_elem.text.split('\n') for i in ['DA', 'DT', 'DC', 'DG', 'DU']):
                 self.mol_class[i] = "dna"
-                if not self.dna_model:
-                    print("请选择 DNA 模型：\n1. 3SPN 模型\n2. Mittal 2 Beads 模型")
-                    dna_model_choice = input("请输入选择：")
-                    if dna_model_choice == "1":
-                        self.dna_model = "3SPN"
-                    elif dna_model_choice == "2":
-                        self.dna_model = "2BeadMittal"
             elif any(i in seq_elem.text.split('\n') for i in ['A', 'C', 'G', 'U']):
                 self.mol_class[i] = "rna"
-                if not self.rna_model:
-                    print("请选择 RNA 模型：\n1. 3SPN 模型\n2. CAVADOS-RNA 模型(未提供)")
-                    rna_model_choice = input("请输入选择：")
-                    if rna_model_choice == "1":
-                        self.rna_model = "3SPN"
-                    elif rna_model_choice == "2":
-                        self.rna_model = "CAVADOS-RNA"
 
             res = ""
             k = 1
