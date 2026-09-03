@@ -96,13 +96,13 @@ def run_main(lang):
 
     parser.add_argument("-add_enm_bond", metavar="enm_domain_list",
                         type=str2value, default=None,
-                        help="若要设置弹性网络，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。" if lang == 'zh' else "To set up elastic network, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
+                        help="若要设置弹性网络，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522, 若有多个结构域, 请以英文逗号分隔。" if lang == 'zh' else "To set up elastic network, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
 
     parser.add_argument("-add_rigid_body", metavar="rigid_body_domain_list",
                         type=str2value, default=None,
-                        help="若要设置刚体，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。" if lang == 'zh' else "To set up rigid body, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
+                        help="若要设置刚体，请输入结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522, 若有多个结构域, 请以英文逗号分隔。" if lang == 'zh' else "To set up rigid body, enter the starting and ending residue numbers of domains (starting from 1), separated by -, e.g., 159-522. For multiple domains, separate with commas.")
 
-    parser.add_argument('-add_domain', action='store_true', help="若要将结构域残基单独设置粒子类型（例如甘氨酸A→AD），请设置为 True，将以rigid body 或 enm bond 的结构域列表来设置单独的粒子类型。" if lang == 'zh' else "To set separate particle types for domain residues (e.g., glycine A→AD), set to True. It will use rigid body or enm bond domain lists to set separate particle types.")
+    parser.add_argument('-add_domain', action='store_true', help="若要将结构域残基单独设置粒子类型（例如甘氨酸 A → AD）, 请设置为 True, 将以rigid body 或 enm bond 的结构域列表来设置单独的粒子类型。" if lang == 'zh' else "To set separate particle types for domain residues (e.g., glycine A→AD), set to True. It will use rigid body or enm bond domain lists to set separate particle types.")
 
     parser.add_argument("-dna_model", metavar="DNA model",
                         type=str, default="unset", help="设置 DNA 蛋白质模型，可选：略." if lang == 'zh' else "Set DNA protein model, options: see details.")

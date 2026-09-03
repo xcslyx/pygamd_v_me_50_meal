@@ -10,7 +10,7 @@ import numpy as np
 
 
 class XMLGenerator:
-    def __init__(self, path: str, filename, box_size: str | float=100, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
+    def __init__(self, path: str | None, filename: str, box_size: str | float=100, add_enm_bond=None, add_rigid_body=None, add_domain=None, dna_model=None, gen_run_file=None):
         """
         初始化 XMLGenerator 类
         
@@ -18,10 +18,10 @@ class XMLGenerator:
             path: 系统目录路径
             filename: PDB 文件路径或文件名
             box_size: 盒子大小，默认 100
-            add_enm_bond: 弹性网络结构域列表，格式如 "159-522,523-600"
-            add_rigid_body: 刚体结构域列表，格式如 "159-522,523-600"
+            add_enm_bond: 弹性网络结构域列表，格式如 "159-522,463-600"
+            add_rigid_body: 刚体结构域列表，格式如 "159-522,463-600"
             add_domain: 是否对结构域单独设置粒子类型
-            dna_model: DNA 模型，"1" 表示 3SPN，"2" 表示 2BeadMittal
+            dna_model: DNA 模型，"1" 表示 3SPN, "2" 表示 2BeadMittal
             gen_run_file: 是否生成 PYGAMD 运行文件
         """
         # 验证文件格式
@@ -65,19 +65,8 @@ class XMLGenerator:
         self.mol_num = 0
         self.mol_class = []
 
-        # 处理弹性网络
-        if add_enm_bond:
-            self.add_enm_bond_flag = True
-            self.enm_domain_list = add_enm_bond.split(',')
-        else:
-            self.add_enm_bond_flag = False
-
         # 处理刚体
-        if add_rigid_body:
-            self.add_rigid_body = True
-            self.rigid_domain_list = add_rigid_body.split(',')
-        else:
-            self.add_rigid_body = False
+        self.add_rigid_body = add_rigid_body
         self.rigid_body_index = 0
 
         # 处理结构域
@@ -99,29 +88,17 @@ class XMLGenerator:
         self.output_file = filename.replace(".pdb", ".xml")
         self.output_tree = ET.ElementTree(ET.Element("galamost_xml", {"version": "1.0"}))
         
-        try:
-            self.pdb2xml()
-            self.merge_xml()
-            print("PDB 转换为 XML 完成！")
-        except Exception as e:
-            print(f"转换过程中出错：{e}")
-            raise
+        self.pdb2xml(add_enm_bond, add_rigid_body)
+        self.merge_xml()
+        print("PDB 转换为 XML 完成！")
 
         # 生成运行文件
-        if gen_run_file is None:
-            try:
-                run_file_request = input("是否要生成对应的 PYGAMD 运行文件？(y(es)/n(o))：")
-                if run_file_request.lower() in ["y", "yes"]:
-                    print("正在生成对应的 PYGAMD 运行文件...")
-                    self.generate_pygamd_run_file()
-            except EOFError:
-                print("未检测到用户输入，跳过生成运行文件")
-        elif gen_run_file:
+        if gen_run_file:
             print("正在生成对应的 PYGAMD 运行文件...")
             self.generate_pygamd_run_file()
 
 
-    def pdb2xml(self):
+    def pdb2xml(self, add_enm_bond: str = "", add_rigid_body: str = ""):
         """
         将 PDB 文件转换为包含 <sequence> 和 <position> 的log文件。
         PDB 文件包含由 "TER" 标签分隔的多个分子。
@@ -227,48 +204,24 @@ class XMLGenerator:
 
         for i in range(len(self.mol_class)):
             if self.mol_class[i] == "pro":
-                if not self.add_rigid_body:
-                    rigid_request = input("是否要对结构域设置刚体？(y(es)/n(o))：")
-                    if rigid_request.lower() in ["y", "yes"]:
-                        self.add_rigid_body = True
-                        self.rigid_domain_list = input("请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。\n").split(',')
-                        # self.add_rigid_body = False
+                self.pro_log2xml(file=f"mol{i:0>2d}_log.xml", add_rigid_body=add_rigid_body)
 
-                self.pro_log2xml(file=f"mol{i:0>2d}_log.xml")
-
-                if self.add_rigid_body:
-                    if not self.add_domain_flag:
-                        domain_request = input("是否要对结构域单独设置粒子类型？(y(es)/n(o))：")
-                        if domain_request.lower() in ["y", "yes"]:
-                            self.add_domain_flag = True
-                        # else:
-                        #     self.add_rigid_body = False
-
+                if add_rigid_body:
                     if self.add_domain_flag:
-                        for domain_idx in range(len(self.rigid_domain_list)):
-                            domain = list(map(int, self.rigid_domain_list[domain_idx].split('-')))
+                        rigid_domain_list = add_rigid_body.split(',')
+                        for domain_idx in range(len(rigid_domain_list)):
+                            domain = list(map(int, rigid_domain_list[domain_idx].split('-')))
                             self.pro_add_domain(f"mol{i:0>2d}_log.xml", domain[0], domain[1])
                         self.add_domain_flag = False
-                        self.add_rigid_body = False
                 else:
-                    if not self.add_enm_bond_flag:
-                        enm_request = input("是否要对结构域设置弹性网络？(y(es)/n(o))：")
-                        if enm_request.lower() in ["y", "yes"]:
-                            self.add_enm_bond_flag = True
-                    if self.add_enm_bond_flag:
-                        self.enm_domain_list = input("请输入该结构域的起始残基编号和末尾残基编号（从 1 开始），以-分隔，如 159-522，若有多个结构域，请以英文逗号分隔。\n").split(',')
-                        for domain_idx in range(len(self.enm_domain_list)):
-                            domain = list(map(int, self.enm_domain_list[domain_idx].split('-')))
+                    if add_enm_bond:
+                        enm_domain_list = add_enm_bond.split(',')
+                        for domain_idx in range(len(enm_domain_list)):
+                            domain = list(map(int, enm_domain_list[domain_idx].split('-')))
                             if domain_idx == 0:
                                 self.add_enm_bond(f"mol{i:0>2d}_log.xml", domain[0], domain[1])
                             else:
                                 self.add_enm_bond(f"mol{i:0>2d}_log_enm.xml", domain[0], domain[1])
-                        self.add_enm_bond_flag = False
-
-                        if not self.add_domain_flag:
-                            domain_request = input("是否要对结构域单独设置粒子类型？(y(es)/n(o))：")
-                            if domain_request.lower() in ["y", "yes"]:
-                                self.add_domain_flag = True
 
                         if self.add_domain_flag:
                             for domain_idx in range(len(self.enm_domain_list)):
@@ -460,7 +413,7 @@ class XMLGenerator:
         os.remove(filename)
 
 
-    def pro_log2xml(self, file):
+    def pro_log2xml(self, file, add_rigid_body: str = ""):
         tree = ET.parse(os.path.join(os.path.join(self.log_dir, file)))
         root = tree.getroot()
 
@@ -564,9 +517,9 @@ class XMLGenerator:
             # set body
             f.write('<body num="{}">\n'.format(n_atoms))
             body_list = ['-1'] * n_atoms
-            if self.add_rigid_body:
-                # print("添加刚体！")
-                for domain in self.rigid_domain_list:
+            if add_rigid_body:
+                rigid_domain_list = add_rigid_body.split(',')
+                for domain in rigid_domain_list:
                     domain = list(map(int, domain.split('-')))
                     body_list[domain[0] - 1:domain[1]] = [str(self.rigid_body_index)] * (domain[1] - domain[0] + 1)
                     self.rigid_body_index += 1
@@ -961,7 +914,7 @@ class XMLGenerator:
             f.write("</configuration>\n</galamost_xml>\n")
 
 
-    def generate_pygamd_run_file(self):
+    def generate_pygamd_run_file(self, add_enm_bond: str = "", add_rigid_body: str = ""):
         file_path = os.path.join(self.path, f"run_{self.filename.split('.')[0]}.py")
         with open(file_path, 'w') as f:
             f.write("#!/usr/bin/python\n")
@@ -977,8 +930,8 @@ class XMLGenerator:
             f.write("perform_config = gala.PerformConfig(_options.gpu)\n")
             f.write("all_info = gala.AllInfo(build_method, perform_config)\n\n")
 
-            if self.add_enm_bond_flag:
-                f.write("dt = 0.0002\n"); print("已设置弹性键，生成结构松弛模拟脚本，dt 首先设置为为 0.0002")
+            if add_enm_bond:
+                f.write("dt = 0.0002\n"); print("已设置弹性键, 生成结构松弛模拟脚本, dt 首先设置为为 0.0002")
             else:
                 f.write("dt = 0.02\n"); print("dt 默认设置为 0.02")
             f.write("app = gala.Application(all_info, dt)\n\n")
@@ -1062,7 +1015,7 @@ class XMLGenerator:
 
             with open(os.path.join(self.path, "ahdh_DNA.force_field"), "w") as f_force_field:
                 f_force_field.write("<ah_params>\n")
-                if self.add_enm_bond_flag:
+                if add_enm_bond:
                     for key, value in list(ahdh_params.items())[:40]:
                         f_force_field.write(f"{key:5} {value[0]:<10} {value[1]:<30}\n")
                 else:
@@ -1075,7 +1028,7 @@ class XMLGenerator:
 
             f.write("bondforce_pro = gala.BondForceHarmonic(all_info)\n")
             f.write("bondforce_pro.setParams('B-B', 8033.28, 0.38)\n")
-            if self.add_enm_bond_flag:
+            if add_enm_bond:
                 enm_bond_file = f'{self.filename.replace(".pdb", "")}_enm_bond.py'
                 f.write('with '); f.write(f'open("{enm_bond_file}", "r") as f:\n')
                 f.write("    f_lines = f.readlines()\n")
@@ -1085,7 +1038,7 @@ class XMLGenerator:
 
             f.write("T = Temperature * 8.3143 / 1000.0  # reduced unit\n\n")
 
-            if self.add_rigid_body:
+            if add_rigid_body:
                 f.write("group = gala.ParticleSet(all_info, \"all\")\n")
                 f.write("comp_info = gala.ComputeInfo(all_info, group)\n\n")
 
@@ -1131,7 +1084,7 @@ class XMLGenerator:
             f.write("xml.setOutputBody(True)\n")
             f.write("app.add(xml)\n\n")
 
-            if self.add_enm_bond_flag:
+            if add_enm_bond:
                 f.write("app.run(int(100000))  # (How many steps to run)\n")
                 f.write("app.setDt(0.001)\n")
                 f.write("app.run(int(100000))\n")

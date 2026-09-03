@@ -49,13 +49,7 @@ class CoordinatesProcessor:
                 shutil.move(file_path, self.init_xml_path)
 
         self.remove_ions_zhy = remove_ions_zhy
-
-        if remove_enm:
-            self.remove_enm_bonds_request = "y"
-        elif remove_enm is None:
-            self.remove_enm_bonds_request = input(msg['remove_enm_bonds_request'][self.lang])
-        else:
-            self.remove_enm_bonds_request = "n"
+        self.remove_enm_bonds_request = remove_enm
 
         xml_path = os.path.join(self.path, "xml")
         self.xml_files = sorted(os.listdir(xml_path))
@@ -237,7 +231,7 @@ class CoordinatesProcessor:
                     output=seq_output).xml2sequence()
         print(f"{msg['sequence_output'][self.lang]}: {seq_output}.")
 
-        if self.remove_enm_bonds_request == "y":
+        if self.remove_enm_bonds_request:
             utils.backup_folder(self.path, 'xml', 'xml_init')
             # 使用 tqdm 和多进程移除弹性键
             with Pool(processes=4) as pool:
