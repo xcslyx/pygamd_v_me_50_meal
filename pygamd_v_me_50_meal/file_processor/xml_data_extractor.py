@@ -20,7 +20,12 @@ class XMLDataExtractor:
         return position_list
     
     def extract_bond_data(self) -> tuple:
-        bond_elem = self.root.findall(f".//bond")[0]
+        try:
+            bond_elem = self.root.findall(f".//bond")[0]
+        except:
+            print(f"No bond data found in the xml file {self.xml_file_path}.")
+            return [], {}
+        
         bond_list = [[line.split()[0], list(map(int, line.split()[1:]))] for line in bond_elem.text.splitlines()[1:]]
         bond_dict = {}
         for bond in bond_list:
@@ -30,7 +35,12 @@ class XMLDataExtractor:
         return bond_list, bond_dict
 
     def extract_angle_data(self) -> tuple:
-        angle_elem = self.root.findall(f".//angle")[0]
+        try:
+            angle_elem = self.root.findall(f".//angle")[0]
+        except:
+            print(f"No angle data found in the xml file {self.xml_file_path}.")
+            return [], {}
+        
         angle_list = [[line.split()[0], list(map(int, line.split()[1:]))] for line in angle_elem.text.splitlines()[1:]]
         angle_dict = {}
         for angle in angle_list:

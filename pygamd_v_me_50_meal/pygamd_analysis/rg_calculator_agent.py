@@ -1,0 +1,145 @@
+import os
+import math
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from tqdm import tqdm
+from scipy.ndimage import gaussian_filter
+
+from pygamd_v_me_50_meal.data import Data
+
+
+# 定义一个类，用于计算 Rg, RMSD, RMSF。
+class RgCalculatorAgent:
+    def __init__(self, path, data: Data,
+                 cal_class_rg: str = None, balance_cut: str = None, domain: str = None, calculate_mass: bool = True):
+        """
+        用于计算 Rg, RMSD, RMSF。
+        """
+        self.path = path
+        self.data = data
+
+        self.chain_path = os.path.join(self.path, "chain_xyz_unwrapping/")
+
+        self.save_path = os.path.join(self.path, "draw_log/")
+        os.makedirs(self.save_path, exist_ok=True)
+
+        self.balance_cut = balance_cut
+
+        assert cal_class_rg, "Error! Please input the class of molecules to calculate Rg!"
+        self.cal_class_rg = list(map(lambda x: int(x) - 1, cal_class_rg.split(',')))
+        self.cal_class_rg = [self.data.mol_class_list[i] for i in self.cal_class_rg]
+        print(f"即将计算 Rg 的分子：{self.cal_class_rg}")
+
+        self.rg_results = {}
+        self.cur_chain_class = ""
+        self.init_pos = []
+        
+        if domain:
+            self.domain = list(map(int, domain.split('-')))
+            print(f"即将计算结构域：{self.domain}")
+
+        self.calculate_mass = calculate_mass
+
+    def cal_rg(self, chain_xyz):
+        chain_xyz = np.array(chain_xyz)
+
+        # calculate the core of mass of the chain
+        with open(f"{os.path.join(self.path, self.data.system_name)}_sequence.txt") as f:
+            if self.domain:
+                domain_sequence = eval(f.read())[self.cur_chain_class][self.domain[0] - 1:self.domain[1]]
+            else:
+                domain_sequence = eval(f.read())[self.cur_chain_class][:]
+
+        assert len(domain_sequence) == len(chain_xyz), f"Error! Length of domain_sequence ({len(domain_sequence)}) is not equal to that of chain_xyz ({len(chain_xyz)}).!"
+        aa_num = len(domain_sequence)
+
+        if self.calculate_mass:
+            mass_list = list(map(float, [i[1] for i in domain_sequence]))
+        else:
+            mass_list = [1.0] * aa_num
+        
+        mass = sum(mass_list)
+        mass_core = [sum([chain_xyz[i][j] * mass_list[i] for i in range(aa_num)]) / mass for j in range(3)]
+        r_g = 0
+        for i in range(aa_num):
+            r_g += sum(sum([(chain_xyz[i][j] - mass_core[j]) ** 2 * mass_list[i]]) for j in range(3))
+        return math.sqrt(r_g / mass)
+
+    def process_chain_file(self, name):
+        with open(os.path.join(self.chain_path, name), 'r') as fp:
+            x_mat: dict = eval(fp.read())
+
+        for i in x_mat.keys():
+            if i not in self.cal_class_rg:
+                continue
+            else:
+                if self.domain:
+                    cur_chain_xyz = map(lambda x: x[self.domain[0]-1:self.domain[1]], x_mat[i])
+                else:
+                    cur_chain_xyz = x_mat[i]
+            if i in self.cal_class_rg:
+                self.cur_chain_class = i
+                self.rg_results[i] = [] if i not in self.rg_results else self.rg_results[i]
+                cur_rg_results = list(map(self.cal_rg, cur_chain_xyz))
+                self.rg_results[i] += cur_rg_results
+
+
+    def calculate(self):
+        if not self.balance_cut:
+            chain_files = os.listdir(self.chain_path)
+        else:
+            start, end = list(map(int, self.balance_cut.split(',')))
+            chain_files = os.listdir(self.chain_path)[start - 1: end]
+
+        self.cur_chain_class = None
+
+        # 使用 tqdm 包装可迭代对象以显示进度条
+        list(tqdm(map(self.process_chain_file, sorted(chain_files)),
+                  total=len(chain_files),
+                  desc="Calculating",
+                  colour='cyan',
+                  bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
+                  ncols=100))
+
+        # 保存结果
+        result_file = os.path.join(self.save_path, f"draw_Rg.log")
+        with open(result_file, 'w') as f:
+            f.write(str(self.rg_results))
+        print(f"Rg 计算完成！结果已保存至文件 draw_Rg.log")
+
+        self.draw_rg_distribution()
+
+
+    def draw_rg_distribution(self):
+        with open(os.path.join(self.save_path, f"draw_Rg.log"), 'r') as f:
+            rg_results = eval(f.read())  # 读取 RMSD 结果
+
+        for mol in rg_results.keys():
+            fig, ax = plt.subplots(figsize=(12, 9), dpi=300)
+            init_rg_list = rg_results[mol]
+            rg = np.array(sorted(init_rg_list))
+            frame_num = int(len(init_rg_list) / self.data.mol_class_dict[mol][0])
+            print(f"{mol} 的帧数：{frame_num}")
+
+            # 计算概率密度函数
+            bins = 40  # 划分 bin 的数量
+            # 计算直方图
+            hist, bin_edges = np.histogram(rg, bins=bins)
+            # hist = gaussian_filter(hist, sigma=1)
+            # 计算概率, 除以总链数和 bin 的宽度
+            probabilities = hist / sum(hist) / (bin_edges[1] - bin_edges[0])
+
+            bin_edges += (bin_edges[1] - bin_edges[0]) / 2  # 使 bin 居中
+            ax.plot(bin_edges[:-1], probabilities, label=rf"{mol} $R_{{\mathrm{{g}}}}$")
+            ax.hist(init_rg_list, bins=bins, density=True, alpha=0.5, color="#99FFFF", edgecolor='black',
+                    label=rf"{mol} $R_{{\mathrm{{g}}}}$ (Histogram)")
+            ax.set_xlabel(r'$R_{\mathrm{g}}$ (nm)')
+            ax.set_ylabel('Probability density')
+            ax.set_title(rf'Probability Density Function of {mol} $R_{{\mathrm{{g}}}}$')
+            ax.legend()
+            fig.savefig(os.path.join(self.save_path, f"draw_Rg_{mol}.png"))
+            plt.close(fig)
+
+            print(f"Rg 绘图完成！结果已保存至文件 {os.path.join(self.save_path, f'draw_Rg_{mol}.png')}")

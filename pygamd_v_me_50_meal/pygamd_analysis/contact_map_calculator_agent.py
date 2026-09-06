@@ -77,6 +77,7 @@ class ContactMapCalculatorAgent:
 
         self.balance_cut = balance_cut
 
+        self.domains, self.domain = None, None
         if domain:
             if ',' in domain:
                 domains = domain.split(',')

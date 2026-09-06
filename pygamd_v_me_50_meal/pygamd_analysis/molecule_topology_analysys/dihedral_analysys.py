@@ -26,7 +26,7 @@ class DihedralAnalysys:
         position_list: np.ndarray = XMLDataExtractor(self.xml_path + file_name).extract_position_data()
         _, dihedral_dict = XMLDataExtractor(self.xml_path + file_name).extract_dihedral_data()
 
-        dihedral_degree_dict = {}
+        dihedral_degree_dict: dict[str, list[float]] = {}
 
         for dihedral in dihedral_dict:
             dihedral_degree_dict[dihedral] = []

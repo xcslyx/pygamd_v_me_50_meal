@@ -328,7 +328,6 @@ def run_main(lang):
         print(msg['start_calculating_cm'])
         ContactMapCalculator(path,
                             data=data,
-                            cm_choice=file_args.cm_choice,
                             r_cut=file_args.r_cut,
                             ).calculate_contact_map_parallel()
         exit()
