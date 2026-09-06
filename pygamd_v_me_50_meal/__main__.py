@@ -127,11 +127,6 @@ def run_main(lang):
     parser.add_argument('-draw', metavar="想要绘制图像的类型, 如cm,rmsd,rmsf。",
                         type=str, default=None, help="用于无需计算的情况下绘图。" if lang == 'zh' else "For drawing without calculation.")
 
-    parser.add_argument('-cm_choice', metavar="分子组合/轨迹切片",
-                        type=str, default="/", help="计算接触图的选择，如“0-0,1-1/1000,2000”。" if lang == 'zh' else "Contact map calculation options, e.g., '0-0,1-1/1000,2000'." +
-                                                    "不提供某一项代表全选，如“0-0,1-1/”代表只计算0-0和1-1之间的接触图，选取所有轨迹。" if lang == 'zh' else "Omitting an item means selecting all, e.g., '0-0,1-1/' means only calculating contact maps between 0-0 and 1-1, selecting all trajectories." +
-                                                    "若不提供，则会在运行中进行提示，此选项供 nohup 使用。" if lang == 'zh' else "If not provided, it will prompt during runtime, this option is for nohup use.")
-
     # TODO: 增加对接触图平均的功能
     parser.add_argument('-avg', metavar="计算类型",
                         type=str, default="unset", help="用于无需计算的情况系进行平均（还不好用）。" if lang == 'zh' else "For averaging without calculation (not fully functional yet).")
