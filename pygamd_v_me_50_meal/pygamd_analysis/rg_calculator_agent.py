@@ -13,7 +13,7 @@ from pygamd_v_me_50_meal.data import Data
 # 定义一个类，用于计算 Rg, RMSD, RMSF。
 class RgCalculatorAgent:
     def __init__(self, path, data: Data,
-                 cal_class_rg: str = None, balance_cut: str = None, domain: str = None, calculate_mass: bool = True):
+                 cal_class_rg: str = None, balance_cut: str | None = None, domain: str | None = None, calculate_mass: bool = True):
         """
         用于计算 Rg, RMSD, RMSF。
         """
