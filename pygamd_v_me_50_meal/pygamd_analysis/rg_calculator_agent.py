@@ -36,9 +36,8 @@ class RgCalculatorAgent:
         self.cur_chain_class = ""
         self.init_pos = []
         
-        if domain:
-            self.domain = list(map(int, domain.split('-')))
-            print(f"即将计算结构域：{self.domain}")
+        self.domain = list(map(int, domain.split('-'))) if domain else None
+        print(f"即将计算结构域：{self.domain}")
 
         self.calculate_mass = calculate_mass
 
