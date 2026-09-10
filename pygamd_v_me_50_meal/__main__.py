@@ -3,6 +3,7 @@ import os
 import re
 import json
 import shutil
+import asyncio
 import logging
 import argparse
 
@@ -76,6 +77,8 @@ def run_main(lang):
         # description='Do something you want to do in your system.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+
+    parser.add_argument('-agent', '--agent', action='store_true', help='使用智能体.' if lang == 'zh' else 'Use agent to run the package.')
 
     try:
         parser.add_argument('-v', '--version', action='version', version=f'{os.path.basename(__file__)} v{p50.__version__}')
@@ -199,6 +202,15 @@ def run_main(lang):
     
     file_args = parser.parse_args()
 
+    # 智能体作为独立功能，不需要 -p 参数
+    if file_args.agent:
+        # print(msg['start_agent'])
+        # 动态导入 Agent，避免其他模块的依赖问题
+        import pygamd_v_me_50_meal.agent.agent as agent
+        asyncio.run(agent.main())
+        exit()
+        
+            
     # 序列分析作为独立功能，不需要 -p 参数
     if file_args.seq_analysis:
         print(msg['start_seq_analysis'])

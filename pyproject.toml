@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygamd_v_me_50_meal"
-version = "0.7.6"
+version = "0.8.0"
 description = "MD analysis toolkit for cGAS-DNA simulations"
 authors = [
     { name = "Yuxi Leng", email = "1203969713@qq.com" }
@@ -14,7 +14,8 @@ requires-python = ">=3.11"
 dependencies = ["numpy", "pandas", "matplotlib",
                 "torch", "tqdm", "scipy",
                 "scikit-learn", "MDAnalysis",
-                "pygamd", "biopython"]
+                "pygamd", "biopython",
+                "semantic_kernel"]
 
 [tool.setuptools]
 # 自动发现包
