@@ -13,7 +13,7 @@ class GetEnvironment:
         name="check_environment",
         description="获取当前系统的环境信息、当前工作目录以及指定目录下的文件列表。当需要确认文件是否存在、或者不知道当前处于哪个文件夹时，调用此工具。",
     )
-    def check_environment(target_dir: str = ".") -> str:
+    def check_environment(self, target_dir: str = ".") -> str:
         """
         参数:
         :param target_dir: 需要查看的目录路径。默认为 "." 表示当前目录。

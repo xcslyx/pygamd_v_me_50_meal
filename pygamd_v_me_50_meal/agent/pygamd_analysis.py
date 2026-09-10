@@ -31,7 +31,7 @@ class PygamdAnalysis:
         name="cal_contact_map",
         description="计算分子间接触图 Contact Map",
     )
-    def cal_contact_map(path: str, gpu_choice: str | int=0, r_cut: float=4.0,
+    def cal_contact_map(self, path: str, gpu_choice: str | int=0, r_cut: float=4.0,
                         cm_class_list: str="", balance_cut: str | None=None, domain: str='',
                         draw_limit: bool=False):
         """
@@ -65,7 +65,7 @@ class PygamdAnalysis:
         name="cal_rg",
         description="计算分子回转半径 Rg",
     )
-    def cal_rg(path: str, cal_class_rg: str = "1", balance_cut: str | None = None, domain: str | None = None, calculate_mass: bool = True):
+    def cal_rg(self, path: str, cal_class_rg: str = "1", balance_cut: str | None = None, domain: str | None = None, calculate_mass: bool = True):
         """
         Args:
             path: 系统目录路径
@@ -88,7 +88,7 @@ class PygamdAnalysis:
         name="analysis_molecular_topology",
         description="分析分子拓扑结构，可统计键长、键角、二面角信息。",
     )
-    def analysis_molecular_topology(path: str, lang: str = "zh", bond: bool = False, angle: bool = False, dihedral: bool = False):
+    def analysis_molecular_topology(self, path: str, lang: str = "zh", bond: bool = False, angle: bool = False, dihedral: bool = False):
         """ 
         Args:
             path: 系统目录路径
@@ -119,7 +119,7 @@ class PygamdAnalysis:
         name="cal_rmsd",
         description="计算分子均方根位移 RMSD",
     )
-    def cal_rmsd(path: str, ref: str, cal_class_rmsd: str='1', domain: str | None=None, balance_cut: str | None=None):
+    def cal_rmsd(self, path: str, ref: str, cal_class_rmsd: str='1', domain: str | None=None, balance_cut: str | None=None):
         """
         计算 RMSD
         Args:
