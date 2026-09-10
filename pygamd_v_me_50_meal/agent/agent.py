@@ -52,6 +52,8 @@ chat_completion : OpenAIChatCompletion = kernel.get_service(type=ChatCompletionC
 # Add the plugin to the kernel
 from pygamd_v_me_50_meal.agent.pygamd_analysis import PygamdAnalysis
 kernel.add_plugin(PygamdAnalysis(), plugin_name="PygamdAnalysis")
+from pygamd_v_me_50_meal.agent.get_environment import GetEnvironment
+kernel.add_plugin(GetEnvironment(), plugin_name="GetEnvironment")
 
 execution_settings = OpenAIChatPromptExecutionSettings()
 execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
